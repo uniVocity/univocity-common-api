@@ -1,8 +1,8 @@
-/*******************************************************************************
- * Copyright (c) 2015 uniVocity Software Pty Ltd. All rights reserved.
+/*
+ * Copyright (c) 2013 uniVocity Software Pty Ltd. All rights reserved.
  * This file is subject to the terms and conditions defined in file
  * 'LICENSE.txt', which is part of this source code package.
- ******************************************************************************/
+ */
 package com.univocity.api.common;
 
 import com.univocity.api.*;
@@ -10,6 +10,9 @@ import com.univocity.api.*;
 import java.io.*;
 import java.nio.charset.*;
 
+/**
+ * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ */
 public class UrlReaderProvider extends ReaderProvider {
 
 	private int retries = 0;
@@ -32,11 +35,11 @@ public class UrlReaderProvider extends ReaderProvider {
 		this.defaultEncoding = defaultEncoding == null ? Charset.forName("UTF-8") : defaultEncoding;
 	}
 
-	public HttpRequest getRequestConfiguration(){
+	public HttpRequest getRequestConfiguration() {
 		return request;
 	}
 
-	public final Charset getDefaultEncoding(){
+	public final Charset getDefaultEncoding() {
 		return defaultEncoding;
 	}
 

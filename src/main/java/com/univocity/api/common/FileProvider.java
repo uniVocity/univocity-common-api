@@ -1,8 +1,8 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2013 uniVocity Software Pty Ltd. All rights reserved.
  * This file is subject to the terms and conditions defined in file
  * 'LICENSE.txt', which is part of this source code package.
- ******************************************************************************/
+ */
 package com.univocity.api.common;
 
 import java.io.*;
@@ -21,6 +21,7 @@ public final class FileProvider {
 
 	/**
 	 * Creates a provider for the file to be open/written using the default system encoding.
+	 *
 	 * @param file the File
 	 */
 	public FileProvider(File file) {
@@ -29,7 +30,8 @@ public final class FileProvider {
 
 	/**
 	 * Creates a provider for the file to be open/written using a given encoding
-	 * @param file the File to be used.
+	 *
+	 * @param file     the File to be used.
 	 * @param encoding the name of the encoding that must be used to read from/write to the given file.
 	 */
 	public FileProvider(File file, String encoding) {
@@ -38,7 +40,8 @@ public final class FileProvider {
 
 	/**
 	 * Creates a provider for the file to be open/written using a given encoding
-	 * @param file the File to be used.
+	 *
+	 * @param file     the File to be used.
 	 * @param encoding the encoding that must be used to read from/write to the given file.
 	 */
 	public FileProvider(File file, Charset encoding) {
@@ -52,6 +55,7 @@ public final class FileProvider {
 
 	/**
 	 * Creates a provider for the file, represented by a path, to be open/written using the default system encoding.
+	 *
 	 * @param file the path to a file. It can either be the path to a file in the file system or a resource in the classpath.
 	 */
 	public FileProvider(String file) {
@@ -60,7 +64,8 @@ public final class FileProvider {
 
 	/**
 	 * Creates a provider for the file, represented by a path, to be open/written using the default system encoding.
-	 * @param file the path to a file. It can either be the path to a file in the file system or a resource in the classpath.
+	 *
+	 * @param file     the path to a file. It can either be the path to a file in the file system or a resource in the classpath.
 	 * @param encoding the name of the encoding that must be used to read from/write to the given file.
 	 */
 	public FileProvider(String file, String encoding) {
@@ -69,6 +74,7 @@ public final class FileProvider {
 
 	/**
 	 * Creates a provider for the file, represented by a path, to be open/written using the default system encoding.
+	 *
 	 * @param filePath the path to a file. It can either be the path to a file in the file system or a resource in the classpath.
 	 * @param encoding the encoding that must be used to read from/write to the given file.
 	 */
@@ -97,6 +103,7 @@ public final class FileProvider {
 
 	/**
 	 * Returns the File instance given in the constructor of this class, or null if a path to a resource is being used.
+	 *
 	 * @return the File to be loaded by uniVocity, or null if a resource path should be used instead.
 	 */
 	public final File getFile() {
@@ -105,6 +112,7 @@ public final class FileProvider {
 
 	/**
 	 * Returns the encoding used to manipulate the provided file.
+	 *
 	 * @return encoding used to manipulate the provided file.
 	 */
 	public final Charset getEncoding() {
@@ -113,6 +121,7 @@ public final class FileProvider {
 
 	/**
 	 * Returns the resource path given in the constructor of this class, or null if a File is being used.
+	 *
 	 * @return the path to a resource to be loaded by uniVocity, or null if a File should be used instead.
 	 */
 	public final String getFilePath() {
@@ -121,6 +130,6 @@ public final class FileProvider {
 
 	@Override
 	public final String toString() {
-		return filePath + " ("+ encoding +")";
+		return filePath + " (" + encoding + ")";
 	}
 }

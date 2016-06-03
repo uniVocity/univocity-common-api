@@ -1,8 +1,8 @@
-/*******************************************************************************
- * Copyright (c) 2014 uniVocity Software Pty Ltd. All rights reserved.
+/*
+ * Copyright (c) 2013 uniVocity Software Pty Ltd. All rights reserved.
  * This file is subject to the terms and conditions defined in file
  * 'LICENSE.txt', which is part of this source code package.
- ******************************************************************************/
+ */
 package com.univocity.api.common;
 
 import java.io.*;
@@ -25,8 +25,8 @@ public abstract class WriterProvider implements ResourceProvider<Writer> {
 	 *
 	 * Considering the entity is configured to write its headers to the output, the <code>isEmpty()</code> method will be queried and:
 	 * <ul>
-	 * 	<li>if {@code false}: The underlying resource has data already and no headers will be written</li>
-	 *  <li>if {@code true}: The underlying resource is empty and headers will be written to it</li>
+	 * <li>if {@code false}: The underlying resource has data already and no headers will be written</li>
+	 * <li>if {@code true}: The underlying resource is empty and headers will be written to it</li>
 	 * </ul>
 	 *
 	 * If {@link #clearDestination()} was invoked in the same transaction, uniVocity will know the entity is empty and will then attempt to write the header row.

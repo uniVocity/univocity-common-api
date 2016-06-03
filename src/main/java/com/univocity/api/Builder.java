@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2013 uniVocity Software Pty Ltd. All rights reserved.
+ * This file is subject to the terms and conditions defined in file
+ * 'LICENSE.txt', which is part of this source code package.
+ */
+
 package com.univocity.api;
 
 import java.util.*;
@@ -6,10 +12,9 @@ import java.util.*;
  * This is the entry point to the uniVocity data integration engine. It connects the resources in this API to their actual implementations in univocity's jars.
  *
  * <p>In some circumstances, you might need to configure the class loader before being able to obtain instances of {@link CommonFactoryProvider} from univocity.jar.
- *    If that is the case, use the {@link #setClassLoader(ClassLoader)} method before calling the {@link #provider()} method.
+ * If that is the case, use the {@link #setClassLoader(ClassLoader)} method before calling the {@link #provider()} method.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
- *
  */
 public final class Builder {
 
@@ -21,7 +26,7 @@ public final class Builder {
 			for (CommonFactoryProvider provider : factoryProviderLoader) {
 				return provider;
 			}
-		} catch(Exception e){
+		} catch (Exception e) {
 			error = e;
 		}
 		throw new IllegalStateException("Unable to load provider. You might need to use a different classloader in order to load it from uniVocity's jar file", error);
@@ -46,7 +51,7 @@ public final class Builder {
 		return provider;
 	}
 
-	public static final <T> T build(Class<T> builderType, Object ... args){
+	public static final <T> T build(Class<T> builderType, Object... args) {
 		return provider().build(builderType, args);
 	}
 }
