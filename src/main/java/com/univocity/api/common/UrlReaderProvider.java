@@ -9,6 +9,7 @@ import com.univocity.api.*;
 
 import java.io.*;
 import java.nio.charset.*;
+import java.util.*;
 
 /**
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
@@ -20,6 +21,8 @@ public class UrlReaderProvider extends ReaderProvider {
 	private final Charset defaultEncoding;
 	private HttpResponse response;
 	protected HttpRequest request;
+	private final Map<String, Object> parameterValues = new TreeMap<String, Object>();
+	private FileProvider localCopyProvider;
 
 	public UrlReaderProvider(String url) {
 		this(url, (Charset) null);
@@ -64,6 +67,49 @@ public class UrlReaderProvider extends ReaderProvider {
 			response = Builder.build(HttpResponse.class, this);
 		}
 		return response;
+	}
+
+	public void setParameter(String name, Object value) {
+		Args.notBlank(name,"Parameter name");
+		parameterValues.put(name, value);
+	}
+
+	public Map<String, Object> getParameters() {
+		return parameterValues;
+	}
+
+
+
+	public void storeLocalCopyIn(FileProvider provider) {
+		this.localCopyProvider = provider;
+	}
+
+	public void storeLocalCopyIn(File file) {
+		localCopyProvider = new FileProvider(file);
+	}
+
+	public void storeLocalCopyIn(File file, Charset encoding) {
+		localCopyProvider = new FileProvider(file,encoding);
+	}
+
+	public void storeLocalCopyIn(File file, String encoding) {
+		localCopyProvider = new FileProvider(file,encoding);
+	}
+
+	public void storeLocalCopyIn(String path) {
+		localCopyProvider = new FileProvider(path);
+	}
+
+	public void storeLocalCopyIn(String path, Charset encoding) {
+		localCopyProvider = new FileProvider(path, encoding);
+	}
+
+	public void storeLocalCopyIn(String path, String encoding) {
+		localCopyProvider = new FileProvider(path, encoding);
+	}
+
+	public FileProvider getFileProvider() {
+		return localCopyProvider;
 	}
 
 	@Override
