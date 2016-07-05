@@ -108,7 +108,7 @@ public class UrlReaderProvider extends ReaderProvider {
 		localCopyProvider = new FileProvider(path, encoding);
 	}
 
-	public FileProvider getFileProvider() {
+	public FileProvider getLocalCopyFileProvider() {
 		return localCopyProvider;
 	}
 
