@@ -14,15 +14,17 @@ import java.util.*;
 /**
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
-public class UrlReaderProvider extends ReaderProvider {
+public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 
 	private int retries = 0;
 	private long retryInterval = 2000;
 	private final Charset defaultEncoding;
 	private HttpResponse response;
 	protected HttpRequest request;
-	private final Map<String, Object> parameterValues = new TreeMap<String, Object>();
+	private TreeMap<String, Object> parameterValues = new TreeMap<String, Object>();
 	private FileProvider localCopyProvider;
+	private String baseUrl;
+	private String protocol;
 
 	public UrlReaderProvider(String url) {
 		this(url, (Charset) null);
@@ -38,8 +40,43 @@ public class UrlReaderProvider extends ReaderProvider {
 		this.defaultEncoding = defaultEncoding == null ? Charset.forName("UTF-8") : defaultEncoding;
 	}
 
+	public String getBaseUrl() {
+		if (baseUrl == null) {
+			String url;
+			if (response != null && request.getFollowRedirects()) {
+				url = response.getRedirectionUrl();
+			} else {
+				url = request.getUrl();
+			}
+			int index = url.indexOf("://");
+			if (index >= 0) {
+				protocol = url.substring(0,index+3);
+				url = url.substring(index+3);
+			}
+
+			if (url.indexOf('/') >= 0) {
+				baseUrl = url.substring(0, url.indexOf('/'));
+			}
+		}
+
+
+		return baseUrl;
+	}
+
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+
+		int index = baseUrl.indexOf("://");
+		if (index >= 0) {
+			protocol = baseUrl.substring(0,index+3);
+		}
+	}
 	public HttpRequest getRequestConfiguration() {
 		return request;
+	}
+
+	public String getProtocol() {
+		return protocol;
 	}
 
 	public final Charset getDefaultEncoding() {
@@ -124,5 +161,17 @@ public class UrlReaderProvider extends ReaderProvider {
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + " [" + request.getUrl() + "]";
+	}
+
+	public UrlReaderProvider clone() {
+		try {
+			UrlReaderProvider clone = (UrlReaderProvider) super.clone();
+			clone.response = null;
+			clone.request = request.clone();
+			clone.parameterValues = (TreeMap<String, Object>) parameterValues.clone();
+			return clone;
+		} catch (CloneNotSupportedException e) {
+		    throw new IllegalStateException("Unable to clone ",e);
+		}
 	}
 }

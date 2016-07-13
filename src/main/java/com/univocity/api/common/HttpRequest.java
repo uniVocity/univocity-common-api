@@ -12,16 +12,16 @@ import java.util.*;
 /**
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
-public class HttpRequest {
+public class HttpRequest implements Cloneable{
 
 	private String url;
 	private int timeout = 0;
 	private boolean followRedirects = false;
 	private boolean validateSSL = true;
 	private HttpMethodType httpMethodType = HttpMethodType.GET;
-	private final LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
-	private final LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
-	private final List<Object[]> data = new ArrayList<Object[]>();
+	private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
+	private LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
+	private List<Object[]> data = new ArrayList<Object[]>();
 
 	private String proxyUser;
 	private String proxyHost;
@@ -160,5 +160,20 @@ public class HttpRequest {
 
 	public int getProxyPort() {
 		return proxyPort;
+	}
+
+	public HttpRequest clone() {
+		try {
+			HttpRequest clone = (HttpRequest) super.clone();
+			clone.headers = (LinkedHashMap<String, String>) this.headers.clone();
+			clone.cookies = (LinkedHashMap<String, String>) this.cookies.clone();
+			clone.data = new ArrayList<Object[]>();
+			for (Object[] object : this.data) {
+				clone.data.add(object.clone());
+			}
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalStateException("Could not clone",e);
+		}
 	}
 }
