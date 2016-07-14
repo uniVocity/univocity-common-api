@@ -76,6 +76,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	}
 
 	public String getProtocol() {
+		getBaseUrl();
 		return protocol;
 	}
 
