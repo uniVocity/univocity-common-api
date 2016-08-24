@@ -26,6 +26,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	private FileProvider localCopyProvider;
 	private String baseUrl;
 	private String protocol;
+	private String pageUrl;
 
 	public UrlReaderProvider(String url) {
 		this(url, (Charset) null);
@@ -99,6 +100,27 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 
 	public final void setRetryInterval(long retryInterval) {
 		this.retryInterval = retryInterval;
+	}
+
+	/**
+	 * Gets the string of the current page. For example, if the url is "http://google.com/images/logo.png",
+	 * "/images/logo.png" will be returned.
+	 * @return
+	 */
+	public String getPage() {
+		return pageUrl = request.getUrl().substring(protocol.length() + baseUrl.length());
+	}
+
+	/**
+	 * Returns file name specfied in URL. For example, if the URL is "http://google.com/images/logo.png".
+	 * "logo.png" will be returned
+	 * @return
+	 */
+	public String getFileName() {
+		if (pageUrl == null) {
+			getPage();
+		}
+		return pageUrl.substring(pageUrl.lastIndexOf('/') + 1);
 	}
 
 	public HttpResponse getResponse() {
