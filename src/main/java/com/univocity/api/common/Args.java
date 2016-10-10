@@ -140,4 +140,33 @@ public class Args {
 	public static boolean isNotBlank(String s) {
 		return !isBlank(s);
 	}
+
+	public static String replaceSystemProperties(String filePath) {
+		int offset = 0;
+		int braceOpen = 0;
+		while (braceOpen >= 0) {
+			braceOpen = filePath.indexOf('{', offset);
+			if (braceOpen >= 0) {
+				offset = braceOpen;
+				int braceClose = filePath.indexOf('}');
+				if (braceClose > braceOpen) {
+					offset = braceClose;
+					String property = filePath.substring(braceOpen + 1, braceClose);
+					String value = System.getProperty(property);
+					if (value != null) {
+						String beforeProperty = filePath.substring(0, braceOpen);
+						String afterProperty = "";
+						if (braceClose < filePath.length()) {
+							afterProperty = filePath.substring(braceClose + 1, filePath.length());
+						}
+						filePath = beforeProperty + value + afterProperty;
+					}
+				}
+
+			} else {
+				break;
+			}
+		}
+		return filePath;
+	}
 }
