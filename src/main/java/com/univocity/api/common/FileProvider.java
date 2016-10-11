@@ -85,7 +85,7 @@ public final class FileProvider {
 		}
 		this.encoding = getEncoding(encoding);
 		this.file = null;
-		this.filePath = Args.replaceSystemProperties(filePath).replace("\\", "/");
+		this.filePath = Args.replaceSystemProperties(filePath).replace('\\', '/');
 	}
 
 	private final static Charset getEncoding(String encoding) {
