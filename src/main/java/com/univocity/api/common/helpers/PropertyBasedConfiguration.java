@@ -14,26 +14,89 @@ import java.util.*;
 import java.util.Map.*;
 
 /**
+ * A configuration class based on properties. Properties can contain values that refer to other properties,
+ * environment variables, or values provided at runtime.
+ *
+ * Examples of properties that can be declared in a file:
+ *
+ * <ul>
+ * <li><code>application.dir=${user.home}/.myApp</code> Property <b>application.dir</b> refers to folder <b>.myApp</b>
+ * under the user's home directory. (<b>user.home</b> here is an environment variable)</li>
+ *
+ * <li><code>application.status.dir=${application.dir}/status</code> Here <b>application.status.dir</b> refers to a
+ * <b>status</b> folder under the application directory. Note that property <b>application.dir</b> defined earlier
+ * is used here: its value will be replaced by the evaluated path to the application directory.
+ *
+ * <li><code>application.batch.dir=${application.dir}/batch_!{batch}</code> Here the property uses a <b>batch</b>
+ * variable which is provided at runtime. A client application must call {@link #getProperty(String, String...)}, or
+ * {@link #getDirectory(String, boolean, boolean, boolean, boolean, String...)} or
+ * {@link #getFile(String, boolean, boolean, boolean, boolean, String...)} with the string {@code "batch"} followed by
+ * a batch number.
+ *
+ * <li><code>logback.configurationFile=config/logback.xml</code> Is a regular property. You can call
+ * {@link #setSystemProperty(String)} at startup to set the this property as a system property. In this case,
+ * calling {@code setSystemProperty("logback.configurationFile");} at startup will make the logback logger read
+ * from our {@code config/logback.xml} file</li>
+ *
+ * </ul>
+ *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
-public abstract class PropertyBasedConfiguration {
+public class PropertyBasedConfiguration {
 
 	protected final Properties properties;
 	private final Map<String, String> values = new LinkedHashMap<String, String>();
 
-	protected PropertyBasedConfiguration(InputStream inputProperties) {
+	/**
+	 * Creates a configuration instance from an {@link java.io.InputStream}
+	 *
+	 * @param inputProperties an input with properties.
+	 *
+	 * @throws IllegalConfigurationException if the input can't be read
+	 */
+	public PropertyBasedConfiguration(InputStream inputProperties) throws IllegalConfigurationException {
 		this((Closeable) inputProperties);
 	}
 
-	protected PropertyBasedConfiguration(Reader inputProperties) {
+	/**
+	 * Creates a configuration instance from a {@link java.io.Reader}
+	 *
+	 * @param inputProperties an input with properties.
+	 *
+	 * @throws IllegalConfigurationException if the input can't be read
+	 */
+	public PropertyBasedConfiguration(Reader inputProperties) throws IllegalConfigurationException {
 		this((Closeable) inputProperties);
 	}
 
-	protected PropertyBasedConfiguration(File inputProperties) {
+	/**
+	 * Creates a configuration instance from a {@link java.io.File}
+	 *
+	 * @param inputProperties an input with properties.
+	 *
+	 * @throws IllegalConfigurationException if the input can't be read
+	 */
+	public PropertyBasedConfiguration(File inputProperties) throws IllegalConfigurationException {
 		this(getFileReader(inputProperties));
 	}
 
-	private PropertyBasedConfiguration(Closeable inputProperties) {
+	/**
+	 * Creates a configuration instance from a list of paths to files containing properties.
+	 * Once a file is found it will be loaded and the remainder of these paths will be ignored.
+	 *
+	 * Each path will be attempted to be read twice: first as an absolute path (i.e. as a file of the filesystem)
+	 * and then as a relative path (i.e. as a resource of the application). If no files are found in either attempts
+	 * the next path in the list will be tried, and so on.
+	 *
+	 * @param configurationPaths the sequence of path of configuration files that this class will attempt to load.
+	 *
+	 * @throws IllegalConfigurationException if none of the given paths indicate a file or resource with properties.
+	 */
+	public PropertyBasedConfiguration(String... configurationPaths) throws IllegalConfigurationException {
+		this(openConfiguration(configurationPaths));
+	}
+
+	private PropertyBasedConfiguration(Closeable inputProperties) throws IllegalConfigurationException {
 		Args.notNull(inputProperties, "Properties file input");
 		properties = new OrderedProperties();
 		try {
@@ -43,7 +106,7 @@ public abstract class PropertyBasedConfiguration {
 				properties.load((Reader) inputProperties);
 			}
 		} catch (Exception e) {
-			throw new IllegalStateException("Error loading configuration from properties " + getPropertiesDescription(), e);
+			throw new IllegalConfigurationException("Error loading configuration from properties " + getPropertiesDescription(), e);
 		} finally {
 			if (inputProperties != null) {
 				try {
@@ -68,11 +131,7 @@ public abstract class PropertyBasedConfiguration {
 		}
 	}
 
-	protected PropertyBasedConfiguration(String... configurationPaths) {
-		this(openConfiguration(configurationPaths));
-	}
-
-	protected static InputStream openConfiguration(String... pathsToTry) {
+	private static InputStream openConfiguration(String... pathsToTry) {
 		Args.notEmpty(pathsToTry, "List of paths to look for a properties file");
 		for (String path : pathsToTry) {
 			try {
@@ -84,9 +143,7 @@ public abstract class PropertyBasedConfiguration {
 				}
 			}
 		}
-		System.err.println("Could not load a properties file from any of the given paths: " + Arrays.toString(pathsToTry));
-		System.exit(1);
-		return null;
+		throw new IllegalConfigurationException("Could not load a properties file from any of the given paths: " + Arrays.toString(pathsToTry));
 	}
 
 	private static Reader getFileReader(File file) {
@@ -94,7 +151,7 @@ public abstract class PropertyBasedConfiguration {
 		try {
 			return new FileReader(file);
 		} catch (Exception ex) {
-			throw new IllegalStateException("Error loading properties from file " + file.getAbsolutePath(), ex);
+			throw new IllegalConfigurationException("Error loading properties from file " + file.getAbsolutePath(), ex);
 		}
 	}
 
@@ -111,10 +168,24 @@ public abstract class PropertyBasedConfiguration {
 		return out.toString();
 	}
 
+	/**
+	 * Describes the sort of configuration managed by this class.
+	 *
+	 * @return a description of the configuration
+	 */
 	protected String getPropertiesDescription() {
 		return "properties file";
 	}
 
+	/**
+	 * Replaces a variable inside '${' and '}' within a {@code String} with a value.
+	 *
+	 * @param s        a string that may contain the given variable
+	 * @param variable the variable name, present in the script within '${' and '}'
+	 * @param value    the value that should be used to replace the variable
+	 *
+	 * @return the transformed string, with values in place of the given variables.
+	 */
 	protected String replaceVariables(String s, String variable, String value) {
 		variable = "${" + variable + "}";
 		StringBuilder out = new StringBuilder();
@@ -129,6 +200,13 @@ public abstract class PropertyBasedConfiguration {
 		return out.toString();
 	}
 
+	/**
+	 * Parses a string to find variables between '${' and '}'
+	 *
+	 * @param s the input string
+	 *
+	 * @return the list of variables found
+	 */
 	protected List<String> listVariables(String s) {
 		List<String> list = new ArrayList<String>();
 		int i = 0;
@@ -148,9 +226,25 @@ public abstract class PropertyBasedConfiguration {
 		return list;
 	}
 
-	protected void setSystemProperty(String property) {
+	/**
+	 * Sets a given property of the configuration as a system property. Existing existing system properties
+	 * are not overridden. Use {@link #setSystemProperty(String, boolean)} to override existing system properties.
+	 *
+	 * @param property the property contained in the configuration that should become a system property
+	 */
+	public void setSystemProperty(String property) {
+		setSystemProperty(property, false);
+	}
+
+	/**
+	 * Sets a given property of the configuration as a system property.
+	 *
+	 * @param property the property contained in the configuration that should become a system property
+	 * @param override flag indicating whether to override any value already associated with the given system property.
+	 */
+	public void setSystemProperty(String property, boolean override) {
 		String value = System.getProperty(property);
-		if (Args.isBlank(value)) {
+		if (Args.isBlank(value) || override) {
 			value = getProperty(property);
 			if (Args.isNotBlank(value)) {
 				System.setProperty(property, value);
@@ -206,6 +300,14 @@ public abstract class PropertyBasedConfiguration {
 		return value;
 	}
 
+	/**
+	 * Returns the value associated with a property in the configuration
+	 *
+	 * @param property     the property name
+	 * @param defaultValue a default value to return in case the property is not defined in the configuration
+	 *
+	 * @return the property value, if present in the configuration, or the default value in case the property doesn't exist.
+	 */
 	public String getProperty(String property, String defaultValue) {
 		if (!values.containsKey(property)) {
 			return defaultValue;
@@ -214,15 +316,37 @@ public abstract class PropertyBasedConfiguration {
 		return values.get(property);
 	}
 
-	public String getProperty(String property) {
+	/**
+	 * Returns the value associated with a property in the configuration
+	 *
+	 * @param property the property name
+	 *
+	 * @return the property value
+	 *
+	 * @throws IllegalConfigurationException if the property is not present in the configuration.
+	 */
+	public String getProperty(String property) throws IllegalConfigurationException {
 		if (!values.containsKey(property)) {
-			throw new IllegalStateException("Invalid configuration in " + getPropertiesDescription() + "! Property '" + property + "' could not be found.");
+			throw new IllegalConfigurationException("Invalid configuration in " + getPropertiesDescription() + "! Property '" + property + "' could not be found.");
 		}
 
 		return values.get(property);
 	}
 
-	public String getProperty(String property, String... keyValuePairs) {
+	/**
+	 * Returns the value associated with a property in the configuration, replacing variables between '!{' and '}'.
+	 * If property {@code my.property} has value <code>/tmp/!{batch}/!{date}/</code>, and you call
+	 * {@code getProperty("my.property", "batch", "1234", "date", "2015-DEC-25");} the result will be {@code "/tmp/1234/2015-DEC-25/"}
+	 *
+	 * @param property      the property name
+	 * @param keyValuePairs a list of key an value pairs with values for variables between '!{' and '}' that might be
+	 *                      part of the property value.
+	 *
+	 * @return the property value with the variables replaced.
+	 *
+	 * @throws IllegalConfigurationException if the property is not present in the configuration.
+	 */
+	public String getProperty(String property, String... keyValuePairs) throws IllegalConfigurationException {
 		String previous = getProperty(property);
 
 		String result = previous;
@@ -241,6 +365,11 @@ public abstract class PropertyBasedConfiguration {
 		return result;
 	}
 
+	/**
+	 * Replaces pairs of backslashes in a file path to a single forward slash .
+	 * @param filePath a path to a file
+	 * @return the path with forward slashes only
+	 */
 	protected String normalizeFilePath(String filePath) {
 		if (filePath == null) {
 			throw new IllegalConfigurationException("File path undefined");
