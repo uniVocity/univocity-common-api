@@ -196,6 +196,14 @@ public abstract class PropertyBasedConfiguration {
 		return filePath;
 	}
 
+	public File getValidatedFile(String pathToFile, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create) {
+		return getValidatedPath(pathToFile, null, false, mandatory, validateRead, validateWrite, create);
+	}
+
+	public File getValidatedDirectory(String pathToFile, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create) {
+		return getValidatedPath(pathToFile, null, true, mandatory, validateRead, validateWrite, create);
+	}
+
 	private File getValidatedPath(String property, File defaultFile, boolean isDirectory, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) {
 		String path = getProperty(property, keyValuePairs);
 		String description = isDirectory ? "Directory" : "File";
