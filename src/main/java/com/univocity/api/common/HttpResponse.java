@@ -12,8 +12,12 @@ import java.util.*;
 
 /**
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @see HttpResponseReader
+ * @see HttpRequest
+ * @see HttpMethodType
+ * @see UrlReaderProvider
  */
-public interface HttpResponse extends Closeable,Cloneable{
+public interface HttpResponse extends Closeable, Cloneable {
 
 	String getRedirectionUrl();
 
