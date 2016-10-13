@@ -9,7 +9,7 @@ package com.univocity.api;
 import java.util.*;
 
 /**
- * This is the entry point to the uniVocity data integration engine. It connects the resources in this API to their actual implementations in univocity's jars.
+ * This is the entry point to univocity's internal implementation classes. It connects the resources in the public API to their actual implementations in univocity's jars.
  *
  * <p>In some circumstances, you might need to configure the class loader before being able to obtain instances of {@link CommonFactoryProvider} from univocity.jar.
  * If that is the case, use the {@link #setClassLoader(ClassLoader)} method before calling the {@link #provider()} method.
@@ -51,6 +51,15 @@ public final class Builder {
 		return provider;
 	}
 
+	/**
+	 * Creates a new instance of the given type, using the given arguments
+	 *
+	 * @param builderType the type whose instance must be created
+	 * @param args        the arguments to be used by the concrete implementation of the given type.
+	 * @param <T>         the type of the object that will be returned by this method.
+	 *
+	 * @return an instance of the given type.
+	 */
 	public static final <T> T build(Class<T> builderType, Object... args) {
 		return provider().build(builderType, args);
 	}

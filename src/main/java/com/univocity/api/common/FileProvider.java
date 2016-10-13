@@ -10,7 +10,8 @@ import java.io.*;
 import java.nio.charset.*;
 
 /**
- * A FileProvider validates and stores the minimum information required by uniVocity to locate and manipulate files.
+ * A {@code FileProvider} validates and stores the minimum information required by uniVocity to locate and manipulate files.
+ * System properties can be used as part of the file name, such as {user.home}.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
@@ -21,7 +22,7 @@ public final class FileProvider {
 	private final String filePath;
 
 	/**
-	 * Creates a provider for the file to be open/written using the default system encoding.
+	 * Creates a provider for the file to be read/written using the default system encoding.
 	 *
 	 * @param file the File
 	 */
@@ -30,7 +31,7 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Creates a provider for the file to be open/written using a given encoding
+	 * Creates a provider for the file to be read/written using a given encoding
 	 *
 	 * @param file     the File to be used.
 	 * @param encoding the name of the encoding that must be used to read from/write to the given file.
@@ -40,7 +41,7 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Creates a provider for the file to be open/written using a given encoding
+	 * Creates a provider for the file to be read/written using a given encoding
 	 *
 	 * @param file     the File to be used.
 	 * @param encoding the encoding that must be used to read from/write to the given file.
@@ -55,7 +56,8 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Creates a provider for the file, represented by a path, to be open/written using the default system encoding.
+	 * Creates a provider for the file, represented by a path, to be read/written using the default system encoding.
+	 * The path can contain system variables enclosed within { and } (e.g. {@code {user.home}/myapp/log"}).
 	 *
 	 * @param file the path to a file. It can either be the path to a file in the file system or a resource in the classpath.
 	 */
@@ -64,7 +66,8 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Creates a provider for the file, represented by a path, to be open/written using the default system encoding.
+	 * Creates a provider for the file, represented by a path, to be read/written using the default system encoding.
+	 * The path can contain system variables enclosed within { and } (e.g. {@code {user.home}/myapp/log"}).
 	 *
 	 * @param file     the path to a file. It can either be the path to a file in the file system or a resource in the classpath.
 	 * @param encoding the name of the encoding that must be used to read from/write to the given file.
@@ -74,7 +77,8 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Creates a provider for the file, represented by a path, to be open/written using the default system encoding.
+	 * Creates a provider for the file, represented by a path, to be read/written using the default system encoding.
+	 * The path can contain system variables enclosed within { and } (e.g. {@code {user.home}/myapp/log"}).
 	 *
 	 * @param filePath the path to a file. It can either be the path to a file in the file system or a resource in the classpath.
 	 * @param encoding the encoding that must be used to read from/write to the given file.
@@ -103,7 +107,7 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Returns the File instance given in the constructor of this class, or null if a path to a resource is being used.
+	 * Returns the File instance given in the constructor of this class, or {@code null} if a path to a resource is being used.
 	 *
 	 * @return the File to be loaded by uniVocity, or null if a resource path should be used instead.
 	 */
@@ -121,9 +125,9 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Returns the resource path given in the constructor of this class, or null if a File is being used.
+	 * Returns the resource path given in the constructor of this class, or null if a {@code File{} is being used.
 	 *
-	 * @return the path to a resource to be loaded by uniVocity, or null if a File should be used instead.
+	 * @return the path to a resource to be loaded by uniVocity, or null if a {@code File} should be used instead.
 	 */
 	public final String getFilePath() {
 		return filePath;

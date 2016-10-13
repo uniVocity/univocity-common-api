@@ -9,17 +9,21 @@ package com.univocity.api.common;
 import java.io.*;
 
 /**
- * A {@code WriterProvider} for Strings. Use this to write data directly to a String.
+ * A {@link WriterProvider} for {@code String}s. Use this to write data directly to a {@code String}.
  * This is just a convenience class that you can use to write test cases
  * without having to deal with files or other persistent resources.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @see WriterProvider
  */
 public final class StringWriterProvider extends WriterProvider {
 
 	private StringWriter writer;
 	private String string = "";
 
+	/**
+	 * Creates a new, empty {@code StringWriterProvider}
+	 */
 	public StringWriterProvider() {
 
 	}
@@ -30,7 +34,7 @@ public final class StringWriterProvider extends WriterProvider {
 	 * @return a new StringWriter
 	 */
 	@Override
-	public final Writer getResource() {
+	public final StringWriter getResource() {
 		string = getString();
 		writer = new StringWriter();
 		writer.append(string);

@@ -21,20 +21,9 @@ public abstract class WriterProvider implements ResourceProvider<Writer> {
 	public abstract void clearDestination();
 
 	/**
-	 * Queries whether or not the resource to be written contains records already. This is used only for determining whether or not uniVocity should write
-	 * a row with headers for each column in case the underlying resource is empty, and the entity is configured to write its headers to the output.
+	 * Queries whether or not the resource to be written contains any sort of content.
 	 *
-	 * Considering the entity is configured to write its headers to the output, the <code>isEmpty()</code> method will be queried and:
-	 * <ul>
-	 * <li>if {@code false}: The underlying resource has data already and no headers will be written</li>
-	 * <li>if {@code true}: The underlying resource is empty and headers will be written to it</li>
-	 * </ul>
-	 *
-	 * If {@link #clearDestination()} was invoked in the same transaction, uniVocity will know the entity is empty and will then attempt to write the header row.
-	 * However, as it cannot determine whether the output has data already written in it; Mappings where {@link #clearDestination()} is not used
-	 * might produce outputs without the header row. This is likely to occur in write-only entities with no initial data.
-	 *
-	 * @return a flag indicating whether or not the underlying resource contains records.
+	 * @return a flag indicating whether or not the underlying resource contains data.
 	 */
 	public abstract boolean isEmpty();
 }

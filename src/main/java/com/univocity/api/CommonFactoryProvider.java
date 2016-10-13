@@ -21,7 +21,7 @@ public interface CommonFactoryProvider {
 	 * @param args        any arguments required to initialize the builder.
 	 * @param <T>         the type of builder to instantiate.
 	 *
-	 * @return a builder implementation provided by uniVocity.
+	 * @return a concrete implementation of the given type.
 	 */
 	<T> T build(Class<T> builderType, Object... args);
 }

@@ -12,6 +12,9 @@ package com.univocity.api.common;
  * @param <T> the type of resource provided by this ResourceProvider
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @see WriterProvider
+ * @see ReaderProvider
+ * @see InputQueue
  */
 public interface ResourceProvider<T> {
 	/**
