@@ -156,7 +156,7 @@ public class PropertyBasedConfiguration {
 	}
 
 	@Override
-	public String toString() {
+	public final String toString() {
 		StringBuilder out = new StringBuilder(getPropertiesDescription());
 		for (Entry<String, String> e : values.entrySet()) {
 			out.append('\n');
@@ -186,7 +186,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @return the transformed string, with values in place of the given variables.
 	 */
-	protected String replaceVariables(String s, String variable, String value) {
+	protected final String replaceVariables(String s, String variable, String value) {
 		variable = "${" + variable + "}";
 		StringBuilder out = new StringBuilder();
 
@@ -207,7 +207,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @return the list of variables found
 	 */
-	protected List<String> listVariables(String s) {
+	protected final List<String> listVariables(String s) {
 		List<String> list = new ArrayList<String>();
 		int i = 0;
 		while (i < s.length() - 1) {
@@ -232,7 +232,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @param property the property contained in the configuration that should become a system property
 	 */
-	public void setSystemProperty(String property) {
+	public final void setSystemProperty(String property) {
 		setSystemProperty(property, false);
 	}
 
@@ -242,7 +242,7 @@ public class PropertyBasedConfiguration {
 	 * @param property the property contained in the configuration that should become a system property
 	 * @param override flag indicating whether to override any value already associated with the given system property.
 	 */
-	public void setSystemProperty(String property, boolean override) {
+	public final void setSystemProperty(String property, boolean override) {
 		String value = System.getProperty(property);
 		if (Args.isBlank(value) || override) {
 			value = getProperty(property);
@@ -308,7 +308,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @return the property value, if present in the configuration, or the default value in case the property doesn't exist.
 	 */
-	public String getProperty(String property, String defaultValue) {
+	public final String getProperty(String property, String defaultValue) {
 		if (!values.containsKey(property)) {
 			return defaultValue;
 		}
@@ -325,7 +325,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @throws IllegalConfigurationException if the property is not present in the configuration.
 	 */
-	public String getProperty(String property) throws IllegalConfigurationException {
+	public final String getProperty(String property) throws IllegalConfigurationException {
 		if (!values.containsKey(property)) {
 			throw new IllegalConfigurationException("Invalid configuration in " + getPropertiesDescription() + "! Property '" + property + "' could not be found.");
 		}
@@ -346,7 +346,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @throws IllegalConfigurationException if the property is not present in the configuration.
 	 */
-	public String getProperty(String property, String... keyValuePairs) throws IllegalConfigurationException {
+	public final String getProperty(String property, String... keyValuePairs) throws IllegalConfigurationException {
 		String previous = getProperty(property);
 
 		String result = previous;
@@ -367,10 +367,12 @@ public class PropertyBasedConfiguration {
 
 	/**
 	 * Replaces pairs of backslashes in a file path to a single forward slash .
+	 *
 	 * @param filePath a path to a file
+	 *
 	 * @return the path with forward slashes only
 	 */
-	protected String normalizeFilePath(String filePath) {
+	public final String normalizeFilePath(String filePath) {
 		if (filePath == null) {
 			throw new IllegalConfigurationException("File path undefined");
 		}
@@ -381,15 +383,56 @@ public class PropertyBasedConfiguration {
 		return filePath;
 	}
 
-	public File getValidatedFile(String pathToFile, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create) {
+	/**
+	 * Given a path to a file, returns an instance of {@link java.io.File} for that path, ensuring the physical file
+	 * matches a given criteria (e.g. it must exist, be readable, writable, etc)
+	 *
+	 * @param pathToFile    path to the desired file
+	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
+	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param validateRead  flag indicating whether the file must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not readable.
+	 * @param validateWrite flag indicating whether the file must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not writable.
+	 * @param create        A flag indicating whether the file must be created if it doesn't exist. In case the path
+	 *                      contains a directory that doesn't exist, the parent directory will be created as well.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file couldn't be created.
+	 *
+	 * @return the validated file represented by the given path.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getValidatedFile(String pathToFile, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create) throws IllegalConfigurationException {
 		return getValidatedPath(pathToFile, null, false, mandatory, validateRead, validateWrite, create);
 	}
 
-	public File getValidatedDirectory(String pathToFile, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create) {
-		return getValidatedPath(pathToFile, null, true, mandatory, validateRead, validateWrite, create);
+
+	/**
+	 * Given a path to a directory, returns an instance of {@link java.io.File} for that path, ensuring the physical
+	 * directory matches a given criteria (e.g. it must exist, be readable, writable, etc)
+	 *
+	 * @param pathToDir     path to the desired directory
+	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
+	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param validateRead  flag indicating whether the directory must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not readable.
+	 * @param validateWrite flag indicating whether the directory must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not writable.
+	 * @param create        A flag indicating whether the directory must be created if it doesn't exist. In case the path
+	 *                      contains a directory that doesn't exist, the parent directory will be created as well.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory couldn't be created.
+	 *
+	 * @return the validated directory represented by the given path.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getValidatedDirectory(String pathToDir, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create) throws IllegalConfigurationException {
+		return getValidatedPath(pathToDir, null, true, mandatory, validateRead, validateWrite, create);
 	}
 
-	private File getValidatedPath(String property, File defaultFile, boolean isDirectory, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) {
+	private File getValidatedPath(String property, File defaultFile, boolean isDirectory, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) throws IllegalConfigurationException {
 		String path = getProperty(property, keyValuePairs);
 		String description = isDirectory ? "Directory" : "File";
 
@@ -438,27 +481,188 @@ public class PropertyBasedConfiguration {
 		return file;
 	}
 
-	protected File getDirectory(String property, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) {
-		return getDirectory(property, true, validateWrite, validateWrite, create, keyValuePairs);
+	/**
+	 * Given a property of the configuration, reads the property value as a path to a directory, replacing any
+	 * variables between '!{' and '}', and returns an instance of {@link java.io.File} for that path, ensuring the
+	 * physical directory matches a given criteria (e.g. it must exist, be readable, writable, etc).
+	 *
+	 *
+	 * An {@link IllegalConfigurationException} will be thrown if the property has no valid value associated.
+	 *
+	 * @param property      name of a property whose value is expected to contain a path to a directory
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param validateRead  flag indicating whether the directory must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not readable.
+	 * @param validateWrite flag indicating whether the directory must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not writable.
+	 * @param create        A flag indicating whether the directory must be created if it doesn't exist. In case the path
+	 *                      contains a directory that doesn't exist, the parent directory will be created as well.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory couldn't be created.
+	 * @param keyValuePairs a list of key an value pairs with values for variables between '!{' and '}' that might be
+	 *                      part of the property value. Matching variables in the directory path will be replaced by
+	 *                      the values given in the key value pairs, e.g. if the property has
+	 *                      value <code>/tmp/!{batch}/!{date}/</code>, and the key value pairs are "batch", "1234",
+	 *                      "date", "2015-DEC-25", the result will be {@code "/tmp/1234/2015-DEC-25/"}
+	 *
+	 * @return the validated directory represented by the given path.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getDirectory(String property, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) throws IllegalConfigurationException {
+		return getDirectory(property, true, validateRead, validateWrite, create, keyValuePairs);
 	}
 
-	public File getDirectory(String property, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) {
+	/**
+	 * Given a property of the configuration, reads the property value as a path to a directory, replacing any
+	 * variables between '!{' and '}', and returns an instance of {@link java.io.File} for that path, ensuring the
+	 * physical directory matches a given criteria (e.g. it must exist, be readable, writable, etc).
+	 *
+	 * @param property      name of a property whose value is expected to contain a path to a directory
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
+	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 * @param validateRead  flag indicating whether the directory must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not readable.
+	 * @param validateWrite flag indicating whether the directory must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not writable.
+	 * @param create        A flag indicating whether the directory must be created if it doesn't exist. In case the path
+	 *                      contains a directory that doesn't exist, the parent directory will be created as well.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory couldn't be created.
+	 * @param keyValuePairs a list of key an value pairs with values for variables between '!{' and '}' that might be
+	 *                      part of the property value. Matching variables in the directory path will be replaced by
+	 *                      the values given in the key value pairs, e.g. if the property has
+	 *                      value <code>/tmp/!{batch}/!{date}/</code>, and the key value pairs are "batch", "1234",
+	 *                      "date", "2015-DEC-25", the result will be {@code "/tmp/1234/2015-DEC-25/"}
+	 *
+	 * @return the validated directory represented by the given path.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getDirectory(String property, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) throws IllegalConfigurationException {
 		return getValidatedPath(property, null, true, mandatory, validateRead, validateWrite, create, keyValuePairs);
 	}
 
-	public File getDirectory(String property, File defaultDir, boolean validateRead, boolean validateWrite, String... keyValuePairs) {
+	/**
+	 * Given a property of the configuration, reads the property value as a path to a directory, replacing any
+	 * variables between '!{' and '}', and returns an instance of {@link java.io.File} for that path, ensuring the
+	 * physical directory matches a given criteria (e.g. it must exist, be readable, writable, etc).
+	 *
+	 * @param property      name of a property whose value is expected to contain a path to a directory
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param defaultDir    a default directory to return if the property has no path associated with it.
+	 * @param validateRead  flag indicating whether the directory must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not readable.
+	 * @param validateWrite flag indicating whether the directory must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not writable.
+	 * @param keyValuePairs a list of key an value pairs with values for variables between '!{' and '}' that might be
+	 *                      part of the property value. Matching variables in the directory path will be replaced by
+	 *                      the values given in the key value pairs, e.g. if the property has
+	 *                      value <code>/tmp/!{batch}/!{date}/</code>, and the key value pairs are "batch", "1234",
+	 *                      "date", "2015-DEC-25", the result will be {@code "/tmp/1234/2015-DEC-25/"}
+	 *
+	 * @return the validated directory represented by the given path, or the default directory if the property is empty.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getDirectory(String property, File defaultDir, boolean validateRead, boolean validateWrite, String... keyValuePairs) throws IllegalConfigurationException {
 		return getValidatedPath(property, defaultDir, true, false, validateRead, validateWrite, false, keyValuePairs);
 	}
 
-	public File getFile(String property, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) {
+	/**
+	 * Given a property of the configuration, reads the property value as a path to a file, replacing any
+	 * variables between '!{' and '}', and returns an instance of {@link java.io.File} for that path, ensuring the
+	 * physical file matches a given criteria (e.g. it must exist, be readable, writable, etc).
+	 *
+	 * @param property      name of a property whose value is expected to contain a path to a file
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param validateRead  flag indicating whether the file must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not readable.
+	 * @param validateWrite flag indicating whether the file must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not writable.
+	 * @param create        A flag indicating whether the file must be created if it doesn't exist. In case the path
+	 *                      contains a directory that doesn't exist, the parent directory will be created as well.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file couldn't be created.
+	 * @param keyValuePairs a list of key an value pairs with values for variables between '!{' and '}' that might be
+	 *                      part of the property value. Matching variables in the file path will be replaced by
+	 *                      the values given in the key value pairs, e.g. if the property has
+	 *                      value <code>/tmp/!{batch}/!{date}.csv</code>, and the key value pairs are "batch", "1234",
+	 *                      "date", "2015-DEC-25", the result will be {@code "/tmp/1234/2015-DEC-25.csv"}
+	 *
+	 * @return the validated file represented by the given path, or the default file if the property is empty.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getFile(String property, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) throws IllegalConfigurationException {
+		return getValidatedPath(property, null, false, true, validateRead, validateWrite, create, keyValuePairs);
+	}
+
+	/**
+	 * Given a property of the configuration, reads the property value as a path to a file, replacing any
+	 * variables between '!{' and '}', and returns an instance of {@link java.io.File} for that path, ensuring the
+	 * physical file matches a given criteria (e.g. it must exist, be readable, writable, etc).
+	 *
+	 * @param property      name of a property whose value is expected to contain a path to a file
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
+	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 * @param validateRead  flag indicating whether the file must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not readable.
+	 * @param validateWrite flag indicating whether the file must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not writable.
+	 * @param create        A flag indicating whether the file must be created if it doesn't exist. In case the path
+	 *                      contains a directory that doesn't exist, the parent directory will be created as well.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file couldn't be created.
+	 * @param keyValuePairs a list of key an value pairs with values for variables between '!{' and '}' that might be
+	 *                      part of the property value. Matching variables in the file path will be replaced by
+	 *                      the values given in the key value pairs, e.g. if the property has
+	 *                      value <code>/tmp/!{batch}/!{date}.csv</code>, and the key value pairs are "batch", "1234",
+	 *                      "date", "2015-DEC-25", the result will be {@code "/tmp/1234/2015-DEC-25.csv"}
+	 *
+	 * @return the validated file represented by the given path, or the default file if the property is empty.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getFile(String property, boolean mandatory, boolean validateRead, boolean validateWrite, boolean create, String... keyValuePairs) throws IllegalConfigurationException {
 		return getValidatedPath(property, null, false, mandatory, validateRead, validateWrite, create, keyValuePairs);
 	}
 
-	public File getFile(String property, File defaultFile, boolean validateRead, boolean validateWrite, String... keyValuePairs) {
+	/**
+	 * Given a property of the configuration, reads the property value as a path to a file, replacing any
+	 * variables between '!{' and '}', and returns an instance of {@link java.io.File} for that path, ensuring the
+	 * physical file matches a given criteria (e.g. it must exist, be readable, writable, etc).
+	 *
+	 * @param property      name of a property whose value is expected to contain a path to a file
+	 *                      an {@link IllegalConfigurationException} will be thrown.
+	 * @param defaultFile   a default file to return if the property has no path associated with it.
+	 * @param validateRead  flag indicating whether the file must have read permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not readable.
+	 * @param validateWrite flag indicating whether the file must have write permissions.
+	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not writable.
+	 * @param keyValuePairs a list of key an value pairs with values for variables between '!{' and '}' that might be
+	 *                      part of the property value. Matching variables in the file path will be replaced by
+	 *                      the values given in the key value pairs, e.g. if the property has
+	 *                      value <code>/tmp/!{batch}/!{date}.csv</code>, and the key value pairs are "batch", "1234",
+	 *                      "date", "2015-DEC-25", the result will be {@code "/tmp/1234/2015-DEC-25.csv"}
+	 *
+	 * @return the validated file represented by the given path, or the default file if the property is empty.
+	 *
+	 * @throws IllegalConfigurationException if a validation fails
+	 */
+	public final File getFile(String property, File defaultFile, boolean validateRead, boolean validateWrite, String... keyValuePairs) throws IllegalConfigurationException {
 		return getValidatedPath(property, defaultFile, false, false, validateRead, validateWrite, false, keyValuePairs);
 	}
 
-	public Integer getInteger(String property) {
+
+	/**
+	 * Returns the {@code Integer} value associated with a property in the configuration
+	 *
+	 * @param property the property name
+	 *
+	 * @return the property value, or {@code null} if no value is provided.
+	 *
+	 * @throws IllegalConfigurationException if the property is not present in the configuration.
+	 */
+	public final Integer getInteger(String property) {
 		String value = getProperty(property);
 		if (value == null) {
 			return null;
@@ -470,11 +674,46 @@ public class PropertyBasedConfiguration {
 		}
 	}
 
-	public List<String> getList(String property) {
+	/**
+	 * Returns the {@code Integer} value associated with a property in the configuration
+	 *
+	 * @param property     the property name
+	 * @param defaultValue a default value to return in case the property is not present in the configuration
+	 *
+	 * @return the property value, or the default value if the property is not present in the configuration.
+	 */
+	public final Integer getInteger(String property, Integer defaultValue) {
+		if (!values.containsKey(property)) {
+			return defaultValue;
+		}
+		return getInteger(property);
+	}
+
+	/**
+	 * Returns a {@code List} of values associated with a property in the configuration. Assumes the values are
+	 * separated by comma.
+	 *
+	 * @param property the property name
+	 *
+	 * @return the list of values associated with the given property value
+	 *
+	 * @throws IllegalConfigurationException if the property is not present in the configuration.
+	 */
+	public final List<String> getList(String property) {
 		return getList(property, ",");
 	}
 
-	public List<String> getList(String property, String separator) {
+	/**
+	 * Returns a {@code List} of values associated with a property in the configuration
+	 *
+	 * @param property  the property name
+	 * @param separator the separator that delimits individual values associated with the property.
+	 *
+	 * @return the list of values associated with the given property value
+	 *
+	 * @throws IllegalConfigurationException if the property is not present in the configuration.
+	 */
+	public final List<String> getList(String property, String separator) {
 		String value = getProperty(property);
 		ArrayList out = new ArrayList<String>();
 		if (value == null) {
