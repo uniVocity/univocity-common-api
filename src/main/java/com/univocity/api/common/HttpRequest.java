@@ -7,6 +7,7 @@
 package com.univocity.api.common;
 
 import java.io.*;
+import java.net.*;
 import java.nio.charset.*;
 import java.util.*;
 
@@ -375,6 +376,37 @@ public final class HttpRequest implements Cloneable {
 	/**
 	 * Configures this request to connect through a proxy.
 	 *
+	 * @param proxy the proxy configuration.
+	 */
+	public final void setProxy(Proxy proxy) {
+		setProxy(proxy, null, 0, null, null);
+	}
+
+	/**
+	 * Configures this request to connect through a proxy with authentication.
+	 *
+	 * @param proxy the proxy configuration.
+	 * @param user  the proxy user.
+	 */
+	public final void setProxy(Proxy proxy, String user) {
+		setProxy(proxy, null, 0, user, "");
+	}
+
+	/**
+	 * Configures this request to connect through a proxy with authentication.
+	 *
+	 * @param proxy the proxy configuration.
+	 * @param user  the proxy user.
+	 * @param user  the proxy password.
+	 */
+	public final void setProxy(Proxy proxy, String user, String password) {
+		setProxy(proxy, null, 0, user, password);
+	}
+
+
+	/**
+	 * Configures this request to connect through a proxy.
+	 *
 	 * @param host the proxy host.
 	 * @param port the proxy port.
 	 */
@@ -402,16 +434,34 @@ public final class HttpRequest implements Cloneable {
 	 * @param password the proxy password
 	 */
 	public final void setProxy(String host, int port, String user, String password) {
-		Args.positive(port, "Proxy port");
-		Args.notBlank(host, "Proxy host");
-		this.proxyHost = host;
-		this.proxyPort = port;
+		setProxy(null, host, port, user, password);
+	}
+
+	private Proxy proxy;
+
+	/**
+	 * Configures this request to connect through a proxy.
+	 *
+	 * @param host     the proxy host.
+	 * @param port     the proxy port.
+	 * @param user     the proxy user.
+	 * @param password the proxy password
+	 */
+	private final void setProxy(Proxy proxy, String host, int port, String user, String password) {
+		if (proxy == null) {
+			Args.positive(port, "Proxy port");
+			Args.notBlank(host, "Proxy host");
+			this.proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved(host, port));
+		} else {
+			this.proxy = proxy;
+		}
+
 		this.proxyUser = user;
 		this.proxyPassword = password;
 	}
 
 	/**
-	 * Returns the proxy username to be used when authenticating with a proxy host
+	 * Returns the username to be used when authenticating with a proxy
 	 *
 	 * @return the proxy user
 	 */
@@ -419,17 +469,9 @@ public final class HttpRequest implements Cloneable {
 		return proxyUser;
 	}
 
-	/**
-	 * Returns the proxy host this request should connect to
-	 *
-	 * @return the proxy host
-	 */
-	public final String getProxyHost() {
-		return proxyHost;
-	}
 
 	/**
-	 * Returns the proxy password to be used when connecting with a proxy host
+	 * Returns the password to be used when connecting with a proxy
 	 *
 	 * @return the proxy password
 	 */
@@ -438,12 +480,12 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
-	 * Returns the port of the proxy host this request should connect to
+	 * Returns the the proxy this request should use to connect to
 	 *
-	 * @return the proxy port
+	 * @return the proxy configuration
 	 */
-	public final int getProxyPort() {
-		return proxyPort;
+	public final Proxy getProxy() {
+		return proxy;
 	}
 
 	/**

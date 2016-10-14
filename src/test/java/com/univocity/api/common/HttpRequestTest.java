@@ -34,5 +34,4 @@ public class HttpRequestTest {
 		request.clearUrlParameters();
 		assertEquals(request.getUrl(), "https://www.google.com.au/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}");
 	}
-
 }
