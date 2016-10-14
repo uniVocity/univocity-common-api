@@ -203,7 +203,12 @@
 	</properties>
 
 	<dependencies>
-		<!-- No dependencies allowed here -->
+		<!-- Only test dependencies allowed here -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>6.8.21</version>
+		</dependency>
 	</dependencies>
 
 	<!-- only sign the artifact when releasing (i.e. "mvn release:perform") -->

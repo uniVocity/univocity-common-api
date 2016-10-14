@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * A reusable, cloneable HTTP request configuration.
+ * A reusable, cloneable HTTP request configuration, with support for parameterization of the URL.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  * @see HttpMethodType
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public final class HttpRequest implements Cloneable {
 
-	private String url;
+	private ParameterizedString url;
 	private int timeout = 0;
 	private boolean followRedirects = false;
 	private boolean validateSsl = true;
@@ -28,6 +28,7 @@ public final class HttpRequest implements Cloneable {
 	private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
 	private LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
 	private List<Object[]> data = new ArrayList<Object[]>();
+	private TreeMap<String, Object> parameters = new TreeMap<String, Object>();
 
 	private String proxyUser;
 	private String proxyHost;
@@ -40,17 +41,8 @@ public final class HttpRequest implements Cloneable {
 	 * @param url the request URL
 	 */
 	HttpRequest(String url) {
-		setUrl(url);
-	}
-
-	/**
-	 * Modifies the current request URL
-	 *
-	 * @param url the new request URL
-	 */
-	public final void setUrl(String url) {
 		Args.notBlank(url, "HTTP request URL");
-		this.url = url;
+		this.url = new ParameterizedString(url);
 	}
 
 	/**
@@ -152,7 +144,31 @@ public final class HttpRequest implements Cloneable {
 	 * @return the request URL
 	 */
 	public final String getUrl() {
-		return url;
+		return url.applyParameterValues();
+	}
+
+	/**
+	 * Assigns a value to a given parameter of the URL provided in the constructor of this class.
+	 * The value will be used to modify the address that will be accessed by this HTTP request.
+	 *
+	 * Calling {@link #getUrl()} will return the updated target URL of this request. Parameters without values
+	 * won't be replaced in the URL.
+	 *
+	 * @param parameterName  name of the parameter enclosed within { and } in the URL
+	 * @param parameterValue value of the given parameter, to replace the parameter name in the URL
+	 */
+	public final void setUrlParameter(String parameterName, Object parameterValue) {
+		this.url.set(parameterName, parameterValue);
+	}
+
+	/**
+	 * Clears all values assigned to all parameters of the URL provided in the constructor of this class.
+	 *
+	 * Calling {@link #getUrl()} after this method will return the original URL with
+	 * parameters provided in the constructor.
+	 */
+	public final void clearUrlParameters() {
+		this.url.clearValues();
 	}
 
 	/**
@@ -404,6 +420,8 @@ public final class HttpRequest implements Cloneable {
 	public final HttpRequest clone() {
 		try {
 			HttpRequest clone = (HttpRequest) super.clone();
+			clone.url = this.url.clone();
+			clone.parameters = (TreeMap<String, Object>) this.parameters.clone();
 			clone.headers = (LinkedHashMap<String, String>) this.headers.clone();
 			clone.cookies = (LinkedHashMap<String, String>) this.cookies.clone();
 			clone.data = new ArrayList<Object[]>();
