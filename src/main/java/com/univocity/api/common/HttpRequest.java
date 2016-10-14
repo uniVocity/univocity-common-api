@@ -12,6 +12,11 @@ import java.util.*;
 /**
  * A reusable, cloneable HTTP request configuration, with support for parameterization of the URL.
  *
+ * Example of a URL with 2 parameters (QUERY and PERIOD): "https://www.google.com/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}"
+ *
+ * Use {@link #setUrlParameter(String, Object)} to set the values of any parameters so that {@link #getUrl()}
+ * generates the final URL.
+ *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  * @see HttpMethodType
  * @see HttpResponse
@@ -139,9 +144,9 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
-	 * Returns the request URL
+	 * Returns the request URL, with any parameters replaced by their values (if any)
 	 *
-	 * @return the request URL
+	 * @return the URL that will be used to invoke the HTTP request.
 	 */
 	public final String getUrl() {
 		return url.applyParameterValues();
@@ -156,9 +161,37 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param parameterName  name of the parameter enclosed within { and } in the URL
 	 * @param parameterValue value of the given parameter, to replace the parameter name in the URL
+	 *
+	 * @throws IllegalArgumentException if the parameter name does not exist
 	 */
 	public final void setUrlParameter(String parameterName, Object parameterValue) {
 		this.url.set(parameterName, parameterValue);
+	}
+
+	/**
+	 * Returns the value of a given parameter of the URL provided in the constructor of this class.
+	 * The value will be used to modify the address that will be accessed by this HTTP request.
+	 *
+	 * Calling {@link #getUrl()} will return the updated target URL of this request. Parameters without values
+	 * won't be replaced in the URL.
+	 *
+	 * @param parameterName name of the parameter enclosed within { and } in the URL
+	 *
+	 * @return value of the given parameter, to replace the parameter name in the URL
+	 *
+	 * @throws IllegalArgumentException if the parameter name does not exist
+	 */
+	public final Object getUrlParameter(String parameterName) {
+		return this.url.get(parameterName);
+	}
+
+	/**
+	 * Returns the names of all available URL parameters in an unmodifiable set.
+	 *
+	 * @return the available parameters in the URL
+	 */
+	public final Set<String> getUrlParameters() {
+		return this.url.getParameters();
 	}
 
 	/**

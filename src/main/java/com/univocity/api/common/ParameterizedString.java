@@ -88,6 +88,20 @@ public class ParameterizedString implements Cloneable {
 		result = null;
 	}
 
+	/**
+	 * Returns the value of a given parameter.
+	 *
+	 * @param parameter the parameter name
+	 *
+	 * @return the parameter value
+	 *
+	 * @throws IllegalArgumentException if the parameter name does not exist
+	 */
+	public final Object get(String parameter) throws IllegalArgumentException {
+		validateParameterName(parameter);
+		return parameterValues.get(parameter);
+	}
+
 	private void validateParameterName(String parameter) {
 		Args.notBlank(parameter, "Parameter name");
 		if (!parameterNames.contains(parameter)) {

@@ -81,7 +81,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 *
 	 * @return the request configuration.
 	 */
-	public final HttpRequest getRequestConfiguration() {
+	public final HttpRequest getRequest() {
 		return request;
 	}
 
