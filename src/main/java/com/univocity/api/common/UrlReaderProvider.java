@@ -10,169 +10,291 @@ import com.univocity.api.*;
 
 import java.io.*;
 import java.nio.charset.*;
-import java.util.*;
 
 /**
+ * A {@link ReaderProvider} for URLs. This provider works with an internal {@link HttpRequest} configuration object
+ * that allows you to configure a HTTP request. The actual remote invocation is performed when {@link #getResponse()}
+ * is called, and the result will be provided in a {@link HttpResponse} object.
+ *
+ * In case of failure receiving a response, the call can be retried for a number of times using {@link #setRetries(int)}
+ * and each retry can occur after a given interval, which can be defined with {@link #setRetryInterval(long)}
+ *
+ * The response body of a call can be stored in a local file defined using the {@link #storeLocalCopyIn(File)} method.
+ *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 
 	private int retries = 0;
 	private long retryInterval = 2000;
-	private final Charset defaultEncoding;
 	private HttpResponse response;
-	protected HttpRequest request;
-	private TreeMap<String, Object> parameterValues = new TreeMap<String, Object>();
+	private HttpRequest request;
 	private FileProvider localCopyProvider;
-	private String baseUrl;
-	private String protocol;
-	private String pageUrl;
 
+	/**
+	 * Creates a new instance to read content from a given URL.
+	 *
+	 * @param url the URL to access.
+	 */
 	public UrlReaderProvider(String url) {
-		this(url, (Charset) null);
-	}
-
-	public UrlReaderProvider(String url, String defaultEncoding) {
-		this(url, Charset.forName(defaultEncoding));
-	}
-
-	public UrlReaderProvider(String url, Charset defaultEncoding) {
-		Args.notBlank(url, "URL");
 		this.request = new HttpRequest(url);
-		this.defaultEncoding = defaultEncoding == null ? Charset.forName("UTF-8") : defaultEncoding;
 	}
 
-	public String getBaseUrl() {
-		if (baseUrl == null) {
-			String url;
-			if (response != null && request.getFollowRedirects()) {
-				url = response.getRedirectionUrl();
-			} else {
-				url = request.getUrl();
-			}
-			int index = url.indexOf("://");
-			if (index >= 0) {
-				protocol = url.substring(0,index+3);
-				url = url.substring(index+3);
-			}
-
-			if (url.indexOf('/') >= 0) {
-				baseUrl = url.substring(0, url.indexOf('/'));
-			}
-		}
-
-
-		return baseUrl;
-	}
-
-	public void setBaseUrl(String baseUrl) {
-		this.baseUrl = baseUrl;
-
-		int index = baseUrl.indexOf("://");
-		if (index >= 0) {
-			protocol = baseUrl.substring(0,index+3);
+	/**
+	 * Returns the URL used to produce the current response. If {@link #getResponse()} was not invoked yet, the URL
+	 * provided in the constructor of this class will be returned. If redirection was enabled
+	 * (through {@link HttpRequest#getFollowRedirects()}), the redirection URL will be returned.
+	 *
+	 * @return the current URL
+	 */
+	public final String getUrl() {
+		if (response != null && request.getFollowRedirects() && response.getRedirectionUrl() != null) {
+			return response.getRedirectionUrl();
+		} else {
+			return request.getUrl();
 		}
 	}
-	public HttpRequest getRequestConfiguration() {
+
+
+	/**
+	 * Returns the domain name in the current URL. If a response has been obtained (through {@link #getResponse()}) with
+	 * redirection enabled, the domain name in the redirection URL will be returned.
+	 *
+	 * @return the current domain name.
+	 */
+	public final String getDomainName() {
+		String url = getUrl();
+
+		int index = url.indexOf("://");
+		if (index >= 0 && index + 3 < url.length()) {
+			url = url.substring(index + 3);
+		}
+
+		if (url.indexOf('/') >= 0) {
+			return url.substring(0, url.indexOf('/'));
+		}
+		return null;
+	}
+
+	/**
+	 * Returns a {@link HttpRequest} object with configuration options for executing the HTTP request.
+	 *
+	 * @return the request configuration.
+	 */
+	public final HttpRequest getRequestConfiguration() {
 		return request;
 	}
 
-	public String getProtocol() {
-		getBaseUrl();
-		return protocol;
+	/**
+	 * Returns the protocol of the current URL. If a response has been obtained (through {@link #getResponse()}) with
+	 * redirection enabled, the protocol of  the redirection URL will be returned.
+	 *
+	 * @return the current protocol.
+	 */
+	public final String getProtocol() {
+		String url = getUrl();
+
+		int index = url.indexOf("://");
+		if (index >= 0 && index + 3 < url.length()) {
+			return url.substring(0, index + 3);
+		}
+		return null;
 	}
 
-	public final Charset getDefaultEncoding() {
-		return defaultEncoding;
-	}
-
+	/**
+	 * Return the number of retries to be performed in case the HTTP request call fails.
+	 *
+	 * <i>Defaults to 0 (no retries)</i>
+	 *
+	 * @return the number of retries to perform in case of failure to obtain a response
+	 */
 	public final int getRetries() {
 		return retries;
 	}
 
+	/**
+	 * Defines a number of retries to be performed in case the HTTP request call fails.
+	 *
+	 * <i>Defaults to 0 (no retries)</i>
+	 *
+	 * @param retries the number of retries to perform in case of failure to obtain a response
+	 */
 	public final void setRetries(int retries) {
 		this.retries = retries;
 	}
 
+	/**
+	 * Returns the interval (in milliseconds) to wait before trying to execute the HTTP request after a failure.
+	 *
+	 * <i>Defaults to 2000 (2 seconds)</i>
+	 *
+	 * @return the retry interval in ms
+	 */
 	public final long getRetryInterval() {
 		return retryInterval;
 	}
 
+
+	/**
+	 * Defines the interval (in milliseconds) to wait before trying to execute the HTTP request after a failure.
+	 *
+	 * <i>Defaults to 2000 (2 seconds)</i>
+	 *
+	 * @param retryInterval the retry interval in ms
+	 */
 	public final void setRetryInterval(long retryInterval) {
 		this.retryInterval = retryInterval;
 	}
 
 	/**
-	 * Gets the string of the current page. For example, if the url is "http://google.com/images/logo.png",
-	 * "/images/logo.png" will be returned.
-	 * @return
+	 * Gets the path of the resource identified by the URL. For example, if the URL is
+	 * "http://google.com/images/logo.png" then "/images/logo.png" will be returned.
+	 *
+	 * @return the path portion of the URL.
 	 */
-	public String getPage() {
-		return pageUrl = request.getUrl().substring(protocol.length() + baseUrl.length());
+	public final String getPath() {
+		int baseUrlLength = getProtocol().length() + getDomainName().length();
+		String url = getUrl();
+		if (baseUrlLength < url.length()) {
+			return url.substring(baseUrlLength);
+		}
+		return null;
 	}
 
 	/**
-	 * Returns file name specfied in URL. For example, if the URL is "http://google.com/images/logo.png".
-	 * "logo.png" will be returned
-	 * @return
+	 * Returns the file name specified in URL, if it exists. For example, if the URL is
+	 * "http://google.com/images/logo.png". "logo.png" will be returned
+	 *
+	 * @return the file name
 	 */
-	public String getFileName() {
-		if (pageUrl == null) {
-			getPage();
+	public final String getFileName() {
+		String path = getPath();
+		if (path == null) {
+			return null;
 		}
-		return pageUrl.substring(pageUrl.lastIndexOf('/') + 1);
+		int lastSlash = path.lastIndexOf('/');
+
+		int query = Math.max(path.indexOf('?'), 0);
+		int fragment = Math.max(path.indexOf('#'), 0);
+
+		int end = Math.min(query, fragment);
+		if (end == 0) {
+			return path.substring(lastSlash + 1);
+		} else if (end < path.length() && end > lastSlash + 1) {
+			return path.substring(lastSlash + 1, end);
+		}
+		return null;
 	}
 
-	public HttpResponse getResponse() {
+	/**
+	 * Invokes the HTTP request and returns the response as a {@link HttpResponse} object.
+	 * Further calls to this method will produce the same object, and no further HTTP requests will be performed.
+	 *
+	 * Use the {@link #clone()} method to obtain a copy of the current {@link UrlReaderProvider} instance if you need
+	 * to invoke hte HTTP request again.
+	 *
+	 * @return the HTTP response originated by the configured HTTP request.
+	 */
+	public final HttpResponse getResponse() {
 		if (response == null) {
 			response = Builder.build(HttpResponse.class, this);
 		}
 		return response;
 	}
 
-	public void setParameter(String name, Object value) {
-		Args.notBlank(name,"Parameter name");
-		parameterValues.put(name, value);
-	}
-
-	public Map<String, Object> getParameters() {
-		return parameterValues;
-	}
-
-
-
-	public void storeLocalCopyIn(FileProvider provider) {
+	/**
+	 * Defines a file into which a copy of the response body, obtained after invoking the
+	 * HTTP request via the {@link #getResponse()} method, should be stored be stored.
+	 *
+	 * @param provider the {@link FileProvider} defining the target file.
+	 */
+	public final void storeLocalCopyIn(FileProvider provider) {
 		this.localCopyProvider = provider;
 	}
 
-	public void storeLocalCopyIn(File file) {
+	/**
+	 * Defines a file into which a copy of the response body, obtained after invoking the
+	 * HTTP request via the {@link #getResponse()} method, should be stored.
+	 *
+	 * @param file the target file.
+	 */
+	public final void storeLocalCopyIn(File file) {
 		localCopyProvider = new FileProvider(file);
 	}
 
-	public void storeLocalCopyIn(File file, Charset encoding) {
-		localCopyProvider = new FileProvider(file,encoding);
+	/**
+	 * Defines a file into which a copy of the response body, obtained after invoking the
+	 * HTTP request via the {@link #getResponse()} method, should be stored.
+	 *
+	 * @param file     the target file.
+	 * @param encoding the encoding to use for the local copy.
+	 */
+	public final void storeLocalCopyIn(File file, Charset encoding) {
+		localCopyProvider = new FileProvider(file, encoding);
 	}
 
-	public void storeLocalCopyIn(File file, String encoding) {
-		localCopyProvider = new FileProvider(file,encoding);
+	/**
+	 * Defines a file into which a copy of the response body, obtained after invoking the
+	 * HTTP request via the {@link #getResponse()} method, should be stored.
+	 *
+	 * @param file     the target file.
+	 * @param encoding the encoding to use for the local copy.
+	 */
+	public final void storeLocalCopyIn(File file, String encoding) {
+		localCopyProvider = new FileProvider(file, encoding);
 	}
 
-	public void storeLocalCopyIn(String path) {
+	/**
+	 * Defines a file into which a copy of the response body, obtained after invoking the
+	 * HTTP request via the {@link #getResponse()} method, should be stored.
+	 *
+	 * @param path a path to the target file. The path can contain system variables enclosed within
+	 *             { and } (e.g. {@code {user.home}/myapp/page.html"}).
+	 */
+	public final void storeLocalCopyIn(String path) {
 		localCopyProvider = new FileProvider(path);
 	}
 
-	public void storeLocalCopyIn(String path, Charset encoding) {
+	/**
+	 * Defines a file into which a copy of the response body, obtained after invoking the
+	 * HTTP request via the {@link #getResponse()} method, should be stored.
+	 *
+	 * @param path     a path to the target file. The path can contain system variables enclosed within
+	 *                 { and } (e.g. {@code {user.home}/myapp/page.html"}).
+	 * @param encoding the encoding to use for the local copy.
+	 */
+	public final void storeLocalCopyIn(String path, Charset encoding) {
 		localCopyProvider = new FileProvider(path, encoding);
 	}
 
-	public void storeLocalCopyIn(String path, String encoding) {
+	/**
+	 * Defines a file into which a copy of the response body, obtained after invoking the
+	 * HTTP request via the {@link #getResponse()} method, should be stored
+	 *
+	 * @param path     a path to the target file. The path can contain system variables enclosed within
+	 *                 { and } (e.g. {@code {user.home}/myapp/page.html"}).
+	 * @param encoding the encoding to use for the local copy.
+	 */
+	public final void storeLocalCopyIn(String path, String encoding) {
 		localCopyProvider = new FileProvider(path, encoding);
 	}
 
-	public FileProvider getLocalCopyFileProvider() {
+	/**
+	 * Returns a {@link FileProvider} which indicates where in the filesystem a file with a copy of the response body,
+	 * obtained after invoking the HTTP request via the {@link #getResponse()} method, should be stored.
+	 *
+	 * @return the local copy file configuration for storing the HTTP response body obtained when calling {@link #getResponse()}
+	 */
+	public final FileProvider getLocalCopyTarget() {
 		return localCopyProvider;
 	}
 
+	/**
+	 * Returns a {@link java.io.Reader} instance ready to process the content of the body of the HTTP response obtained
+	 * after invoking {@link #getResponse()}. A HTTP request will be made to obtain the response if required.
+	 *
+	 * @return a new {@code Reader} that can be used to consume the body of the resulting HTTP response
+	 */
 	@Override
 	public final Reader getResource() {
 		try {
@@ -182,20 +304,30 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 		}
 	}
 
+	/**
+	 * Prints this object as the original HTTP request URL.
+	 *
+	 * @return the request URL passed in the constructor of this class.
+	 */
 	@Override
-	public String toString() {
-		return this.getClass().getSimpleName() + " [" + request.getUrl() + "]";
+	public final String toString() {
+		return request.getUrl();
 	}
 
-	public UrlReaderProvider clone() {
+	/**
+	 * Clones this object with all its configuration, but without the result of the HTTP request (i.e. no response).
+	 * The clone allows you to perform a new HTTP request call and obtain a fresh HTTP response through {@link #getResponse()}
+	 *
+	 * @return a copy of the current object and all its configurations.
+	 */
+	public final UrlReaderProvider clone() {
 		try {
 			UrlReaderProvider clone = (UrlReaderProvider) super.clone();
 			clone.response = null;
 			clone.request = request.clone();
-			clone.parameterValues = (TreeMap<String, Object>) parameterValues.clone();
 			return clone;
 		} catch (CloneNotSupportedException e) {
-		    throw new IllegalStateException("Unable to clone ",e);
+			throw new IllegalStateException("Unable to clone", e);
 		}
 	}
 }

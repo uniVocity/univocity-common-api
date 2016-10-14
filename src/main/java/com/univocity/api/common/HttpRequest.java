@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * A reusable, cloneable HTTP request.
+ * A reusable, cloneable HTTP request configuration.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  * @see HttpMethodType
@@ -18,12 +18,12 @@ import java.util.*;
  * @see HttpResponseReader
  * @see UrlReaderProvider
  */
-public class HttpRequest implements Cloneable {
+public final class HttpRequest implements Cloneable {
 
 	private String url;
 	private int timeout = 0;
 	private boolean followRedirects = false;
-	private boolean validateSSL = true;
+	private boolean validateSsl = true;
 	private HttpMethodType httpMethodType = HttpMethodType.GET;
 	private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
 	private LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
@@ -39,7 +39,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @param url the request URL
 	 */
-	public HttpRequest(String url) {
+	HttpRequest(String url) {
 		setUrl(url);
 	}
 
@@ -48,7 +48,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @param url the new request URL
 	 */
-	public void setUrl(String url) {
+	public final void setUrl(String url) {
 		Args.notBlank(url, "HTTP request URL");
 		this.url = url;
 	}
@@ -58,7 +58,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @param userAgent the new {@code User-Agent} value
 	 */
-	public void setUserAgent(String userAgent) {
+	public final void setUserAgent(String userAgent) {
 		setHeader("User-Agent", userAgent);
 	}
 
@@ -68,7 +68,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @param referrer the new {@code Referer} value
 	 */
-	public void setReferrer(String referrer) {
+	public final void setReferrer(String referrer) {
 		setHeader("Referer", referrer);
 	}
 
@@ -77,7 +77,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the {@code User-Agent} header
 	 */
-	public String getUserAgent() {
+	public final String getUserAgent() {
 		return headers.get("User-Agent");
 	}
 
@@ -87,7 +87,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the {@code Referer} header
 	 */
-	public String getReferrer() {
+	public final String getReferrer() {
 		return headers.get("Referer");
 	}
 
@@ -98,7 +98,7 @@ public class HttpRequest implements Cloneable {
 	 * @param header the header name
 	 * @param value  the header value
 	 */
-	public void setHeader(String header, String value) {
+	public final void setHeader(String header, String value) {
 		set(headers, header, value);
 	}
 
@@ -109,7 +109,7 @@ public class HttpRequest implements Cloneable {
 	 * @param cookie the cookie name
 	 * @param value  the cookie value
 	 */
-	public void setCookie(String cookie, String value) {
+	public final void setCookie(String cookie, String value) {
 		set(cookies, cookie, value);
 	}
 
@@ -127,7 +127,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @param timeout the time limit to wait until a connection is established.
 	 */
-	public void setTimeout(int timeout) {
+	public final void setTimeout(int timeout) {
 		Args.positiveOrZero(timeout, "HTTP request timeout");
 		this.timeout = timeout;
 
@@ -141,7 +141,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @param httpMethodType the HTTP method to use
 	 */
-	public void setHttpMethodType(HttpMethodType httpMethodType) {
+	public final void setHttpMethodType(HttpMethodType httpMethodType) {
 		Args.notNull(httpMethodType, "HTTP method type");
 		this.httpMethodType = httpMethodType;
 	}
@@ -151,7 +151,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the request URL
 	 */
-	public String getUrl() {
+	public final String getUrl() {
 		return url;
 	}
 
@@ -161,7 +161,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the current timeout value.
 	 */
-	public int getTimeout() {
+	public final int getTimeout() {
 		return timeout;
 	}
 
@@ -173,7 +173,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * return a flag indicating whether or not the request is configured to follow redirects.
 	 */
-	public boolean getFollowRedirects() {
+	public final boolean getFollowRedirects() {
 		return followRedirects;
 	}
 
@@ -185,7 +185,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @param followRedirects flag indicating whether or not to follow redirects.
 	 */
-	public void setFollowRedirects(boolean followRedirects) {
+	public final void setFollowRedirects(boolean followRedirects) {
 		this.followRedirects = followRedirects;
 	}
 
@@ -196,8 +196,8 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return a flag indicating whether SSL will be validated.
 	 */
-	public boolean isSSLValidationEnabled() {
-		return validateSSL;
+	public final boolean isSslValidationEnabled() {
+		return validateSsl;
 	}
 
 	/**
@@ -205,10 +205,10 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * <i>Defaults to {@code true}.</i>
 	 *
-	 * @param validateSSL flag indicating whether SSL is should be validated.
+	 * @param validateSsl flag indicating whether SSL is should be validated.
 	 */
-	public void setSSLValidationEnabled(boolean validateSSL) {
-		this.validateSSL = validateSSL;
+	public final void setSslValidationEnabled(boolean validateSsl) {
+		this.validateSsl = validateSsl;
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the HTTP method to use
 	 */
-	public HttpMethodType getHttpMethodType() {
+	public final HttpMethodType getHttpMethodType() {
 		return httpMethodType;
 	}
 
@@ -229,7 +229,7 @@ public class HttpRequest implements Cloneable {
 	 * @param paramName the parameter name
 	 * @param value     the parameter value
 	 */
-	public void setDataParameter(String paramName, String value) {
+	public final void setDataParameter(String paramName, String value) {
 		this.data.add(new Object[]{paramName, value});
 	}
 
@@ -240,7 +240,7 @@ public class HttpRequest implements Cloneable {
 	 * @param paramName    the parameter name
 	 * @param dataProvider a {@link ResourceProvider} which will open the input to be uploaded when required.
 	 */
-	public void setDataStreamParameter(String paramName, String filename, ResourceProvider<InputStream> dataProvider) {
+	public final void setDataStreamParameter(String paramName, String filename, ResourceProvider<InputStream> dataProvider) {
 		this.data.add(new Object[]{paramName, filename, dataProvider});
 	}
 
@@ -251,7 +251,7 @@ public class HttpRequest implements Cloneable {
 	 * @param paramName   the parameter name
 	 * @param inputStream the binary stream of the content to upload
 	 */
-	public void setDataStreamParameter(String paramName, String filename, final InputStream inputStream) {
+	public final void setDataStreamParameter(String paramName, String filename, final InputStream inputStream) {
 		setDataStreamParameter(paramName, filename, new ResourceProvider<InputStream>() {
 			@Override
 			public InputStream getResource() {
@@ -266,7 +266,7 @@ public class HttpRequest implements Cloneable {
 	 * @param paramName the parameter name
 	 * @param file      the file to upload.
 	 */
-	public void setFileParameter(String paramName, String filename, FileProvider file) {
+	public final void setFileParameter(String paramName, String filename, FileProvider file) {
 		this.data.add(new Object[]{paramName, filename, file});
 	}
 
@@ -276,7 +276,7 @@ public class HttpRequest implements Cloneable {
 	 * @param paramName the parameter name
 	 * @param file      the file to upload.
 	 */
-	public void setFileParameter(String paramName, String filename, File file) {
+	public final void setFileParameter(String paramName, String filename, File file) {
 		this.data.add(new Object[]{paramName, filename, new FileProvider(file)});
 	}
 
@@ -288,7 +288,7 @@ public class HttpRequest implements Cloneable {
 	 *                   a resource in the classpath. The path can contain system variables enclosed within { and }
 	 *                   (e.g. {@code {user.home}/myapp/log"}).
 	 */
-	public void setFileParameter(String paramName, String filename, String pathToFile) {
+	public final void setFileParameter(String paramName, String filename, String pathToFile) {
 		this.data.add(new Object[]{paramName, filename, new FileProvider(pathToFile)});
 	}
 
@@ -298,7 +298,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return a map of headers and their values.
 	 */
-	public Map<String, String> getHeaders() {
+	public final Map<String, String> getHeaders() {
 		return Collections.unmodifiableMap(headers);
 	}
 
@@ -308,7 +308,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return a map of cookie names and values.
 	 */
-	public Map<String, String> getCookies() {
+	public final Map<String, String> getCookies() {
 		return Collections.unmodifiableMap(cookies);
 	}
 
@@ -317,7 +317,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return a map of data parameters and their values.
 	 */
-	public List<Object[]> getData() {
+	public final List<Object[]> getData() {
 		return Collections.unmodifiableList(data);
 	}
 
@@ -327,7 +327,7 @@ public class HttpRequest implements Cloneable {
 	 * @param host the proxy host.
 	 * @param port the proxy port.
 	 */
-	public void setProxy(String host, int port) {
+	public final void setProxy(String host, int port) {
 		setProxy(host, port, null, null);
 	}
 
@@ -338,7 +338,7 @@ public class HttpRequest implements Cloneable {
 	 * @param port the proxy port.
 	 * @param user the proxy user.
 	 */
-	public void setProxy(String host, int port, String user) {
+	public final void setProxy(String host, int port, String user) {
 		setProxy(host, port, user, "");
 	}
 
@@ -350,7 +350,7 @@ public class HttpRequest implements Cloneable {
 	 * @param user     the proxy user.
 	 * @param password the proxy password
 	 */
-	public void setProxy(String host, int port, String user, String password) {
+	public final void setProxy(String host, int port, String user, String password) {
 		Args.positive(port, "Proxy port");
 		Args.notBlank(host, "Proxy host");
 		this.proxyHost = host;
@@ -364,7 +364,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the proxy user
 	 */
-	public String getProxyUser() {
+	public final String getProxyUser() {
 		return proxyUser;
 	}
 
@@ -373,7 +373,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the proxy host
 	 */
-	public String getProxyHost() {
+	public final String getProxyHost() {
 		return proxyHost;
 	}
 
@@ -382,7 +382,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the proxy password
 	 */
-	public String getProxyPassword() {
+	public final String getProxyPassword() {
 		return proxyPassword;
 	}
 
@@ -391,7 +391,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return the proxy port
 	 */
-	public int getProxyPort() {
+	public final int getProxyPort() {
 		return proxyPort;
 	}
 
@@ -401,7 +401,7 @@ public class HttpRequest implements Cloneable {
 	 *
 	 * @return a copy of this request with all possible settings.
 	 */
-	public HttpRequest clone() {
+	public final HttpRequest clone() {
 		try {
 			HttpRequest clone = (HttpRequest) super.clone();
 			clone.headers = (LinkedHashMap<String, String>) this.headers.clone();
