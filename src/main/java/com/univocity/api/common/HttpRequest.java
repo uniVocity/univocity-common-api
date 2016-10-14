@@ -7,6 +7,7 @@
 package com.univocity.api.common;
 
 import java.io.*;
+import java.nio.charset.*;
 import java.util.*;
 
 /**
@@ -34,6 +35,7 @@ public final class HttpRequest implements Cloneable {
 	private LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
 	private List<Object[]> data = new ArrayList<Object[]>();
 	private TreeMap<String, Object> parameters = new TreeMap<String, Object>();
+	private Charset charset;
 
 	private String proxyUser;
 	private String proxyHost;
@@ -445,6 +447,53 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
+	 * Defines a charset to be used when reading the response resulting from this HTTP request.
+	 * This will take precedence over the charset defined in the {@code Content-Type} header of the HTTP response.
+	 *
+	 * @param charset the charset name
+	 */
+	public void setCharset(String charset) {
+		if (charset == null) {
+			this.charset = null;
+		} else {
+			this.charset = Charset.forName(charset);
+		}
+	}
+
+	/**
+	 * Defines a charset to be used when reading the response resulting from this HTTP request.
+	 * This will take precedence over the charset defined in the {@code Content-Type} header of the HTTP response.
+	 *
+	 * @param charset the charset
+	 */
+	public void setCharset(Charset charset) {
+		this.charset = charset;
+	}
+
+	/**
+	 * Returns the charset to be used when reading the response resulting from this HTTP request.
+	 * This will take precedence over the charset defined in the {@code Content-Type} header of the HTTP response.
+	 *
+	 * @return the charset
+	 */
+	public Charset getCharset() {
+		return this.charset;
+	}
+
+	/**
+	 * Returns the name of the charset to be used when reading the response resulting from this HTTP request.
+	 * This will take precedence over the charset defined in the {@code Content-Type} header of the HTTP response.
+	 *
+	 * @return the charset name
+	 */
+	public String getCharsetName() {
+		if (charset == null) {
+			return null;
+		}
+		return this.charset.name();
+	}
+
+	/**
 	 * Clones this request and all its configurations.
 	 * <b>NOTE:</b>Data parameters are reused and not cloned.
 	 *
@@ -458,6 +507,7 @@ public final class HttpRequest implements Cloneable {
 			clone.headers = (LinkedHashMap<String, String>) this.headers.clone();
 			clone.cookies = (LinkedHashMap<String, String>) this.cookies.clone();
 			clone.data = new ArrayList<Object[]>();
+
 			for (Object[] object : this.data) {
 				clone.data.add(object.clone());
 			}

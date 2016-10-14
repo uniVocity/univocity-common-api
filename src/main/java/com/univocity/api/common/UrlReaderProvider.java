@@ -12,9 +12,16 @@ import java.io.*;
 import java.nio.charset.*;
 
 /**
- * A {@link ReaderProvider} for URLs. This provider works with an internal {@link HttpRequest} configuration object
+ * A {@link ReaderProvider} for URLs (parameterized or not).
+ *
+ * This provider works with an internal {@link HttpRequest} configuration object
  * that allows you to configure a HTTP request. The actual remote invocation is performed when {@link #getResponse()}
  * is called, and the result will be provided in a {@link HttpResponse} object.
+ *
+ * Example of a URL with 2 parameters (QUERY and PERIOD): "https://www.google.com/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}"
+ *
+ * Use {@link HttpRequest#setUrlParameter(String, Object)} to set the values of any parameters so that {@link #getUrl()}
+ * generates the final URL.
  *
  * In case of failure receiving a response, the call can be retried for a number of times using {@link #setRetries(int)}
  * and each retry can occur after a given interval, which can be defined with {@link #setRetryInterval(long)}
