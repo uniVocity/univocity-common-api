@@ -215,7 +215,7 @@ public class ParameterizedString implements Cloneable {
 			name = name.trim();
 			if (name.contains(",")) {
 				this.name = name.substring(0, name.indexOf(","));
-				this.format = name.substring(name.indexOf(",") + 1);
+				this.format = name.substring(name.indexOf(",") + 1).trim();
 				if (format.length() == 0) {
 					throw new IllegalArgumentException("Expected value after ',' but found nothing. Parameter: '" + name + "'");
 				}
