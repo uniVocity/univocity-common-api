@@ -125,7 +125,7 @@ public final class FileProvider {
 	}
 
 	/**
-	 * Returns the resource path given in the constructor of this class, or null if a {@code File{} is being used.
+	 * Returns the resource path given in the constructor of this class, or null if a {@code File} is being used.
 	 *
 	 * @return the path to a resource to be loaded by uniVocity, or null if a {@code File} should be used instead.
 	 */

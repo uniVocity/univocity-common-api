@@ -84,6 +84,7 @@ public class InputFileQueue extends InputQueue<FileProvider> {
 
 	/**
 	 * Adds a {@link FileProvider} to the input queue.
+	 * @param fileProvider the next file to add to the queue.
 	 */
 	public void addFile(FileProvider fileProvider) {
 		offer(fileProvider);

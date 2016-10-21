@@ -38,7 +38,7 @@ public abstract class InputQueue<T> extends ReaderProvider {
 	/**
 	 * Queries whether the input is empty (i.e. all inputs have been processed)
 	 *
-	 * @return {@code true} if there are no more inputs to be processed, otherwise {@false}
+	 * @return {@code true} if there are no more inputs to be processed, otherwise {@code false}
 	 */
 	public final boolean isEmpty() {
 		return inputQueue.isEmpty();

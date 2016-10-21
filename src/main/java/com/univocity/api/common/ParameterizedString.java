@@ -164,7 +164,7 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @param parameterName the name of the parameter
 	 *
-	 * @return {@true} if the parameter name exists in this parameterized string, otherwise {@code false}
+	 * @return {@code true} if the parameter name exists in this parameterized string, otherwise {@code false}
 	 */
 	public final boolean contains(String parameterName) {
 		return parameterNames.contains(parameterName);

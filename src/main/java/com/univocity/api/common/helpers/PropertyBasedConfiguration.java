@@ -389,7 +389,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @param pathToFile    path to the desired file
 	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
-	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 *                      given, this method will return {@code null} of this flag is set to {@code false}, otherwise
 	 *                      an {@link IllegalConfigurationException} will be thrown.
 	 * @param validateRead  flag indicating whether the file must have read permissions.
 	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not readable.
@@ -414,7 +414,7 @@ public class PropertyBasedConfiguration {
 	 *
 	 * @param pathToDir     path to the desired directory
 	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
-	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 *                      given, this method will return {@code null} of this flag is set to {@code false}, otherwise
 	 *                      an {@link IllegalConfigurationException} will be thrown.
 	 * @param validateRead  flag indicating whether the directory must have read permissions.
 	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not readable.
@@ -520,7 +520,7 @@ public class PropertyBasedConfiguration {
 	 * @param property      name of a property whose value is expected to contain a path to a directory
 	 *                      an {@link IllegalConfigurationException} will be thrown.
 	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
-	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 *                      given, this method will return {@code null} of this flag is set to {@code false}, otherwise
 	 * @param validateRead  flag indicating whether the directory must have read permissions.
 	 *                      An {@link IllegalConfigurationException} will be thrown if the directory is not readable.
 	 * @param validateWrite flag indicating whether the directory must have write permissions.
@@ -604,7 +604,7 @@ public class PropertyBasedConfiguration {
 	 * @param property      name of a property whose value is expected to contain a path to a file
 	 *                      an {@link IllegalConfigurationException} will be thrown.
 	 * @param mandatory     flag indicating whether the path is mandatory. If a {@code null} path is
-	 *                      given, this method will return {@code null} of this flag is set to {@false}, otherwise
+	 *                      given, this method will return {@code null} of this flag is set to {@code false}, otherwise
 	 * @param validateRead  flag indicating whether the file must have read permissions.
 	 *                      An {@link IllegalConfigurationException} will be thrown if the file is not readable.
 	 * @param validateWrite flag indicating whether the file must have write permissions.

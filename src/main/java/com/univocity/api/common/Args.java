@@ -173,7 +173,7 @@ public class Args {
 	/**
 	 * Ensures a given SQL isolation level is a valid and known JDBC value that exists int {@link java.sql.Connection}
 	 *
-	 * @param transactionIsolationLevel
+	 * @param transactionIsolationLevel code of the transaction isolation level
 	 */
 	public static void validTransactionIsolationLevel(int transactionIsolationLevel) {
 		List<Integer> levels = Arrays.asList(TRANSACTION_NONE, TRANSACTION_READ_COMMITTED, TRANSACTION_READ_UNCOMMITTED, TRANSACTION_REPEATABLE_READ, TRANSACTION_SERIALIZABLE);

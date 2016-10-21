@@ -14,7 +14,7 @@ import java.util.*;
 /**
  * A reusable, cloneable HTTP request configuration, with support for parameterization of the URL.
  *
- * Example of a URL with 2 parameters (QUERY and PERIOD): "https://www.google.com/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}"
+ * Example of a URL with 2 parameters (QUERY and PERIOD): {@code "https://www.google.com/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}"}
  *
  * Use {@link #setUrlParameter(String, Object)} to set the values of any parameters so that {@link #getUrl()}
  * generates the final URL.
@@ -223,7 +223,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * <i>Defaults to {@code false}.</i>
 	 *
-	 * return a flag indicating whether or not the request is configured to follow redirects.
+	 * @return a flag indicating whether or not the request is configured to follow redirects.
 	 */
 	public final boolean getFollowRedirects() {
 		return followRedirects;
@@ -290,10 +290,11 @@ public final class HttpRequest implements Cloneable {
 	 * upload content in MIME multipart/form-data encoding.
 	 *
 	 * @param paramName    the parameter name
+	 * @param fileName     the file name
 	 * @param dataProvider a {@link ResourceProvider} which will open the input to be uploaded when required.
 	 */
-	public final void setDataStreamParameter(String paramName, String filename, ResourceProvider<InputStream> dataProvider) {
-		this.data.add(new Object[]{paramName, filename, dataProvider});
+	public final void setDataStreamParameter(String paramName, String fileName, ResourceProvider<InputStream> dataProvider) {
+		this.data.add(new Object[]{paramName, fileName, dataProvider});
 	}
 
 	/**
@@ -301,10 +302,11 @@ public final class HttpRequest implements Cloneable {
 	 * upload content in MIME multipart/form-data encoding.
 	 *
 	 * @param paramName   the parameter name
+	 * @param fileName    the file name
 	 * @param inputStream the binary stream of the content to upload
 	 */
-	public final void setDataStreamParameter(String paramName, String filename, final InputStream inputStream) {
-		setDataStreamParameter(paramName, filename, new ResourceProvider<InputStream>() {
+	public final void setDataStreamParameter(String paramName, String fileName, final InputStream inputStream) {
+		setDataStreamParameter(paramName, fileName, new ResourceProvider<InputStream>() {
 			@Override
 			public InputStream getResource() {
 				return inputStream;
@@ -316,32 +318,35 @@ public final class HttpRequest implements Cloneable {
 	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
 	 *
 	 * @param paramName the parameter name
+	 * @param fileName  the file name
 	 * @param file      the file to upload.
 	 */
-	public final void setFileParameter(String paramName, String filename, FileProvider file) {
-		this.data.add(new Object[]{paramName, filename, file});
+	public final void setFileParameter(String paramName, String fileName, FileProvider file) {
+		this.data.add(new Object[]{paramName, fileName, file});
 	}
 
 	/**
 	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
 	 *
 	 * @param paramName the parameter name
+	 * @param fileName  fileName   the file name
 	 * @param file      the file to upload.
 	 */
-	public final void setFileParameter(String paramName, String filename, File file) {
-		this.data.add(new Object[]{paramName, filename, new FileProvider(file)});
+	public final void setFileParameter(String paramName, String fileName, File file) {
+		this.data.add(new Object[]{paramName, fileName, new FileProvider(file)});
 	}
 
 	/**
 	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
 	 *
 	 * @param paramName  the parameter name
+	 * @param fileName   the file name
 	 * @param pathToFile the file or resource to upload.It can either be the path to a file in the file system or
 	 *                   a resource in the classpath. The path can contain system variables enclosed within { and }
 	 *                   (e.g. {@code {user.home}/myapp/log"}).
 	 */
-	public final void setFileParameter(String paramName, String filename, String pathToFile) {
-		this.data.add(new Object[]{paramName, filename, new FileProvider(pathToFile)});
+	public final void setFileParameter(String paramName, String fileName, String pathToFile) {
+		this.data.add(new Object[]{paramName, fileName, new FileProvider(pathToFile)});
 	}
 
 	/**
@@ -397,7 +402,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param proxy the proxy configuration.
 	 * @param user  the proxy user.
-	 * @param user  the proxy password.
+	 * @param password  the proxy password.
 	 */
 	public final void setProxy(Proxy proxy, String user, String password) {
 		setProxy(proxy, null, 0, user, password);

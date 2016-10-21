@@ -18,7 +18,7 @@ import java.nio.charset.*;
  * that allows you to configure a HTTP request. The actual remote invocation is performed when {@link #getResponse()}
  * is called, and the result will be provided in a {@link HttpResponse} object.
  *
- * Example of a URL with 2 parameters (QUERY and PERIOD): "https://www.google.com/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}"
+ * Example of a URL with 2 parameters (QUERY and PERIOD): {@code "https://www.google.com/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}"}
  *
  * Use {@link HttpRequest#setUrlParameter(String, Object)} to set the values of any parameters so that {@link #getUrl()}
  * generates the final URL.
