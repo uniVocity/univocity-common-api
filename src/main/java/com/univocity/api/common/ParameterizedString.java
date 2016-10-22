@@ -84,7 +84,7 @@ public class ParameterizedString implements Cloneable {
 	 */
 	public final void set(String parameter, Object value) throws IllegalArgumentException {
 		validateParameterName(parameter);
-		parameterValues.put(String.valueOf(parameter), value);
+		parameterValues.put(parameter, value);
 		result = null;
 	}
 
@@ -203,6 +203,15 @@ public class ParameterizedString implements Cloneable {
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException("Could not clone parameterized string", e);
 		}
+	}
+
+	/**
+	 * Returns the current parameter names and their values.
+	 *
+	 * @return an unmodifiable copy of the map of parameter names and their values.
+	 */
+	public final Map<String, Object> getParameterValues() {
+		return Collections.unmodifiableMap(parameterValues);
 	}
 
 	static private final class Parameter {

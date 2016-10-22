@@ -37,6 +37,7 @@ public final class HttpRequest implements Cloneable {
 	private List<Object[]> data = new ArrayList<Object[]>();
 	private TreeMap<String, Object> parameters = new TreeMap<String, Object>();
 	private Charset charset;
+	private boolean ignoreHttpErrors;
 
 	private String proxyUser;
 	private String proxyHost;
@@ -49,8 +50,28 @@ public final class HttpRequest implements Cloneable {
 	 * @param url the request URL
 	 */
 	HttpRequest(String url) {
+		setUrl(url);
+	}
+
+	/**
+	 * Modifies the URL this HTTP request. Parameter values set in the previous URL will be re-applied on the new URL,
+	 * if their names match.
+	 *
+	 * @param url the new request URL.
+	 */
+	public void setUrl(String url) {
 		Args.notBlank(url, "HTTP request URL");
+
+		Map<String, Object> oldParameters = Collections.emptyMap();
+		if(this.url != null){
+			oldParameters = this.url.getParameterValues();
+		}
+
 		this.url = new ParameterizedString(url);
+
+		for(String param : this.url.getParameters()){
+			this.url.set(param, oldParameters.get(param));
+		}
 	}
 
 	/**
@@ -400,9 +421,9 @@ public final class HttpRequest implements Cloneable {
 	/**
 	 * Configures this request to connect through a proxy with authentication.
 	 *
-	 * @param proxy the proxy configuration.
-	 * @param user  the proxy user.
-	 * @param password  the proxy password.
+	 * @param proxy    the proxy configuration.
+	 * @param user     the proxy user.
+	 * @param password the proxy password.
 	 */
 	public final void setProxy(Proxy proxy, String user, String password) {
 		setProxy(proxy, null, 0, user, password);
@@ -538,6 +559,26 @@ public final class HttpRequest implements Cloneable {
 			return null;
 		}
 		return this.charset.name();
+	}
+
+	/**
+	 * Returns whether this HTTP request to ignore HTTP errors returned by the remote server and process the
+	 * response anyway. Defaults to {@code false}.
+	 *
+	 * @return a flag indicating whether or not HTTP response code errors should be ignored/
+	 */
+	public boolean isIgnoreHttpErrors() {
+		return ignoreHttpErrors;
+	}
+
+	/**
+	 * Configures the this HTTP request to ignore HTTP errors returned by the remote server and process the
+	 * response anyway. Defaults to {@code false}.
+	 *
+	 * @param ignoreHttpErrors flag indicating whether or not HTTP response code errors should be ignored/
+	 */
+	public void setIgnoreHttpErrors(boolean ignoreHttpErrors) {
+		this.ignoreHttpErrors = ignoreHttpErrors;
 	}
 
 	/**

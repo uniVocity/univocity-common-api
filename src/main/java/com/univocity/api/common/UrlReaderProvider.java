@@ -337,4 +337,10 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 			throw new IllegalStateException("Unable to clone", e);
 		}
 	}
+
+	public final UrlReaderProvider clone(String newUrl) {
+		UrlReaderProvider out = this.clone();
+		out.getRequest().setUrl(newUrl);
+		return out;
+	}
 }
