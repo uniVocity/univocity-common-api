@@ -16,7 +16,7 @@ package com.univocity.api.statistics;
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
-public interface DataTransfer<S, T> {
+public interface DataTransferListener<S, T> {
 
 	/**
 	 * Notifies a data transfer has been started.
