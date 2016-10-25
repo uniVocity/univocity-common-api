@@ -24,22 +24,22 @@ public final class NoopDataTransfer implements DataTransfer {
 	}
 
 	@Override
-	public final void started(Object source, long totalSize, Object target) {
+	public void started(Object source, long totalSize, Object target) {
 
 	}
 
 	@Override
-	public final void transferred(Object source, long totalSize, long transferred, Object target) {
+	public void transferred(long transferred) {
 
 	}
 
 	@Override
-	public final void completed(Object source, long totalSize, Object target) {
+	public void completed() {
 
 	}
 
 	@Override
-	public final void aborted(Object source, long totalSize, long transferred, Object target, Exception error) {
+	public void aborted(Exception error) {
 
 	}
 }
