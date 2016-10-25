@@ -4,7 +4,7 @@
  * 'LICENSE.txt', which is part of this source code package.
  */
 
-package com.univocity.api.common;
+package com.univocity.api.net;
 
 import java.io.*;
 import java.nio.charset.*;

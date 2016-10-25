@@ -4,7 +4,7 @@
  * 'LICENSE.txt', which is part of this source code package.
  */
 
-package com.univocity.api.common.helpers;
+package com.univocity.api.config;
 
 import com.univocity.api.common.*;
 import com.univocity.api.exception.*;

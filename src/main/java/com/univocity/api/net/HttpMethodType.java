@@ -4,7 +4,7 @@
  * 'LICENSE.txt', which is part of this source code package.
  */
 
-package com.univocity.api.common;
+package com.univocity.api.net;
 
 /**
  * The set of  HTTP/1.1 methods, plus <a href="https://tools.ietf.org/html/rfc5789">RFC 5789</a>.

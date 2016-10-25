@@ -6,6 +6,7 @@
 
 package com.univocity.api.common;
 
+import com.univocity.api.net.*;
 import org.testng.annotations.*;
 
 import java.util.*;
