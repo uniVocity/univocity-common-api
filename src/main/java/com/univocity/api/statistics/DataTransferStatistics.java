@@ -23,9 +23,9 @@ import static java.util.concurrent.TimeUnit.*;
  * @param <T> the target of data, where data is being transferred into.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
- * @see Notification
+ * @see NotificationHandler
  */
-public final class DataTransferStatistics<S, T> implements DataTransferListener<S, T> {
+public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> {
 
 	private S source;
 	private T target;
@@ -39,8 +39,10 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 	private String dateMask;
 
 	private String description;
+	private String unitDescription;
+	private long unitDivisor = 1;
 
-	private Notification<DataTransferStatistics<S, T>> notification;
+	private NotificationHandler<DataTransferStatistics<S, T>> notificationHandler;
 
 	/**
 	 * Creates a new data transfer statistics object that doesn't notify the user of updates. Users are expected to
@@ -55,10 +57,10 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 	 * query this object at their discretion to obtain the process' status and will receive notification of
 	 * any updates to this process as soon as they occur.
 	 *
-	 * @param notification the notification callback that will receive updates as soon as the statistics are changed.
+	 * @param notificationHandler the notification callback that will receive updates as soon as the statistics are changed.
 	 */
-	public DataTransferStatistics(Notification<DataTransferStatistics<S, T>> notification) {
-		this(0, notification);
+	public DataTransferStatistics(NotificationHandler<DataTransferStatistics<S, T>> notificationHandler) {
+		this(0, notificationHandler);
 	}
 
 	/**
@@ -67,20 +69,73 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 	 * receive notification of updates to this process, after a given interval to avoid excessive processing.
 	 *
 	 * @param notificationInterval the minimum interval, in milliseconds, before notifying the provided callback of updates.
-	 * @param notification         the notification callback that will receive updates as soon as the statistics
+	 * @param handler              the notification callback that will receive updates as soon as the statistics
 	 *                             are changed.
 	 */
-	public DataTransferStatistics(long notificationInterval, final Notification<DataTransferStatistics<S, T>> notification) {
+	public DataTransferStatistics(long notificationInterval, final NotificationHandler<DataTransferStatistics<S, T>> handler) {
+		setNotificationHandler(notificationInterval, handler);
+	}
+
+	protected final void setNotificationHandler(final NotificationHandler<DataTransferStatistics<S, T>> handler) {
+		setNotificationHandler(0, handler);
+	}
+
+	protected final void setNotificationHandler(long notificationInterval, final NotificationHandler<DataTransferStatistics<S, T>> handler) {
 		if (notificationInterval > 0) {
-			this.notification = new TimedNotification<DataTransferStatistics<S, T>>(notificationInterval) {
+			this.notificationHandler = new TimedNotificationHandler<DataTransferStatistics<S, T>>(notificationInterval) {
 				@Override
 				protected void onNotification(DataTransferStatistics<S, T> n, boolean lastNotification) {
-					notification.notify(n, lastNotification);
+					handler.notify(n, lastNotification);
 				}
 			};
 		} else {
-			this.notification = notification;
+			this.notificationHandler = handler;
 		}
+	}
+
+	/**
+	 * Returns a description of the unit of data being transferred.
+	 *
+	 * @return a description of the unit of data being transferred.
+	 */
+	public final String getUnitDescription() {
+		return unitDescription == null ? "" : unitDescription;
+	}
+
+	/**
+	 * Defines a description of the unit of data being transferred.
+	 *
+	 * @param unitDescription the description of what is being transferred
+	 */
+	public final void setUnit(String unitDescription) {
+		this.unitDescription = unitDescription;
+	}
+
+	/**
+	 * Defines a description of the unit of data being transferred and updates the unit divisor to amounts will be returned
+	 * taking into account the division of the totals by the given divisor. This allows you to convert totals accumulated as bytes
+	 * into kilobytes ({@code unitDivisor = 1024}) or megabytes ({@code unitDivisor = 1024*1024}) for example.
+	 *
+	 * @param unitDescription the description of what unit of data is being transferred
+	 * @param unitDivisor     the divisor to be applied over the totals accumulated by this class, so that the units
+	 */
+	public final void setUnit(String unitDescription, long unitDivisor) {
+		this.unitDescription = unitDescription;
+		if (unitDivisor == 0) {
+			unitDivisor = 1;
+		}
+		this.unitDivisor = unitDivisor;
+	}
+
+
+	/**
+	 * Returns the unit divisor currently in use. The unit divisor allows you to convert totals accumulated as bytes
+	 * into kilobytes ({@code unitDivisor = 1024}) or megabytes ({@code unitDivisor = 1024*1024}) for example.
+	 *
+	 * @return the divisor to be applied over the totals accumulated by this class
+	 */
+	public final long getUnitDivisor() {
+		return unitDivisor;
 	}
 
 	@Override
@@ -107,8 +162,8 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 	}
 
 	private void notifyStatisticUpdates() {
-		if (notification != null) {
-			notification.notify(this, endTime > 0);
+		if (notificationHandler != null) {
+			notificationHandler.notify(this, endTime > 0);
 		}
 	}
 
@@ -147,9 +202,9 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 
 		time = timeUnit.convert(time, MILLISECONDS);
 		if (time > 0) {
-			return (double) totalTransferredSoFar / (double) time;
+			return (double) getTotalTransferredSoFar() / (double) time;
 		} else {
-			return totalTransferredSoFar;
+			return getTotalTransferredSoFar();
 		}
 	}
 
@@ -182,7 +237,7 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 	 * @return the total amount transferred already.
 	 */
 	public final long getTotalTransferredSoFar() {
-		return totalTransferredSoFar;
+		return totalTransferredSoFar / unitDivisor;
 	}
 
 	/**
@@ -196,9 +251,9 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 	 */
 	public final long getTotalSize() {
 		if (!aborted && endTime > 0) {
-			return totalTransferredSoFar;
+			return totalTransferredSoFar / unitDivisor;
 		}
-		return totalSize;
+		return totalSize / unitDivisor;
 	}
 
 	/**
@@ -287,7 +342,7 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 	 */
 	public final double getTransferPercentage() {
 		if (totalSize > 0) {
-			return (double) totalTransferredSoFar / (double) totalSize;
+			return (double) getTotalTransferredSoFar() / (double) getTotalSize();
 		}
 		if (aborted) {
 			return 0.0;
@@ -377,15 +432,32 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 			return "Not started";
 		}
 
-		StringBuilder stats = new StringBuilder();
-		stats.append(getTotalTransferredSoFar());
-
-		if (totalSize > 0) {
-			stats.append(" of ");
-			stats.append(totalSize);
+		StringBuilder stats = new StringBuilder(" | ");
+		stats.append(NumberFormat.getNumberInstance().format(getTotalTransferredSoFar()));
+		if (!getUnitDescription().isEmpty()) {
+			stats.append(' ');
+			stats.append(getUnitDescription());
 		}
 
-		stats.append(' ').append('(').append(NumberFormat.getPercentInstance().format(getTransferPercentage()));
+			stats.append(" of ");
+		if (getTotalSize() > 0) {
+			stats.append(NumberFormat.getNumberInstance().format(getTotalSize()));
+		} else {
+			stats.append("??");
+		}
+
+		if (!getUnitDescription().isEmpty()) {
+			stats.append(' ');
+			stats.append(getUnitDescription());
+		}
+
+		stats.append(' ').append('(');
+
+		if (getTotalSize() > 0) {
+			stats.append(NumberFormat.getPercentInstance().format(getTransferPercentage()));
+		} else {
+			stats.append("??%");
+		}
 
 		if (aborted) {
 			if (abortError != null) {
@@ -396,7 +468,7 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 		}
 
 		stats.append(' ').append('-').append(' ');
-		stats.append(NumberFormat.getNumberInstance().format(getRate(TimeUnit.SECONDS))).append("/sec)");
+		stats.append(NumberFormat.getNumberInstance().format(getRate(TimeUnit.SECONDS))).append(' ').append(getUnitDescription()).append("/sec)");
 
 		if (endTime < 0) {
 			return description + stats.toString() + " | Transferring ";
@@ -404,4 +476,5 @@ public final class DataTransferStatistics<S, T> implements DataTransferListener<
 			return description + stats.toString() + " | Completed ";
 		}
 	}
+
 }

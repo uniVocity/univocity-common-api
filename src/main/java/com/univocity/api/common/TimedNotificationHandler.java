@@ -8,13 +8,13 @@ package com.univocity.api.common;
 
 
 /**
- * A basic {@link Notification} implementation that filters out excessive notifications and only processes them
+ * A basic {@link NotificationHandler} implementation that filters out excessive notifications and only processes them
  * after a given interval has been elapsed since the last notification was processed, or if the last notification
  * is received.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
-public abstract class TimedNotification<T> implements Notification<T> {
+public abstract class TimedNotificationHandler<T> implements NotificationHandler<T> {
 
 	private final long notificationInterval;
 	private long previousNotification = 0;
@@ -26,7 +26,7 @@ public abstract class TimedNotification<T> implements Notification<T> {
 	 * @param notificationInterval the interval, in milliseconds, between each call to
 	 *                             {@link #onNotification(Object, boolean)}
 	 */
-	public TimedNotification(long notificationInterval) {
+	public TimedNotificationHandler(long notificationInterval) {
 		Args.positive(notificationInterval, "Notification interval");
 		this.notificationInterval = notificationInterval;
 	}

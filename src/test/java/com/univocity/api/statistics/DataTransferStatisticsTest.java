@@ -71,7 +71,7 @@ public class DataTransferStatisticsTest {
 		final boolean[] last = new boolean[]{false};
 		final int[] count = new int[]{0};
 
-		DataTransferStatistics<String, StringBuilder> stats = new DataTransferStatistics<String, StringBuilder>(10, new Notification<DataTransferStatistics<String, StringBuilder>>() {
+		DataTransferStatistics<String, StringBuilder> stats = new DataTransferStatistics<String, StringBuilder>(10, new NotificationHandler<DataTransferStatistics<String, StringBuilder>>() {
 			@Override
 			public void notify(DataTransferStatistics<String, StringBuilder> statistics, boolean lastNotification) {
 				last[0] = lastNotification;
