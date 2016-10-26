@@ -42,7 +42,7 @@ public class DataTransferStatisticsTest {
 			assertEquals(stats.getTotalTransferredSoFar(), i);
 			assertEquals((int) (stats.getTransferPercentage() * 100), i * 10);
 
-			stats.transferred(1);
+			stats.transferred(source, 1, target);
 
 			assertEquals(stats.getTotalTransferredSoFar(), i + 1);
 			assertEquals((int) (stats.getTransferPercentage() * 100), (i + 1) * 10);
@@ -55,7 +55,7 @@ public class DataTransferStatisticsTest {
 			//	System.out.println(stats.toString());
 		}
 
-		stats.completed();
+		stats.completed(source, target);
 
 		assertFalse(stats.isRunning());
 		assertFalse(stats.isAborted());
@@ -97,13 +97,13 @@ public class DataTransferStatisticsTest {
 
 		for (int i = 0; i < source.length(); i++) {
 			target.append(source.charAt(i));
-			stats.transferred(1);
+			stats.transferred(source, 1, target);
 
 			Thread.sleep(5);
 		}
 
 		assertFalse(last[0]);
-		stats.completed();
+		stats.completed(source, target);
 		assertTrue(last[0]);
 
 		assertTrue(count[0] < (source.length() / 2) + 1 && count[0] > 4);

@@ -10,7 +10,6 @@ import com.univocity.api.common.*;
 import com.univocity.api.net.*;
 
 import java.io.*;
-import java.text.*;
 
 /**
  * A simple implementation of {@link DataTransferStatistics} to notify the progress/completion of download processes
@@ -56,5 +55,6 @@ public abstract class DownloadStatistics extends DataTransferStatistics<UrlReade
 	 *                         completed or was aborted due to an error)
 	 */
 	protected abstract void dataDownloaded(DownloadStatistics status, boolean lastNotification);
+
 
 }

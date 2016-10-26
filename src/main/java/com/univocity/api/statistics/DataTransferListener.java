@@ -33,19 +33,48 @@ public interface DataTransferListener<S, T> {
 	 * Notifies how much data has been transferred from source to target. Can be invoked multiple times until the
 	 * data transfer is completed or aborted.
 	 *
+	 * @param source      the source of data
 	 * @param transferred the amount of data transferred since the last time this method was called. The meaning of the
 	 *                    amount provided depends on the underlying implementation: this can be bytes, number of
 	 *                    records, etc.
+	 * @param target      the data target
 	 */
-	void transferred(long transferred);
+	void transferred(S source, long transferred, T target);
 
 	/**
 	 * Notifies that a data transfer has been finalized.
+	 *
+	 * @param source the source of data
+	 * @param target the data target
 	 */
-	void completed();
+	void completed(S source, T target);
 
 	/**
 	 * Notifies that the data has been aborted.
+	 *
+	 * @param source the source of data
+	 * @param target the data target
 	 */
-	void aborted(Exception error);
+	void aborted(S source, T target, Exception error);
+
+	/**
+	 * Returns a flag indicating whether the data transfer has been started.
+	 *
+	 * @return a flag indicating whether the data transfer has been started.
+	 */
+	boolean isStarted();
+
+	/**
+	 * Returns a flag indicating whether the data transfer is running.
+	 *
+	 * @return a flag indicating whether the data transfer is running.
+	 */
+	boolean isRunning();
+
+	/**
+	 * Returns a flag indicating whether the data transfer was aborted.
+	 *
+	 * @return a flag indicating whether the data transfer was aborted.
+	 */
+	boolean isAborted();
 }

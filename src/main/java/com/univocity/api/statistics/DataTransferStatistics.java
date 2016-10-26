@@ -119,7 +119,7 @@ public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> 
 	 * @param unitDescription the description of what unit of data is being transferred
 	 * @param unitDivisor     the divisor to be applied over the totals accumulated by this class, so that the units
 	 */
-	public final void setUnit(String unitDescription, long unitDivisor) {
+	public void setUnit(String unitDescription, long unitDivisor) {
 		this.unitDescription = unitDescription;
 		if (unitDivisor == 0) {
 			unitDivisor = 1;
@@ -154,8 +154,8 @@ public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> 
 	}
 
 	@Override
-	public final void transferred(long transferred) {
-		if (transferred > 0) {
+	public final void transferred(S source, long transferred, T target) {
+		if (transferred > 0 && this.source == source && this.target == target) {
 			totalTransferredSoFar += transferred;
 			notifyStatisticUpdates();
 		}
@@ -168,16 +168,20 @@ public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> 
 	}
 
 	@Override
-	public final void completed() {
-		endTime = currentTimeMillis();
-		notifyStatisticUpdates();
+	public final void completed(S source, T target) {
+		if (this.source == source && this.target == target) {
+			endTime = currentTimeMillis();
+			notifyStatisticUpdates();
+		}
 	}
 
 	@Override
-	public final void aborted(Exception error) {
-		aborted = true;
-		abortError = error;
-		completed();
+	public final void aborted(S source, T target, Exception error) {
+		if (this.source == source && this.target == target) {
+			aborted = true;
+			abortError = error;
+			completed(source, target);
+		}
 	}
 
 	/**
@@ -380,29 +384,17 @@ public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> 
 		return abortError;
 	}
 
-	/**
-	 * Returns a flag indicating whether the data transfer has been started.
-	 *
-	 * @return a flag indicating whether the data transfer has been started.
-	 */
+	@Override
 	public final boolean isStarted() {
 		return totalTransferredSoFar != -1;
 	}
 
-	/**
-	 * Returns a flag indicating whether the data transfer is running.
-	 *
-	 * @return a flag indicating whether the data transfer is running.
-	 */
+	@Override
 	public final boolean isRunning() {
 		return isStarted() && endTime <= 0;
 	}
 
-	/**
-	 * Returns a flag indicating whether the data transfer was aborted.
-	 *
-	 * @return a flag indicating whether the data transfer was aborted.
-	 */
+	@Override
 	public final boolean isAborted() {
 		return aborted;
 	}
@@ -427,7 +419,7 @@ public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> 
 	}
 
 	@Override
-	public final String toString() {
+	public String toString() {
 		if (totalTransferredSoFar == -1L) {
 			return "Not started";
 		}
@@ -439,7 +431,7 @@ public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> 
 			stats.append(getUnitDescription());
 		}
 
-			stats.append(" of ");
+		stats.append(" of ");
 		if (getTotalSize() > 0) {
 			stats.append(NumberFormat.getNumberInstance().format(getTotalSize()));
 		} else {

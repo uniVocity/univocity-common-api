@@ -24,22 +24,37 @@ public final class NoopDataTransferListener implements DataTransferListener {
 	}
 
 	@Override
-	public void started(Object source, long totalSize, Object target) {
+	public final void started(Object source, long totalSize, Object target) {
 
 	}
 
 	@Override
-	public void transferred(long transferred) {
+	public final void transferred(Object source, long transferred, Object target) {
 
 	}
 
 	@Override
-	public void completed() {
+	public final void completed(Object source, Object target) {
 
 	}
 
 	@Override
-	public void aborted(Exception error) {
+	public final void aborted(Object source, Object target, Exception error) {
 
+	}
+
+	@Override
+	public boolean isStarted() {
+		return false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return false;
+	}
+
+	@Override
+	public boolean isAborted() {
+		return false;
 	}
 }
