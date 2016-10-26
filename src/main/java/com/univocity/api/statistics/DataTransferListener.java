@@ -6,75 +6,112 @@
 
 package com.univocity.api.statistics;
 
+import java.util.*;
+import java.util.concurrent.*;
+
 /**
- * A callback interface used to receive notifications of data transfers from a source to a target.
- * Information about sizes transferred are implementation dependent and can signify bytes transferred, number of
- * records, etc.
+ * A basic management structure for data transfers occurring in parallel.
  *
- * @param <S> the source of data, where data is coming from
- * @param <T> the target of data, where data is being transferred into.
+ * @param <S> type of the supported sources of data
+ * @param <T> type of the supported targets of data
+ * @param <E> type of the entries managed by this list, created for each individual data transfer with a call to
+ *            {@link #newDataTransfer(Object, long, Object)}
  *
- * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a> *
+ * @see DownloadListener
+ * @see DataTransfer
  */
-public interface DataTransferListener<S, T> {
+public abstract class DataTransferListener<S, T, E extends DataTransfer<S, T>> implements DataTransfer<S, T>, Iterable<E> {
+
+	private Map<T, E> active = new ConcurrentHashMap<T, E>();
+	private LinkedHashSet<E> order = new LinkedHashSet<E>();
+
+	@Override
+	public synchronized void started(S source, long totalSize, T target) {
+		E previousTransfer = active.get(target);
+		if (previousTransfer != null && previousTransfer.isRunning()) {
+			previousTransfer.aborted(source, target, null);
+			order.remove(previousTransfer);
+		}
+
+		E transfer = newDataTransfer(source, totalSize, target);
+		transfer.started(source, totalSize, target);
+		order.add(transfer);
+		active.put(target, transfer);
+	}
+
+	@Override
+	public void transferred(S source, long transferred, T target) {
+		E transfer = active.get(target);
+		if (transfer != null) {
+			transfer.transferred(source, transferred, target);
+		}
+	}
+
+	@Override
+	public synchronized void completed(S source, T target) {
+		E transfer = active.remove(target);
+		if (transfer != null) {
+			order.remove(transfer);
+			transfer.completed(source, target);
+		}
+	}
+
+	@Override
+	public synchronized void aborted(S source, T target, Exception error) {
+		E transfer = active.remove(target);
+		if (transfer != null) {
+			order.remove(transfer);
+			transfer.aborted(source, target, error);
+		}
+	}
 
 	/**
-	 * Notifies a data transfer has been started.
+	 * Creates a a new data transfer
 	 *
-	 * @param source    the source of data
-	 * @param totalSize the total size of the data. The meaning of the
-	 *                  amount provided depends on the underlying implementation: this can be bytes, number of
-	 *                  records, etc. If -1, the total size is unknown ahead of time.
-	 * @param target    the data target
+	 * @param source
+	 * @param totalSize
+	 * @param target
+	 *
+	 * @return
 	 */
-	void started(S source, long totalSize, T target);
+	protected abstract E newDataTransfer(S source, long totalSize, T target);
+
+	@Override
+	public final boolean isStarted() {
+		return true;
+	}
+
+	@Override
+	public final boolean isRunning() {
+		return !active.isEmpty();
+	}
+
+	@Override
+	public final boolean isAborted() {
+		return false;
+	}
 
 	/**
-	 * Notifies how much data has been transferred from source to target. Can be invoked multiple times until the
-	 * data transfer is completed or aborted.
+	 * Returns the number of active transfers currently maintained by this list
 	 *
-	 * @param source      the source of data
-	 * @param transferred the amount of data transferred since the last time this method was called. The meaning of the
-	 *                    amount provided depends on the underlying implementation: this can be bytes, number of
-	 *                    records, etc.
-	 * @param target      the data target
+	 * @return the number of active data transfers
 	 */
-	void transferred(S source, long transferred, T target);
+	public int size() {
+		return active.size();
+	}
 
 	/**
-	 * Notifies that a data transfer has been finalized.
+	 * Returns a copy of the internal list of currently active transfers
 	 *
-	 * @param source the source of data
-	 * @param target the data target
+	 * @return the active transfers
 	 */
-	void completed(S source, T target);
+	public List<E> getActiveTransfers() {
+		return new ArrayList<E>(order);
+	}
 
-	/**
-	 * Notifies that the data has been aborted.
-	 *
-	 * @param source the source of data
-	 * @param target the data target
-	 */
-	void aborted(S source, T target, Exception error);
-
-	/**
-	 * Returns a flag indicating whether the data transfer has been started.
-	 *
-	 * @return a flag indicating whether the data transfer has been started.
-	 */
-	boolean isStarted();
-
-	/**
-	 * Returns a flag indicating whether the data transfer is running.
-	 *
-	 * @return a flag indicating whether the data transfer is running.
-	 */
-	boolean isRunning();
-
-	/**
-	 * Returns a flag indicating whether the data transfer was aborted.
-	 *
-	 * @return a flag indicating whether the data transfer was aborted.
-	 */
-	boolean isAborted();
+	@Override
+	public Iterator<E> iterator() {
+		return order.iterator();
+	}
 }

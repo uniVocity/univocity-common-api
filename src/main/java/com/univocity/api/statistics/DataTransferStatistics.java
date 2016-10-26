@@ -16,7 +16,7 @@ import static java.lang.System.*;
 import static java.util.concurrent.TimeUnit.*;
 
 /**
- * A basic implementation of {@link DataTransferListener} which collects statistics about a given data transfer process, and
+ * A basic implementation of {@link DataTransfer} which collects statistics about a given data transfer process, and
  * provides easy to use methods to report the progress and timing of the process.
  *
  * @param <S> the source of data, where data is coming from
@@ -25,7 +25,7 @@ import static java.util.concurrent.TimeUnit.*;
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  * @see NotificationHandler
  */
-public class DataTransferStatistics<S, T> implements DataTransferListener<S, T> {
+public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 
 	private S source;
 	private T target;

@@ -18,11 +18,11 @@ import java.io.*;
  * completes or is aborted.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
- * @see DataTransferList
+ * @see DataTransferListener
  * @see DownloadStatistics
  * @see DataTransferStatistics
  */
-public abstract class DownloadList extends DataTransferList<UrlReaderProvider, File, DownloadStatistics> {
+public abstract class DownloadListener extends DataTransferListener<UrlReaderProvider, File, DownloadStatistics> {
 
 	private String unitDescription;
 	private long unitDivisor;
@@ -33,7 +33,7 @@ public abstract class DownloadList extends DataTransferList<UrlReaderProvider, F
 	 * Creates a default download list that invokes the {@link #dataDownloaded(DownloadStatistics, boolean)} method after
 	 * at least 250ms have elapsed since the last call has been made for the <strong>same</strong> download process.
 	 */
-	public DownloadList() {
+	public DownloadListener() {
 		this(250L);
 	}
 
@@ -44,7 +44,7 @@ public abstract class DownloadList extends DataTransferList<UrlReaderProvider, F
 	 * @param notificationInterval how often, in milliseconds, the {@link #dataDownloaded(DownloadStatistics, boolean)}
 	 *                             should be invoked for each individual download process in this list
 	 */
-	public DownloadList(long notificationInterval) {
+	public DownloadListener(long notificationInterval) {
 		this.notificationInterval = notificationInterval;
 	}
 
@@ -54,7 +54,7 @@ public abstract class DownloadList extends DataTransferList<UrlReaderProvider, F
 		DownloadStatistics out = new DownloadStatistics(notificationInterval) {
 			@Override
 			protected void dataDownloaded(DownloadStatistics status, boolean lastNotification) {
-				DownloadList.this.dataDownloaded(status, lastNotification);
+				DownloadListener.this.dataDownloaded(status, lastNotification);
 			}
 		};
 

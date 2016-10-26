@@ -16,7 +16,7 @@ import java.io.*;
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  * @see DataTransferStatistics
- * @see DataTransferListener
+ * @see DataTransfer
  * @see TimedNotificationHandler
  */
 public abstract class DownloadStatistics extends DataTransferStatistics<UrlReaderProvider, File> {

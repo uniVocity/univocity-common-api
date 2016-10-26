@@ -7,19 +7,19 @@
 package com.univocity.api.statistics;
 
 /**
- * A singleton {@link DataTransferListener} that does nothing.
+ * A singleton {@link DataTransfer} that does nothing.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
-public final class NoopDataTransferListener implements DataTransferListener {
+public final class NoopDataTransfer implements DataTransfer {
 
-	private NoopDataTransferListener() {
+	private NoopDataTransfer() {
 
 	}
 
-	public static final DataTransferListener instance = new NoopDataTransferListener();
+	public static final DataTransfer instance = new NoopDataTransfer();
 
-	public static final <S, T> DataTransferListener<S, T> getInstance() {
+	public static final <S, T> DataTransfer<S, T> getInstance() {
 		return instance;
 	}
 
