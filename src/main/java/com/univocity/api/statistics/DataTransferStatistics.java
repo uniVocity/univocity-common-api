@@ -12,6 +12,7 @@ import java.sql.*;
 import java.text.*;
 import java.util.concurrent.*;
 
+import static com.sun.tools.javac.util.Constants.*;
 import static java.lang.System.*;
 import static java.util.concurrent.TimeUnit.*;
 
@@ -247,10 +248,10 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	/**
 	 * Returns the total size of the source to be transferred to the target, if available. If the process completed
 	 * successfully, returns the amount transferred. The meaning of the amount returned depends on the underlying
-	 * implementation: this can be bytes, number of records, etc. If {@code -1}, the total size is unknown ahead of
+	 * implementation: this can be bytes, number of records, etc. If negative, the total size is unknown ahead of
 	 * time.
 	 *
-	 * @return the total size to transfer, if known. Otherwise, returns {@code -1}. If the process completed
+	 * @return the total size to transfer, if known. Otherwise, returns a negative value. If the process completed
 	 * successfully, returns the amount transferred.
 	 */
 	public final double getTotalSize() {
@@ -425,31 +426,10 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 		}
 
 		StringBuilder stats = new StringBuilder(" | ");
-		stats.append(NumberFormat.getNumberInstance().format(getTotalTransferredSoFar()));
-		if (!getUnitDescription().isEmpty()) {
-			stats.append(' ');
-			stats.append(getUnitDescription());
-		}
-
-		stats.append(" of ");
-		if (getTotalSize() > 0) {
-			stats.append(NumberFormat.getNumberInstance().format(getTotalSize()));
-		} else {
-			stats.append("??");
-		}
-
-		if (!getUnitDescription().isEmpty()) {
-			stats.append(' ');
-			stats.append(getUnitDescription());
-		}
-
+		stats.append(getFormattedTotalTransferredSoFar());
+		stats.append(" of ").append(getFormattedTotalSize());
 		stats.append(' ').append('(');
-
-		if (getTotalSize() > 0) {
-			stats.append(NumberFormat.getPercentInstance().format(getTransferPercentage()));
-		} else {
-			stats.append("??%");
-		}
+		stats.append(getFormattedTransferPercentage());
 
 		if (aborted) {
 			if (abortError != null) {
@@ -460,7 +440,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 		}
 
 		stats.append(' ').append('-').append(' ');
-		stats.append(NumberFormat.getNumberInstance().format(getRate(TimeUnit.SECONDS))).append(' ').append(getUnitDescription()).append("/sec)");
+		stats.append(getFormattedTransferRate());
 
 		if (endTime < 0) {
 			return description + stats.toString() + " | Transferring ";
@@ -469,4 +449,125 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 		}
 	}
 
+
+	/**
+	 * Returns a formatted {@code String} representing the percentage of data already transferred
+	 *
+	 * @param format         the numeric format to use to represent the percentage.
+	 * @param valueIfUnknown the {@code String} to return if the percentage cannot be determined.
+	 *
+	 * @return the formatted percentage of data already transferred.
+	 */
+	public String getFormattedTransferPercentage(NumberFormat format, String valueIfUnknown) {
+		if (getTotalSize() > 0) {
+			return format.format(getTransferPercentage());
+		} else {
+			return valueIfUnknown;
+		}
+	}
+
+	/**
+	 * Returns the percentage of data already transferred, formatted a decimal number between 0% and 100% inclusive,
+	 * or ?% if unknown
+	 *
+	 * @return the formatted percentage of data already transferred.
+	 */
+	public String getFormattedTransferPercentage() {
+		return getFormattedTransferPercentage(NumberFormat.getPercentInstance(), "?%");
+	}
+
+
+	/**
+	 * Returns a formatted {@code String} representing the rate at which the data is being transferred to the target.
+	 *
+	 * @param format     the numeric format to use to represent the rate.
+	 * @param timeUnit   the unit of time to be used to calculate the rate.
+	 * @param rateSymbol the symbol to be displayed after the rate
+	 *
+	 * @return the formatted rate at which the data is being transferred
+	 */
+	public String getFormattedTransferRate(NumberFormat format, TimeUnit timeUnit, String rateSymbol) {
+		StringBuilder out = new StringBuilder();
+
+		out.append(format.format(getRate(timeUnit)));
+		if (!getUnitDescription().isEmpty()) {
+			out.append(getUnitDescription());
+		}
+
+		if (rateSymbol != null && !rateSymbol.isEmpty()) {
+			out.append(rateSymbol);
+		}
+
+		return out.toString();
+	}
+
+	/**
+	 * Returns a formatted {@code String} representing the rate, per second, at which the data is being transferred
+	 * to the target
+	 *
+	 * @return the formatted rate at which the data is being transferred
+	 */
+	public String getFormattedTransferRate() {
+		return getFormattedTransferRate(NumberFormat.getNumberInstance(), TimeUnit.SECONDS, " /sec");
+	}
+
+	/**
+	 * Returns a formatted {@code String} representing the amount size of data already to be transferred to the target
+	 *
+	 * @param format the numeric format to use to represent the amount.
+	 *
+	 * @return the formatted total amount already transferred
+	 */
+	public String getFormattedTotalTransferredSoFar(NumberFormat format) {
+		StringBuilder out = new StringBuilder();
+
+		out.append(format.format(getTotalTransferredSoFar()));
+		if (!getUnitDescription().isEmpty()) {
+			out.append(' ');
+			out.append(getUnitDescription());
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Returns a formatted {@code String} representing the amount size of data already to be transferred to the target
+	 *
+	 * @return the formatted total amount already transferred
+	 */
+	public String getFormattedTotalTransferredSoFar() {
+		return getFormattedTotalTransferredSoFar(NumberFormat.getNumberInstance());
+	}
+
+	/**
+	 * Returns a formatted {@code String} representing the total size of the source to be transferred to the target,
+	 * if available.
+	 *
+	 * @param format         the numeric format to use to represent the total.
+	 * @param valueIfUnknown the {@code String} to return if the total size cannot be determined.
+	 *
+	 * @return the formatted total amount to be transferred
+	 */
+	public String getFormattedTotalSize(NumberFormat format, String valueIfUnknown) {
+		StringBuilder out = new StringBuilder();
+		if (getTotalSize() > 0) {
+			out.append(format.format(getTotalSize()));
+		} else {
+			out.append(valueIfUnknown);
+		}
+		if (!getUnitDescription().isEmpty()) {
+			out.append(' ');
+			out.append(getUnitDescription());
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Returns a formatted {@code String} representing the total size of the source to be transferred to the target,
+	 * if available.
+	 *
+	 * @return the formatted total amount to be transferred
+	 */
+	public String getFormattedTotalSize() {
+		return getFormattedTotalSize(NumberFormat.getNumberInstance(), "?");
+	}
 }
