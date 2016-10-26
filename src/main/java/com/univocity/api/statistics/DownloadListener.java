@@ -11,7 +11,7 @@ import com.univocity.api.net.*;
 import java.io.*;
 
 /**
- * A list of active downloads from remote locations into local files. Updates on the progress of each individual
+ * A listener of active downloads from remote locations into local files. Updates on the progress of each individual
  * download are sent to the user on the {@link #dataDownloaded(DownloadStatistics, boolean)} method.
  *
  * By default, updates to an individual download are sent every 250 ms, and immediately in case the download

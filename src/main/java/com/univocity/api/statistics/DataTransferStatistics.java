@@ -29,8 +29,8 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 
 	private S source;
 	private T target;
-	private long totalSize = -1L;
-	private long totalTransferredSoFar = -1L;
+	private double totalSize = -1L;
+	private double totalTransferredSoFar = -1L;
 	private long startTime = -1L;
 	private long endTime = -1L;
 	private boolean aborted;
@@ -40,7 +40,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 
 	private String description;
 	private String unitDescription;
-	private long unitDivisor = 1;
+	private double unitDivisor = 1;
 
 	private NotificationHandler<DataTransferStatistics<S, T>> notificationHandler;
 
@@ -135,7 +135,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 * @return the divisor to be applied over the totals accumulated by this class
 	 */
 	public final long getUnitDivisor() {
-		return unitDivisor;
+		return (long) unitDivisor;
 	}
 
 	@Override
@@ -206,7 +206,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 
 		time = timeUnit.convert(time, MILLISECONDS);
 		if (time > 0) {
-			return (double) getTotalTransferredSoFar() / (double) time;
+			return getTotalTransferredSoFar() / (double) time;
 		} else {
 			return getTotalTransferredSoFar();
 		}
@@ -231,7 +231,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 *
 	 *                 Returns how long the data transfer took so far.
 	 */
-	public final long getTimeElapsed(TimeUnit timeUnit) {
+	public final double getTimeElapsed(TimeUnit timeUnit) {
 		return timeUnit.convert(getTimeElapsed(), MILLISECONDS);
 	}
 
@@ -240,7 +240,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 *
 	 * @return the total amount transferred already.
 	 */
-	public final long getTotalTransferredSoFar() {
+	public final double getTotalTransferredSoFar() {
 		return totalTransferredSoFar / unitDivisor;
 	}
 
@@ -253,7 +253,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 * @return the total size to transfer, if known. Otherwise, returns {@code -1}. If the process completed
 	 * successfully, returns the amount transferred.
 	 */
-	public final long getTotalSize() {
+	public final double getTotalSize() {
 		if (!aborted && endTime > 0) {
 			return totalTransferredSoFar / unitDivisor;
 		}
@@ -346,7 +346,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 */
 	public final double getTransferPercentage() {
 		if (totalSize > 0) {
-			return (double) getTotalTransferredSoFar() / (double) getTotalSize();
+			return getTotalTransferredSoFar() / getTotalSize();
 		}
 		if (aborted) {
 			return 0.0;

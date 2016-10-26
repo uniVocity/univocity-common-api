@@ -39,12 +39,12 @@ public class DataTransferStatisticsTest {
 		for (int i = 0; i < source.length(); i++) {
 			target.append(source.charAt(i));
 
-			assertEquals(stats.getTotalTransferredSoFar(), i);
+			assertEquals(stats.getTotalTransferredSoFar(), (double) i);
 			assertEquals((int) (stats.getTransferPercentage() * 100), i * 10);
 
 			stats.transferred(source, 1, target);
 
-			assertEquals(stats.getTotalTransferredSoFar(), i + 1);
+			assertEquals(stats.getTotalTransferredSoFar(), (double) i + 1);
 			assertEquals((int) (stats.getTransferPercentage() * 100), (i + 1) * 10);
 
 
