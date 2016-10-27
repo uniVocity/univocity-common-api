@@ -43,9 +43,7 @@ public final class HttpRequest implements Cloneable {
 	private boolean ignoreHttpErrors;
 
 	private String proxyUser;
-	private String proxyHost;
 	private String proxyPassword;
-	private int proxyPort = -1;
 
 	/**
 	 * Creates a new request for a given request URL
@@ -66,13 +64,13 @@ public final class HttpRequest implements Cloneable {
 		Args.notBlank(url, "HTTP request URL");
 
 		Map<String, Object> oldParameters = Collections.emptyMap();
-		if(this.url != null){
+		if (this.url != null) {
 			oldParameters = this.url.getParameterValues();
 		}
 
 		this.url = new ParameterizedString(url);
 
-		for(String param : this.url.getParameters()){
+		for (String param : this.url.getParameters()) {
 			this.url.set(param, oldParameters.get(param));
 		}
 	}
@@ -127,6 +125,29 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
+	 * Replaces any previous headers with the given values. All headers are transmitted after the request line
+	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * @param headers a map of headers names and their values. Previous values will be discarded
+	 */
+	public final void setHeaders(Map<String, String> headers) {
+		this.headers.clear();
+		addHeaders(headers);
+	}
+
+	/**
+	 * Adds the given headers and their values to the existing list of headers. All headers are transmitted after
+	 * the request line (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * @param headers a map of header names and their values.
+	 */
+	public final void addHeaders(Map<String, String> headers) {
+		for (Map.Entry<String, String> e : headers.entrySet()) {
+			set(this.headers, e.getKey(), e.getValue());
+		}
+	}
+
+	/**
 	 * Sets a cookie to be added to the {@code Cookie} HTTP header.
 	 * All cookies are sent in this header in the format of semicolon-separated name-value pairs.
 	 *
@@ -135,6 +156,29 @@ public final class HttpRequest implements Cloneable {
 	 */
 	public final void setCookie(String cookie, String value) {
 		set(cookies, cookie, value);
+	}
+
+	/**
+	 * Replaces the cookies to be added to the {@code Cookie} HTTP header.
+	 * All cookies are sent in this header in the format of semicolon-separated name-value pairs.
+	 *
+	 * @param cookies a map of cookie names and their values. Previous values will be discarded
+	 */
+	public final void setCookies(Map<String, String> cookies) {
+		this.cookies.clear();
+		addCookies(cookies);
+	}
+
+	/**
+	 * Adds the given cookies to the {@code Cookie} HTTP header.
+	 * All cookies are sent in this header in the format of semicolon-separated name-value pairs.
+	 *
+	 * @param cookies a map of cookie names and their values.
+	 */
+	public final void addCookies(Map<String, String> cookies) {
+		for (Map.Entry<String, String> e : cookies.entrySet()) {
+			set(this.cookies, e.getKey(), e.getValue());
+		}
 	}
 
 	private void set(Map<String, String> map, String key, String value) {
