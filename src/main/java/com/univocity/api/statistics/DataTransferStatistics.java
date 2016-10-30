@@ -12,7 +12,6 @@ import java.sql.*;
 import java.text.*;
 import java.util.concurrent.*;
 
-import static com.sun.tools.javac.util.Constants.*;
 import static java.lang.System.*;
 import static java.util.concurrent.TimeUnit.*;
 
@@ -32,6 +31,8 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	private T target;
 	private double totalSize = -1L;
 	private double totalTransferredSoFar = -1L;
+	private double totalTransferredRecently = 0.0;
+	private double ratePerSecond;
 	private long startTime = -1L;
 	private long endTime = -1L;
 	private boolean aborted;
@@ -151,19 +152,41 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 		this.totalSize = totalSize;
 		startTime = currentTimeMillis();
 		totalTransferredSoFar = 0L;
+		totalTransferredRecently = 0L;
 		endTime = -1L;
 	}
+
+	long lastSecond = 0;
 
 	@Override
 	public final void transferred(S source, long transferred, T target) {
 		if (transferred > 0 && this.source == source && this.target == target) {
 			totalTransferredSoFar += transferred;
+			totalTransferredRecently += transferred;
 			notifyStatisticUpdates();
 		}
 	}
 
+	private void updateRatePerSecond() {
+		if (lastSecond <= 0) {
+			lastSecond = System.currentTimeMillis();
+			totalTransferredRecently = 0.0;
+			return;
+		}
+		long time = currentTimeMillis() - lastSecond;
+		if (time < 1000) {
+			return;
+		}
+
+		ratePerSecond = (totalTransferredRecently / unitDivisor) / ((double) time) * 1000.0;
+
+		totalTransferredRecently = 0.0;
+		lastSecond = System.currentTimeMillis();
+	}
+
 	private void notifyStatisticUpdates() {
 		if (notificationHandler != null) {
+			updateRatePerSecond();
 			notificationHandler.notify(this, endTime > 0);
 		}
 	}
@@ -186,23 +209,23 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	}
 
 	/**
-	 * Returns the transfer rate, in milliseconds.
+	 * Returns the average transfer rate, in milliseconds.
 	 *
 	 * @return the number number of data elements measured by the underlying implementation transferred per millisecond.
 	 */
-	public final double getRate() {
-		return getRate(MILLISECONDS);
+	public final double getAverageRate() {
+		return getAverageRate(MILLISECONDS);
 	}
 
 	/**
-	 * Returns the transfer rate, using a given {@link TimeUnit}
+	 * Returns the average transfer rate, using a given {@link TimeUnit}
 	 *
 	 * @param timeUnit the time unit used to calculate the transfer rate.
 	 *
 	 * @return the number number of data elements measured by the underlying implementation
 	 * transferred per a given unit of time
 	 */
-	public final double getRate(TimeUnit timeUnit) {
+	public final double getAverageRate(TimeUnit timeUnit) {
 		long time = getTimeElapsed();
 
 		time = timeUnit.convert(time, MILLISECONDS);
@@ -440,7 +463,8 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 		}
 
 		stats.append(' ').append('-').append(' ');
-		stats.append(getFormattedTransferRate());
+		stats.append(getFormattedRatePerSecond());
+		stats.append(" (avg ").append(getFormattedAverageRate()).append(')');
 
 		if (endTime < 0) {
 			return description + stats.toString() + " | Transferring ";
@@ -476,20 +500,45 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 		return getFormattedTransferPercentage(NumberFormat.getPercentInstance(), "?%");
 	}
 
+	/**
+	 * Returns the approximate transfer rate at which the data was transferred during the previous second.
+	 *
+	 * @return the number number of data elements measured by the underlying implementation
+	 * transferred during the previous second.
+	 */
+	public final double getRatePerSecond() {
+		updateRatePerSecond();
+		return ratePerSecond;
+	}
 
 	/**
-	 * Returns a formatted {@code String} representing the rate at which the data is being transferred to the target.
+	 * Returns a formatted {@code String} representing the approximate rate at which the data was transferred
+	 * during the previous second.
 	 *
 	 * @param format     the numeric format to use to represent the rate.
-	 * @param timeUnit   the unit of time to be used to calculate the rate.
 	 * @param rateSymbol the symbol to be displayed after the rate
 	 *
-	 * @return the formatted rate at which the data is being transferred
+	 * @return the formatted approximate rate at which the data was transferred during the previous second.
 	 */
-	public String getFormattedTransferRate(NumberFormat format, TimeUnit timeUnit, String rateSymbol) {
+	public String getFormattedRatePerSecond(NumberFormat format, String rateSymbol) {
+		return getFormattedRate(getRatePerSecond(), format, rateSymbol);
+	}
+
+	/**
+	 * Returns a formatted {@code String} representing the approximate rate, per second, at which the data was being
+	 * transferred to the target during the previous second.
+	 *
+	 * @return the formatted rate at which the data is being transferred during the previous second.
+	 */
+	public String getFormattedRatePerSecond() {
+		return getFormattedRatePerSecond(NumberFormat.getNumberInstance(), " /sec");
+	}
+
+
+	private String getFormattedRate(double rate, NumberFormat format, String rateSymbol) {
 		StringBuilder out = new StringBuilder();
 
-		out.append(format.format(getRate(timeUnit)));
+		out.append(format.format(rate));
 		if (!getUnitDescription().isEmpty()) {
 			out.append(getUnitDescription());
 		}
@@ -502,13 +551,26 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	}
 
 	/**
-	 * Returns a formatted {@code String} representing the rate, per second, at which the data is being transferred
+	 * Returns a formatted {@code String} representing the average rate at which the data is being transferred to the target.
+	 *
+	 * @param format     the numeric format to use to represent thea average rate.
+	 * @param timeUnit   the unit of time to be used to calculate the average rate.
+	 * @param rateSymbol the symbol to be displayed after the rate
+	 *
+	 * @return the formatted average rate at which the data is being transferred
+	 */
+	public String getFormattedAverageRate(NumberFormat format, TimeUnit timeUnit, String rateSymbol) {
+		return getFormattedRate(getAverageRate(timeUnit), format, rateSymbol);
+	}
+
+	/**
+	 * Returns a formatted {@code String} representing the average rate, per second, at which the data is being transferred
 	 * to the target
 	 *
-	 * @return the formatted rate at which the data is being transferred
+	 * @return the formatted average rate at which the data is being transferred
 	 */
-	public String getFormattedTransferRate() {
-		return getFormattedTransferRate(NumberFormat.getNumberInstance(), TimeUnit.SECONDS, " /sec");
+	public String getFormattedAverageRate() {
+		return getFormattedAverageRate(NumberFormat.getNumberInstance(), TimeUnit.SECONDS, " /sec");
 	}
 
 	/**

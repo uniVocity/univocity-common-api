@@ -350,7 +350,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param value     the parameter value
 	 */
 	public final void setDataParameter(String paramName, String value) {
-		this.data.add(new Object[]{paramName, value});
+		this.data.add(new Object[]{paramName, value == null ? "" : value});
 	}
 
 	/**
