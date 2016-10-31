@@ -349,8 +349,46 @@ public final class HttpRequest implements Cloneable {
 	 * @param paramName the parameter name
 	 * @param value     the parameter value
 	 */
-	public final void setDataParameter(String paramName, String value) {
-		this.data.add(new Object[]{paramName, value == null ? "" : value});
+	public final void addDataParameter(String paramName, Object value) {
+		this.data.add(new Object[]{paramName, value == null ? "" : String.valueOf(value)});
+	}
+
+	/**
+	 * Adds multiple parameters to the body of {@link HttpMethodType#POST} requests as a plain {@code String}s.
+	 * Multiple values can be associated with a parameter name.
+	 *
+	 * {@code null} or empty lists of values will cause an empty {@code String} to be associated with the parameter name.
+	 *
+	 * @param params the parameters and values associated with them. Multiple values can be associated with each
+	 *               parameter name.
+	 * @param keys   the specific keys to read from the given parameter map. Parameters will be added in the order
+	 *               defined by the key sequence. If the map doesn't contain a given key, a parameter named after
+	 *               the key will be created, assigning an empty {@code String} value to it.
+	 *               If no keys are provided, all elements of the map will be used.
+	 */
+	public final void addDataParameters(Map<String, String[]> params, String... keys) {
+		if (keys.length == 0) {
+			for (Map.Entry<String, String[]> e : params.entrySet()) {
+				addDataParameters(e.getKey(), e.getValue());
+			}
+		} else {
+			for (String key : keys) {
+				addDataParameters(key, params.get(key));
+			}
+		}
+	}
+
+	private void addDataParameters(String key, String[] values) {
+		if (key == null) {
+			return;
+		}
+		if (values == null || values.length == 0) {
+			addDataParameter(key, "");
+		} else {
+			for (int i = 0; i < values.length; i++) {
+				addDataParameter(key, values[i]);
+			}
+		}
 	}
 
 	/**
@@ -361,7 +399,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param fileName     the file name
 	 * @param dataProvider a {@link ResourceProvider} which will open the input to be uploaded when required.
 	 */
-	public final void setDataStreamParameter(String paramName, String fileName, ResourceProvider<InputStream> dataProvider) {
+	public final void addDataStreamParameter(String paramName, String fileName, ResourceProvider<InputStream> dataProvider) {
 		this.data.add(new Object[]{paramName, fileName, dataProvider});
 	}
 
@@ -373,8 +411,8 @@ public final class HttpRequest implements Cloneable {
 	 * @param fileName    the file name
 	 * @param inputStream the binary stream of the content to upload
 	 */
-	public final void setDataStreamParameter(String paramName, String fileName, final InputStream inputStream) {
-		setDataStreamParameter(paramName, fileName, new ResourceProvider<InputStream>() {
+	public final void addDataStreamParameter(String paramName, String fileName, final InputStream inputStream) {
+		addDataStreamParameter(paramName, fileName, new ResourceProvider<InputStream>() {
 			@Override
 			public InputStream getResource() {
 				return inputStream;
@@ -389,7 +427,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param fileName  the file name
 	 * @param file      the file to upload.
 	 */
-	public final void setFileParameter(String paramName, String fileName, FileProvider file) {
+	public final void addFileParameter(String paramName, String fileName, FileProvider file) {
 		this.data.add(new Object[]{paramName, fileName, file});
 	}
 
@@ -400,7 +438,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param fileName  fileName   the file name
 	 * @param file      the file to upload.
 	 */
-	public final void setFileParameter(String paramName, String fileName, File file) {
+	public final void addFileParameter(String paramName, String fileName, File file) {
 		this.data.add(new Object[]{paramName, fileName, new FileProvider(file)});
 	}
 
@@ -413,7 +451,7 @@ public final class HttpRequest implements Cloneable {
 	 *                   a resource in the classpath. The path can contain system variables enclosed within { and }
 	 *                   (e.g. {@code {user.home}/myapp/log"}).
 	 */
-	public final void setFileParameter(String paramName, String fileName, String pathToFile) {
+	public final void addFileParameter(String paramName, String fileName, String pathToFile) {
 		this.data.add(new Object[]{paramName, fileName, new FileProvider(pathToFile)});
 	}
 
