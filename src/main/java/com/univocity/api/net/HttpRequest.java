@@ -485,6 +485,13 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
+	 * Removes all data parameters set on the body of this request.
+	 */
+	public final void clearDataParameters() {
+		data.clear();
+	}
+
+	/**
 	 * Configures this request to connect through a proxy.
 	 *
 	 * @param proxy the proxy configuration.
