@@ -508,6 +508,9 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 */
 	public final double getRatePerSecond() {
 		updateRatePerSecond();
+		if(ratePerSecond == 0.0){
+			return getAverageRate();
+		}
 		return ratePerSecond;
 	}
 
