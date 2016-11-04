@@ -10,6 +10,7 @@ import com.univocity.api.*;
 import com.univocity.api.io.*;
 
 import java.io.*;
+import java.net.*;
 import java.nio.charset.*;
 
 /**
@@ -71,17 +72,11 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @return the current domain name.
 	 */
 	public final String getDomainName() {
-		String url = getUrl();
-
-		int index = url.indexOf("://");
-		if (index >= 0 && index + 3 < url.length()) {
-			url = url.substring(index + 3);
+		try {
+			return new URL(getUrl()).getAuthority();
+		} catch (Exception ex) {
+			throw new IllegalStateException("Invalid URL " + getUrl(), ex);
 		}
-
-		if (url.indexOf('/') >= 0) {
-			return url.substring(0, url.indexOf('/'));
-		}
-		return null;
 	}
 
 	/**
@@ -100,13 +95,11 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @return the current protocol.
 	 */
 	public final String getProtocol() {
-		String url = getUrl();
-
-		int index = url.indexOf("://");
-		if (index >= 0 && index + 3 < url.length()) {
-			return url.substring(0, index + 3);
+		try {
+			return new URL(getUrl()).getProtocol();
+		} catch (Exception ex) {
+			throw new IllegalStateException("Invalid URL " + getUrl(), ex);
 		}
-		return null;
 	}
 
 	/**
@@ -161,12 +154,11 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @return the path portion of the URL.
 	 */
 	public final String getPath() {
-		int baseUrlLength = getProtocol().length() + getDomainName().length();
-		String url = getUrl();
-		if (baseUrlLength < url.length()) {
-			return url.substring(baseUrlLength);
+		try {
+			return new URL(getUrl()).getPath();
+		} catch (Exception ex) {
+			throw new IllegalStateException("Invalid URL " + getUrl(), ex);
 		}
-		return null;
 	}
 
 	/**
