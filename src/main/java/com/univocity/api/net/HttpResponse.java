@@ -114,4 +114,11 @@ public interface HttpResponse extends Closeable {
 	 */
 	int getRetriesPerformed();
 
+	/**
+	 * Returns the length of the content in the body of this HTTP response, as specified in the {code Content-Length}
+	 * header. If unknown, returns {@code -1}.
+	 * @return length of the content in the body of this HTTP response. If unknown, returns {@code -1}.
+	 */
+	long getContentLength();
+
 }
