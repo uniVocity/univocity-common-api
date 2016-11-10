@@ -11,7 +11,7 @@ package com.univocity.api.exception;
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
-public final class DataInputException extends RuntimeException {
+public class DataInputException extends RuntimeException {
 	private static final long serialVersionUID = 5840516365821353625L;
 
 	/**

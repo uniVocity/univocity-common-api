@@ -696,4 +696,9 @@ public final class HttpRequest implements Cloneable {
 			throw new IllegalStateException("Could not clone", e);
 		}
 	}
+
+	@Override
+	public String toString() {
+		return httpMethodType + " - " + getUrl();
+	}
 }
