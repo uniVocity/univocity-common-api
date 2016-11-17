@@ -139,4 +139,20 @@ public final class FileProvider {
 	public final String toString() {
 		return filePath + " (" + encoding + ")";
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		FileProvider that = (FileProvider) o;
+
+		return filePath.equals(that.filePath);
+
+	}
+
+	@Override
+	public int hashCode() {
+		return filePath.hashCode();
+	}
 }

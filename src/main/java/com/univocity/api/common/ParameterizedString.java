@@ -226,7 +226,7 @@ public class ParameterizedString implements Cloneable {
 				this.name = name.substring(0, name.indexOf(","));
 				this.format = name.substring(name.indexOf(",") + 1).trim();
 				if (format.length() == 0) {
-					throw new IllegalArgumentException("Expected value after ',' but found nothing. Parameter: '" + name + "'");
+					throw new IllegalArgumentException("Expected formatting parameter after ',' in '" + name + "'");
 				}
 			} else {
 				this.name = name;
