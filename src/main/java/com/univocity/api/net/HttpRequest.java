@@ -32,7 +32,7 @@ public final class HttpRequest implements Cloneable {
 
 	private ParameterizedString url;
 	private int timeout = 0;
-	private boolean followRedirects = false;
+	private boolean followRedirects = true;
 	private boolean validateSsl = true;
 	private HttpMethodType httpMethodType = HttpMethodType.GET;
 	private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
@@ -289,7 +289,7 @@ public final class HttpRequest implements Cloneable {
 	 * Returns a flag indicating if the request should follow redirects. If enabled, {@link HttpResponse#getRedirectionUrl()}
 	 * should return the redirection URL if this request was redirected.
 	 *
-	 * <i>Defaults to {@code false}.</i>
+	 * <i>Defaults to {@code true}.</i>
 	 *
 	 * @return a flag indicating whether or not the request is configured to follow redirects.
 	 */
@@ -301,7 +301,7 @@ public final class HttpRequest implements Cloneable {
 	 * Configures the request to follow redirects. If enabled, {@link HttpResponse#getRedirectionUrl()} should return
 	 * the redirection URL if this request was redirected.
 	 *
-	 * <i>Defaults to {@code false}.</i>
+	 * <i>Defaults to {@code true}.</i>
 	 *
 	 * @param followRedirects flag indicating whether or not to follow redirects.
 	 */

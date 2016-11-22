@@ -64,6 +64,16 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 		}
 	}
 
+	/**
+	 * Returns a flag indicating whether the HTTP request has been executed and a response is already available through
+	 * {@link #getResponse()}.
+	 *
+	 * @return {@code true} if a {@link HttpResponse} is available, otherwise {@code false}
+	 */
+	public final boolean isResponseAvailable() {
+		return response != null;
+	}
+
 
 	/**
 	 * Returns the domain name in the current URL. If a response has been obtained (through {@link #getResponse()}) with

@@ -54,6 +54,14 @@ public abstract class InputQueue<T> extends ReaderProvider {
 	}
 
 	/**
+	 * Returns the current input at the head of the queue.
+	 * @return the current input at the head of the queue.
+	 */
+	public final T peek(){
+		return inputQueue.peek();
+	}
+
+	/**
 	 * Adds an input to be processed to the end of the queue
 	 *
 	 * @param input the input to be processed
