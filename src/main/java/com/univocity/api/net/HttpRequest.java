@@ -6,6 +6,7 @@
 
 package com.univocity.api.net;
 
+import com.univocity.api.*;
 import com.univocity.api.common.*;
 import com.univocity.api.io.*;
 
@@ -80,6 +81,8 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param userAgent the new {@code User-Agent} value
 	 */
+	@Choices(file = "userAgents.txt")
+	@UIConfig
 	public final void setUserAgent(String userAgent) {
 		setHeader("User-Agent", userAgent);
 	}
@@ -90,6 +93,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param referrer the new {@code Referer} value
 	 */
+	@UIConfig
 	public final void setReferrer(String referrer) {
 		setHeader("Referer", referrer);
 	}
@@ -195,6 +199,8 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param timeout the time limit to wait until a connection is established.
 	 */
+	@Range(minSize = 0, maxSize = 10000)
+	@UIConfig
 	public final void setTimeout(int timeout) {
 		Args.positiveOrZero(timeout, "HTTP request timeout");
 		this.timeout = timeout;
@@ -305,6 +311,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param followRedirects flag indicating whether or not to follow redirects.
 	 */
+	@UIConfig
 	public final void setFollowRedirects(boolean followRedirects) {
 		this.followRedirects = followRedirects;
 	}
@@ -327,6 +334,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param validateSsl flag indicating whether SSL is should be validated.
 	 */
+	@UIConfig
 	public final void setSslValidationEnabled(boolean validateSsl) {
 		this.validateSsl = validateSsl;
 	}
@@ -496,6 +504,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param proxy the proxy configuration.
 	 */
+	@UIConfig
 	public final void setProxy(Proxy proxy) {
 		setProxy(proxy, null, 0, null, null);
 	}
@@ -612,6 +621,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param charset the charset name
 	 */
+	@UIConfig
 	public void setCharset(String charset) {
 		if (charset == null) {
 			this.charset = null;
@@ -669,6 +679,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param ignoreHttpErrors flag indicating whether or not HTTP response code errors should be ignored/
 	 */
+	@UIConfig
 	public void setIgnoreHttpErrors(boolean ignoreHttpErrors) {
 		this.ignoreHttpErrors = ignoreHttpErrors;
 	}
