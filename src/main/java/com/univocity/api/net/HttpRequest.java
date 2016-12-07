@@ -504,7 +504,6 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param proxy the proxy configuration.
 	 */
-	@UIConfig
 	public final void setProxy(Proxy proxy) {
 		setProxy(proxy, null, 0, null, null);
 	}
@@ -560,6 +559,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param user     the proxy user.
 	 * @param password the proxy password
 	 */
+	@UIConfig
 	public final void setProxy(String host, int port, String user, String password) {
 		setProxy(null, host, port, user, password);
 	}
