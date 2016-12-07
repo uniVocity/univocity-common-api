@@ -199,7 +199,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @param timeout the time limit to wait until a connection is established.
 	 */
-	@Range(minSize = 0, maxSize = 10000)
+	@Range(min = 0, max = 10000)
 	@UIConfig
 	public final void setTimeout(int timeout) {
 		Args.positiveOrZero(timeout, "HTTP request timeout");
@@ -559,9 +559,8 @@ public final class HttpRequest implements Cloneable {
 	 * @param user     the proxy user.
 	 * @param password the proxy password
 	 */
-	@UIConfig
 	public final void setProxy(String host, int port, String user, String password) {
-		setProxy(null, host, port, user, password);
+		setProxy((Proxy) null, host, port, user, password);
 	}
 
 	private Proxy proxy;
@@ -574,7 +573,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param user     the proxy user.
 	 * @param password the proxy password
 	 */
-	private final void setProxy(Proxy proxy, String host, int port, String user, String password) {
+	public final void setProxy(Proxy proxy, String host, int port, String user, String password) {
 		if (proxy == null) {
 			Args.positive(port, "Proxy port");
 			Args.notBlank(host, "Proxy host");
@@ -585,6 +584,21 @@ public final class HttpRequest implements Cloneable {
 
 		this.proxyUser = user;
 		this.proxyPassword = password;
+	}
+
+	/**
+	 * Configures this request to connect through a proxy.
+	 *
+	 * @param proxyType the type of proxy.
+	 * @param host      the proxy host.
+	 * @param port      the proxy port.
+	 * @param user      the proxy user.
+	 * @param password  the proxy password
+	 */
+	@UIConfig
+	public void setProxy(Proxy.Type proxyType, String host, int port, String user, String password) {
+		Proxy proxy = new Proxy(proxyType, new InetSocketAddress(host,port));
+		setProxy(proxy, host, port, user, password);
 	}
 
 	/**

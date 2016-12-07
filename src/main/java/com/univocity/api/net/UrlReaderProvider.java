@@ -130,7 +130,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 *
 	 * @param retries the number of retries to perform in case of failure to obtain a response
 	 */
-	@Range(minSize = 0, maxSize = 10)
+	@Range(min = 0, max = 10)
 	@UIConfig
 	public final void setRetries(int retries) {
 		this.retries = retries;
@@ -155,7 +155,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 *
 	 * @param retryInterval the retry interval in ms
 	 */
-	@Range(minSize = 0, maxSize = 10000)
+	@Range(min = 0, max = 10000)
 	@UIConfig
 	public final void setRetryInterval(long retryInterval) {
 		this.retryInterval = retryInterval;
