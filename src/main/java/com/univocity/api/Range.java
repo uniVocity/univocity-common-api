@@ -9,6 +9,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Range {
 
+	int DEFAULT_INCREMENT = -1;
 	/**
 	 * Defines the minimum value of method's parameter.
 	 *
@@ -32,5 +33,5 @@ public @interface Range {
 	 *
 	 * @return the difference between numbers of the range
 	 */
-	int increment() default -1;
+	int increment() default DEFAULT_INCREMENT;
 }
