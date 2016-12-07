@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * with the method.
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UIConfig {
+public @interface UI {
 
 	int DEFAULT_ORDER = Integer.MAX_VALUE;
 
