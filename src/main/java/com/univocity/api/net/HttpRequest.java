@@ -272,6 +272,88 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
+	 * Assigns a value to a given parameter of the URL provided in the constructor of this class.
+	 * The value will be used to modify the address that will be accessed by this HTTP request.
+	 *
+	 * Calling {@link #getUrl()} will return the updated target URL of this request. Parameters without values
+	 * won't be replaced in the URL.
+	 *
+	 * @param parameterName  name of the parameter enclosed within { and } in the URL
+	 * @param parameterValue value of the given parameter, to replace the parameter name in the URL
+	 * @param encode         flag indicating whether to encode the given parameter value.
+	 *                       If the value is already encoded, it won't be encoded again.
+	 *
+	 * @throws IllegalArgumentException if the parameter name does not exist
+	 */
+	public final void setUrlParameter(String parameterName, Object parameterValue, boolean encode) {
+		if (encode && parameterValue != null) {
+			String original = String.valueOf(parameterValue);
+			String decoded = original;
+			try {
+				decoded = decode(parameterName, original);
+			} catch (Exception ex) {
+				//ignore, will encode.
+			}
+
+			if (decoded.equals(original)) {
+				try {
+					parameterValue = URLEncoder.encode(original, getEncoderCharsetName());
+				} catch (Exception ex) {
+					throw new IllegalStateException("Error encoding value of parameter '" + parameterName + "'. Value: " + parameterValue, ex);
+				}
+			} //else value is already encoded.
+		}
+		this.url.set(parameterName, parameterValue);
+	}
+
+	private final String getEncoderCharsetName() {
+		String name = getCharsetName();
+		if (name == null) {
+			return "UTF-8";
+		}
+		return name;
+	}
+
+	/**
+	 * Returns the value of a given parameter of the URL provided in the constructor of this class.
+	 * The value will be used to modify the address that will be accessed by this HTTP request.
+	 *
+	 * Calling {@link #getUrl()} will return the updated target URL of this request. Parameters without values
+	 * won't be replaced in the URL.
+	 *
+	 * @param parameterName name of the parameter enclosed within { and } in the URL
+	 * @param decode        flag indicating whether to decode the value associated with the given parameter name.
+	 *
+	 * @return value of the given parameter, to replace the parameter name in the URL
+	 *
+	 * @throws IllegalArgumentException if the parameter name does not exist
+	 */
+	public final String getUrlParameter(String parameterName, boolean decode) {
+		Object out = this.url.get(parameterName);
+		if (decode) {
+			return decode(parameterName, out);
+		} else if (out != null) {
+			return String.valueOf(out);
+		}
+		return null;
+	}
+
+	private final String decode(String parameterName, Object value) {
+		if (value == null) {
+			return null;
+		}
+		String stringVal = String.valueOf(value);
+
+		try {
+			stringVal = URLDecoder.decode(stringVal, getEncoderCharsetName());
+		} catch (Exception ex) {
+			throw new IllegalStateException("Error decoding value of parameter '" + parameterName + "'. Value: " + stringVal, ex);
+		}
+
+		return stringVal;
+	}
+
+	/**
 	 * Clears all values assigned to all parameters of the URL provided in the constructor of this class.
 	 *
 	 * Calling {@link #getUrl()} after this method will return the original URL with
@@ -597,7 +679,7 @@ public final class HttpRequest implements Cloneable {
 	 */
 	@UI
 	public void setProxy(Proxy.Type proxyType, String host, int port, String user, String password) {
-		Proxy proxy = new Proxy(proxyType, new InetSocketAddress(host,port));
+		Proxy proxy = new Proxy(proxyType, new InetSocketAddress(host, port));
 		setProxy(proxy, host, port, user, password);
 	}
 
