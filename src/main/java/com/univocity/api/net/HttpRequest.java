@@ -286,30 +286,24 @@ public final class HttpRequest implements Cloneable {
 	 * @throws IllegalArgumentException if the parameter name does not exist
 	 */
 	public final void setUrlParameter(String parameterName, Object parameterValue, boolean encode) {
-		if (encode && parameterValue != null) {
-			String original = String.valueOf(parameterValue);
-			String decoded = original;
-			try {
-				decoded = decode(parameterName, original);
-			} catch (Exception ex) {
-				//ignore, will encode.
-			}
-
-			if (decoded.equals(original)) {
-				try {
-					parameterValue = URLEncoder.encode(original, getEncoderCharsetName());
-				} catch (Exception ex) {
-					throw new IllegalStateException("Error encoding value of parameter '" + parameterName + "'. Value: " + parameterValue, ex);
-				}
-			} //else value is already encoded.
+		if (encode) {
+			parameterValue = Args.encode(parameterName, parameterValue, getCharsetName("UTF-8"));
 		}
 		this.url.set(parameterName, parameterValue);
 	}
 
-	private final String getEncoderCharsetName() {
+	/**
+	 * Returns the name of the charset to be used when reading the response resulting from this HTTP request.
+	 * This will take precedence over the charset defined in the {@code Content-Type} header of the HTTP response.
+	 *
+	 * @param defaultIfNull a default charset name to return if the result of {@link #getCharsetName()} is {@code null}
+	 *
+	 * @return the charset name
+	 */
+	public final String getCharsetName(String defaultIfNull) {
 		String name = getCharsetName();
 		if (name == null) {
-			return "UTF-8";
+			return defaultIfNull;
 		}
 		return name;
 	}
@@ -331,26 +325,11 @@ public final class HttpRequest implements Cloneable {
 	public final String getUrlParameter(String parameterName, boolean decode) {
 		Object out = this.url.get(parameterName);
 		if (decode) {
-			return decode(parameterName, out);
+			return Args.decode(parameterName, out, getCharsetName("UTF-8"));
 		} else if (out != null) {
 			return String.valueOf(out);
 		}
 		return null;
-	}
-
-	private final String decode(String parameterName, Object value) {
-		if (value == null) {
-			return null;
-		}
-		String stringVal = String.valueOf(value);
-
-		try {
-			stringVal = URLDecoder.decode(stringVal, getEncoderCharsetName());
-		} catch (Exception ex) {
-			throw new IllegalStateException("Error decoding value of parameter '" + parameterName + "'. Value: " + stringVal, ex);
-		}
-
-		return stringVal;
 	}
 
 	/**
