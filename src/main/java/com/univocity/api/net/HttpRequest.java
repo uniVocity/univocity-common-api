@@ -787,4 +787,40 @@ public final class HttpRequest implements Cloneable {
 	public String toString() {
 		return httpMethodType + " - " + getUrl();
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		HttpRequest that = (HttpRequest) o;
+
+		if (url != null ? !url.equals(that.url) : that.url != null) {
+			return false;
+		}
+		if (httpMethodType != that.httpMethodType) {
+			return false;
+		}
+		if (headers != null ? !headers.equals(that.headers) : that.headers != null) {
+			return false;
+		}
+		if (data != null ? !data.equals(that.data) : that.data != null) {
+			return false;
+		}
+		return parameters != null ? parameters.equals(that.parameters) : that.parameters == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = url != null ? url.hashCode() : 0;
+		result = 31 * result + (httpMethodType != null ? httpMethodType.hashCode() : 0);
+		result = 31 * result + (headers != null ? headers.hashCode() : 0);
+		result = 31 * result + (data != null ? data.hashCode() : 0);
+		result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
+		return result;
+	}
 }

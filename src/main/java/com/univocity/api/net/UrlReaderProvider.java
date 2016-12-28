@@ -345,9 +345,35 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 		}
 	}
 
+	/**
+	 * Clones this object with all its configuration and a new URL, but without the result of the HTTP request (i.e. no response).
+	 * The clone allows you to perform a new HTTP request call to another URL, while preserving all original parameters,
+	 * to obtain a fresh HTTP response through {@link #getResponse()}
+	 *
+	 * @return a copy of the current object and all its configurations, but targeting a new URL.
+	 */
 	public final UrlReaderProvider clone(String newUrl) {
 		UrlReaderProvider out = this.clone();
 		out.getRequest().setUrl(newUrl);
 		return out;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		UrlReaderProvider that = (UrlReaderProvider) o;
+
+		return request != null ? request.equals(that.request) : that.request == null;
+	}
+
+	@Override
+	public int hashCode() {
+		return request != null ? request.hashCode() : 0;
 	}
 }

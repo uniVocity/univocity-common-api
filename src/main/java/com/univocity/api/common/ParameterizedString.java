@@ -68,7 +68,8 @@ public class ParameterizedString implements Cloneable {
 				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + 1);
 				parameters.add(parameter);
 				parameterNames.add(parameter.name);
-			} else {
+			}
+			else {
 				x = openBracketIndex + 1;
 			}
 		}
@@ -228,12 +229,95 @@ public class ParameterizedString implements Cloneable {
 				if (format.length() == 0) {
 					throw new IllegalArgumentException("Expected formatting parameter after ',' in '" + name + "'");
 				}
-			} else {
+			}
+			else {
 				this.name = name;
 				format = null;
 			}
 			this.startPosition = startPosition;
 			this.endPosition = endPosition;
 		}
+
+		@Override
+		public String toString() {
+			return "Parameter{" +
+					"name='" + name + '\'' +
+					", startPosition=" + startPosition +
+					", endPosition=" + endPosition +
+					", format='" + format + '\'' +
+					'}';
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			Parameter parameter = (Parameter) o;
+
+			if (startPosition != parameter.startPosition) {
+				return false;
+			}
+			if (endPosition != parameter.endPosition) {
+				return false;
+			}
+			if (!name.equals(parameter.name)) {
+				return false;
+			}
+			return format != null ? format.equals(parameter.format) : parameter.format == null;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = name.hashCode();
+			result = 31 * result + startPosition;
+			result = 31 * result + endPosition;
+			result = 31 * result + (format != null ? format.hashCode() : 0);
+			return result;
+		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		ParameterizedString that = (ParameterizedString) o;
+
+		if (string != null ? !string.equals(that.string) : that.string != null) {
+			return false;
+		}
+		if (parameters != null ? !parameters.equals(that.parameters) : that.parameters != null) {
+			return false;
+		}
+		if (parameterNames != null ? !parameterNames.equals(that.parameterNames) : that.parameterNames != null) {
+			return false;
+		}
+		if (openBracket != null ? !openBracket.equals(that.openBracket) : that.openBracket != null) {
+			return false;
+		}
+		if (closeBracket != null ? !closeBracket.equals(that.closeBracket) : that.closeBracket != null) {
+			return false;
+		}
+		return parameterValues != null ? parameterValues.equals(that.parameterValues) : that.parameterValues == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = string != null ? string.hashCode() : 0;
+		result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
+		result = 31 * result + (parameterNames != null ? parameterNames.hashCode() : 0);
+		result = 31 * result + (openBracket != null ? openBracket.hashCode() : 0);
+		result = 31 * result + (closeBracket != null ? closeBracket.hashCode() : 0);
+		result = 31 * result + (parameterValues != null ? parameterValues.hashCode() : 0);
+		return result;
 	}
 }
