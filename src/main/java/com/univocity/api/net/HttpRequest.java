@@ -77,6 +77,29 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
+	 * Sets the {@code Connection} request header to explicitly to {@code keep-alive} if the connection is meant to be
+	 * reused for further requests, or to {@code close} if the connection should be discarded and closed as soon as the
+	 * response is processed.
+	 *
+	 * @param enableKeepAlive flag indicating whether or not the HTTP connection should be persistent (i.e kept alive).
+	 */
+	public final void setKeepAliveEnabled(boolean enableKeepAlive) {
+		setHeader("Connection", enableKeepAlive ? "keep-alive" : "close");
+	}
+
+	/**
+	 * Returns a flag indicating whether the connection is meant to be reused for further requests (i.e. persistent) or
+	 * not, in which case the {@code Connection} request header is set to {@code close}. If the {@code Connection}
+	 * header is not set, it is assumed that the connection is persistent, and this method will return {@code true}.
+	 *
+	 * @return flag indicating whether or not the HTTP connection is persistent (i.e kept alive).
+	 */
+	public final boolean isKeepAliveEnabled() {
+		String value = headers.get("Connection");
+		return value == null || "keep-alive".equalsIgnoreCase(value);
+	}
+
+	/**
 	 * Defines a {@code User-Agent} request header, which identifies the user agent originating the request.
 	 *
 	 * @param userAgent the new {@code User-Agent} value
