@@ -68,8 +68,7 @@ public class ParameterizedString implements Cloneable {
 				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + 1);
 				parameters.add(parameter);
 				parameterNames.add(parameter.name);
-			}
-			else {
+			} else {
 				x = openBracketIndex + 1;
 			}
 		}
@@ -136,7 +135,7 @@ public class ParameterizedString implements Cloneable {
 				if (parameterValue != null) {
 					int openBracketIndex = parameters.get(i).startPosition;
 					int closedBracketIndex = parameters.get(i).endPosition;
-					result = result.substring(0, openBracketIndex) + parameterValue + result.substring(closedBracketIndex, result.length());
+					result = result.substring(0, openBracketIndex) + parameterValue.toString() + result.substring(closedBracketIndex, result.length());
 				}
 			}
 		}
@@ -229,8 +228,7 @@ public class ParameterizedString implements Cloneable {
 				if (format.length() == 0) {
 					throw new IllegalArgumentException("Expected formatting parameter after ',' in '" + name + "'");
 				}
-			}
-			else {
+			} else {
 				this.name = name;
 				format = null;
 			}
