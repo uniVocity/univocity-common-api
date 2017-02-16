@@ -7,8 +7,7 @@
 package com.univocity.api.exception;
 
 /**
- * <code>IllegalConfigurationException</code> is the exception thrown by uniVocity to notify of an illegal configuration.
- *
+ * {@code IllegalConfigurationException} is the exception thrown by uniVocity to notify of an illegal configuration.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */

@@ -6,9 +6,11 @@
 package com.univocity.api.common;
 
 /**
- * A simple interface to provide custom values
+ * A simple interface to provide values
  *
  * @param <T> the type of the value to be returned from the {@link ValueGetter#getValue()} method
+ *
+ * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public interface ValueGetter<T> {
 	T getValue();
