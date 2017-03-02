@@ -20,11 +20,16 @@ import java.util.*;
 public class ParameterizedString implements Cloneable {
 
 	private final String string;
+
 	private final List<Parameter> parameters = new ArrayList<Parameter>();
 	private final Set<String> parameterNames = new TreeSet<String>();
+	private TreeMap<String, Object> parameterValues;
+
+	private final List<String> nonParameterSections = new ArrayList<String>();
+
 	private final String openBracket;
 	private final String closeBracket;
-	private TreeMap<String, Object> parameterValues;
+
 	private String result = null;
 
 
@@ -59,11 +64,19 @@ public class ParameterizedString implements Cloneable {
 
 	private void collectParameters() {
 		int x = 0;
+		int nonParameterIndexStart = 0;
 		int openBracketIndex;
 		while ((openBracketIndex = string.indexOf(openBracket, x)) >= 0) {
 			int closeBracketIndex = string.indexOf(closeBracket, openBracketIndex);
 			if (closeBracketIndex > 0) {
 				x = closeBracketIndex;
+
+				String nonParameterSection = string.substring(nonParameterIndexStart, openBracketIndex);
+				if (!nonParameterSection.isEmpty()) {
+					nonParameterSections.add(nonParameterSection);
+				}
+				nonParameterIndexStart = closeBracketIndex + 1;
+
 				String parameterizedName = string.substring(openBracketIndex + 1, closeBracketIndex);
 				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + 1);
 				parameters.add(parameter);
@@ -71,6 +84,9 @@ public class ParameterizedString implements Cloneable {
 			} else {
 				x = openBracketIndex + 1;
 			}
+		}
+		if (nonParameterIndexStart < string.length()) {
+			nonParameterSections.add(string.substring(nonParameterIndexStart));
 		}
 	}
 
@@ -100,6 +116,42 @@ public class ParameterizedString implements Cloneable {
 	public final Object get(String parameter) throws IllegalArgumentException {
 		validateParameterName(parameter);
 		return parameterValues.get(parameter);
+	}
+
+	/**
+	 * <p>Parses the {@code String input} and extracts the parameter values storing them as regular parameters.</p>
+	 * <p>The {@link Map} of parameters is returned as a convenience, but parameters values can also be retrieved using:
+	 * <ul>
+	 * <li>{@link #get(String)} - for individual parameters</li>
+	 * <li>{@link #getParameterValues()} - for all of them</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param input the input String to be parsed
+	 *
+	 * @return the {@link Map} of parameters to their assigned values
+	 */
+	public final Map<String, Object> parse(String input) {
+		int sectionIndex = 0;
+		for (int i = 0; i < parameters.size() && sectionIndex < nonParameterSections.size(); i++, sectionIndex++) {
+			int parameterStart = parameters.get(i).startPosition;
+			String section = nonParameterSections.get(sectionIndex);
+			String nextSection = "";
+			if (sectionIndex + 1 < nonParameterSections.size()) {
+				nextSection = nonParameterSections.get(sectionIndex + 1);
+			}
+			int sectionStart = input.indexOf(section);
+			String sectionTrimmed = input.substring(sectionStart + section.length());
+			if (parameterStart < sectionStart) {
+				sectionTrimmed = input;
+				nextSection = section;
+				sectionIndex--;
+			}
+			input = sectionTrimmed;
+			int nextSectionIndex = nextSection.isEmpty() ? input.length() : input.indexOf(nextSection);
+			set(parameters.get(i).name, input.substring(0, nextSectionIndex));
+		}
+		return getParameterValues();
 	}
 
 	private void validateParameterName(String parameter) {
