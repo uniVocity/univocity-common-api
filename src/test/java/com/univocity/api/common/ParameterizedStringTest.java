@@ -37,11 +37,6 @@ public class ParameterizedStringTest {
 		str = new ParameterizedString("www.google.com/{incomplete{");
 		assertTrue(str.getParameters().isEmpty());
 
-		//check parameters next to each other
-		str = new ParameterizedString("www.google.com/{one}{two}");
-		assertTrue(str.getParameters().contains(String.valueOf("one")));
-		assertTrue(str.getParameters().contains(String.valueOf("two")));
-
 		//check parameters with different brackets
 		str = new ParameterizedString("www.google.com/(normal)/{curly}", "(", ")");
 		assertTrue(str.getParameters().contains(String.valueOf("normal")));
@@ -51,15 +46,15 @@ public class ParameterizedStringTest {
 	@Test
 	public void testSetParameter() {
 		//checking setting parameters 'backwards'
-		ParameterizedString str = new ParameterizedString("www.google.com/{one}{two}");
+		ParameterizedString str = new ParameterizedString("www.google.com/{one}/{two}");
 		str.set("two", "hello");
-		assertEquals(str.applyParameterValues(), "www.google.com/{one}hello");
+		assertEquals(str.applyParameterValues(), "www.google.com/{one}/hello");
 		str.set("one", "bla");
-		assertEquals(str.applyParameterValues(), "www.google.com/blahello");
-		assertEquals(str.toString(), "www.google.com/{one}{two}");
+		assertEquals(str.applyParameterValues(), "www.google.com/bla/hello");
+		assertEquals(str.toString(), "www.google.com/{one}/{two}");
 
 		//testing setting invalid parameter
-		str = new ParameterizedString("www.google.com/{one}{two}");
+		str = new ParameterizedString("www.google.com/{one}/{two}");
 		try {
 			str.set("fjbewsjkfbe", "error");
 			fail();
@@ -68,17 +63,17 @@ public class ParameterizedStringTest {
 		}
 		//checking setting parameters 'forwards'
 		str.set("one", "keyboard");
-		assertEquals(str.applyParameterValues(), "www.google.com/keyboard{two}");
+		assertEquals(str.applyParameterValues(), "www.google.com/keyboard/{two}");
 		str.set("two", "bla");
-		assertEquals(str.applyParameterValues(), "www.google.com/keyboardbla");
+		assertEquals(str.applyParameterValues(), "www.google.com/keyboard/bla");
 
 		//testing multiple instances of same parameter
-		str = new ParameterizedString("www.google.com/{one}{two}{one}");
+		str = new ParameterizedString("www.google.com/{one}/{two}/{one}");
 		str.set("one", "pen");
 		str.set("two", "hello");
-		assertEquals(str.applyParameterValues(), "www.google.com/penhellopen");
+		assertEquals(str.applyParameterValues(), "www.google.com/pen/hello/pen");
 		str.set("one", "mouse");
-		assertEquals(str.applyParameterValues(), "www.google.com/mousehellomouse");
+		assertEquals(str.applyParameterValues(), "www.google.com/mouse/hello/mouse");
 
 
 		str = new ParameterizedString("www.google.com/{one}//{two}//{one}");
@@ -87,31 +82,31 @@ public class ParameterizedStringTest {
 		assertEquals(str.applyParameterValues(), "www.google.com/pen//hello//pen");
 
 		//testing parameter at start
-		str = new ParameterizedString("{one}www.google.com/{one}//{two}//{one}");
+		str = new ParameterizedString("{one}-www.google.com/{one}//{two}//{one}");
 		str.set("one", "pen");
 		str.set("two", "hello");
-		assertEquals(str.applyParameterValues(), "penwww.google.com/pen//hello//pen");
+		assertEquals(str.applyParameterValues(), "pen-www.google.com/pen//hello//pen");
 
 		//testing clearing parameter values
 		str.clearValues();
-		assertEquals(str.applyParameterValues(), "{one}www.google.com/{one}//{two}//{one}");
+		assertEquals(str.applyParameterValues(), "{one}-www.google.com/{one}//{two}//{one}");
 
 
 		//testing 2nd change of parameter
-		str = new ParameterizedString("www.google.com/{one}{two}");
+		str = new ParameterizedString("www.google.com/{one}/{two}");
 		str.set("one", "firstChange");
-		assertEquals(str.applyParameterValues(), "www.google.com/firstChange{two}");
+		assertEquals(str.applyParameterValues(), "www.google.com/firstChange/{two}");
 		str.set("one", "secondChange");
-		assertEquals(str.applyParameterValues(), "www.google.com/secondChange{two}");
+		assertEquals(str.applyParameterValues(), "www.google.com/secondChange/{two}");
 
 		//testing setting parameter to null
-		str = new ParameterizedString("www.google.com/{one}{two}");
+		str = new ParameterizedString("www.google.com/{one}/{two}");
 		str.set("one", null);
-		assertEquals(str.applyParameterValues(), "www.google.com/{one}{two}");
+		assertEquals(str.applyParameterValues(), "www.google.com/{one}/{two}");
 
 		//testing setting parameter to int
 		str.set("one", 27);
-		assertEquals(str.applyParameterValues(), "www.google.com/27{two}");
+		assertEquals(str.applyParameterValues(), "www.google.com/27/{two}");
 
 	}
 
@@ -131,9 +126,9 @@ public class ParameterizedStringTest {
 
 	@Test
 	public void testParseStringParameterAtStart() {
-		String pattern = "{startParam} non-parameter text {middleParam} {endParam} ";
+		String pattern = "{startParam} non-parameter text {middleParam} {endParam}";
 
-		String input = "BeginningOfTheInput non-parameter text middleOfTheInput endOfTheInput ";
+		String input = "BeginningOfTheInput non-parameter text middleOfTheInput endOfTheInput";
 
 		ParameterizedString string = new ParameterizedString(pattern);
 		string.parse(input);
@@ -154,5 +149,20 @@ public class ParameterizedStringTest {
 		assertEquals(string.get("rootDir"), "/home/user");
 		assertEquals(string.get("parentDir"), "testDirectory");
 		assertEquals(string.get("fileName"), "testFile.txt");
+	}
+
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void testAdjacentParameters() {
+		String pattern = "One parameter {A} two parameters together {X}{Y} should produce an exception";
+		ParameterizedString string = new ParameterizedString(pattern);
+	}
+
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void testNonPatternMatchInInput() {
+		String pattern = "An example pattern {param1} {param2}";
+		String input = "An example non-pattern 1 2 that should throw an exception";
+
+		ParameterizedString string = new ParameterizedString(pattern);
+		string.parse(input);
 	}
 }

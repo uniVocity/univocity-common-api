@@ -67,6 +67,16 @@ public class ParameterizedString implements Cloneable {
 		int nonParameterIndexStart = 0;
 		int openBracketIndex;
 		while ((openBracketIndex = string.indexOf(openBracket, x)) >= 0) {
+			if (openBracketIndex != 0 && openBracketIndex == nonParameterIndexStart) {
+				int errorPos = string.substring(0, openBracketIndex).length();
+				StringBuilder errorMsg = new StringBuilder("There needs to be at least one character separating parameters\nNo separation found after:\n'");
+				errorMsg.append(string).append("'\n");
+				for (int i = 0; i < errorPos; i++) {
+					errorMsg.append(' ');
+				}
+				errorMsg.append('^');
+				throw new IllegalArgumentException(errorMsg.toString());
+			}
 			int closeBracketIndex = string.indexOf(closeBracket, openBracketIndex);
 			if (closeBracketIndex > 0) {
 				x = closeBracketIndex;
@@ -132,6 +142,7 @@ public class ParameterizedString implements Cloneable {
 	 * @return the {@link Map} of parameters to their assigned values
 	 */
 	public final Map<String, Object> parse(String input) {
+		String originalInput = input;
 		int sectionIndex = 0;
 		for (int i = 0; i < parameters.size() && sectionIndex < nonParameterSections.size(); i++, sectionIndex++) {
 			int parameterStart = parameters.get(i).startPosition;
@@ -141,6 +152,10 @@ public class ParameterizedString implements Cloneable {
 				nextSection = nonParameterSections.get(sectionIndex + 1);
 			}
 			int sectionStart = input.indexOf(section);
+			if (sectionStart == -1) {
+				clearValues();
+				throw new IllegalArgumentException("The input:\n'" + originalInput + "'\nDoes not match the parameter pattern:\n'" + string + "'");
+			}
 			String sectionTrimmed = input.substring(sectionStart + section.length());
 			if (parameterStart < sectionStart) {
 				sectionTrimmed = input;
