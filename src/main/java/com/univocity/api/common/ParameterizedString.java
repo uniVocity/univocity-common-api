@@ -68,7 +68,7 @@ public class ParameterizedString implements Cloneable {
 		int openBracketIndex;
 		while ((openBracketIndex = string.indexOf(openBracket, x)) >= 0) {
 			if (openBracketIndex != 0 && openBracketIndex == nonParameterIndexStart) {
-				int errorPos = string.substring(0, openBracketIndex).length();
+				int errorPos = openBracketIndex;
 				StringBuilder errorMsg = new StringBuilder("There needs to be at least one character separating parameters\nNo separation found after:\n'");
 				errorMsg.append(string).append("'\n");
 				for (int i = 0; i < errorPos; i++) {
@@ -145,26 +145,49 @@ public class ParameterizedString implements Cloneable {
 		String originalInput = input;
 		int sectionIndex = 0;
 		for (int i = 0; i < parameters.size() && sectionIndex < nonParameterSections.size(); i++, sectionIndex++) {
-			int parameterStart = parameters.get(i).startPosition;
+			Parameter parameter = parameters.get(i);
+			int parameterStart = parameter.startPosition;
+
 			String section = nonParameterSections.get(sectionIndex);
 			String nextSection = "";
 			if (sectionIndex + 1 < nonParameterSections.size()) {
 				nextSection = nonParameterSections.get(sectionIndex + 1);
 			}
+
 			int sectionStart = input.indexOf(section);
 			if (sectionStart == -1) {
 				clearValues();
-				throw new IllegalArgumentException("The input:\n'" + originalInput + "'\nDoes not match the parameter pattern:\n'" + string + "'");
+				throw new IllegalArgumentException("The input:\n'" + originalInput +
+						"'\nDoes not match the parameter pattern:\n'" + string + "'");
 			}
-			String sectionTrimmed = input.substring(sectionStart + section.length());
+
+			String sectionRemoved = input.substring(sectionStart + section.length());
 			if (parameterStart < sectionStart) {
-				sectionTrimmed = input;
+				sectionRemoved = input;
 				nextSection = section;
 				sectionIndex--;
 			}
-			input = sectionTrimmed;
+
+			input = sectionRemoved;
 			int nextSectionIndex = nextSection.isEmpty() ? input.length() : input.indexOf(nextSection);
-			set(parameters.get(i).name, input.substring(0, nextSectionIndex));
+
+			String value = input.substring(0, nextSectionIndex);
+
+			if (parameterValues.get(parameter.name) != null && !parameterValues.get(parameter.name).equals(value)) {
+				StringBuilder sb = new StringBuilder("Duplicate value found for parameter '");
+				sb.append(parameter.name);
+				sb.append("'\n");
+				sb.append(originalInput);
+				sb.append('\n');
+				int errPos = originalInput.length() - input.length() + input.indexOf(value);
+				for (int j = 0; j < errPos; j++) {
+					sb.append(' ');
+				}
+				sb.append('^');
+				throw new IllegalArgumentException(sb.toString());
+			}
+
+			set(parameter.name, value);
 		}
 		return getParameterValues();
 	}

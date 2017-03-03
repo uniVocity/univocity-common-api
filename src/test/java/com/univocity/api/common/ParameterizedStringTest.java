@@ -165,4 +165,28 @@ public class ParameterizedStringTest {
 		ParameterizedString string = new ParameterizedString(pattern);
 		string.parse(input);
 	}
+
+	@Test
+	public void testParamInPatternMultiple() {
+		String pattern = "p1={param1} p2={param2} p1={param1}";
+
+		ParameterizedString string = new ParameterizedString(pattern);
+
+		String inputWorking = "p1=1 p2=2 p1=1";
+		string.parse(inputWorking);
+
+		assertEquals(string.getParameterValues().toString(), "{param1=1, param2=2}");
+
+		String inputException = "p1=1 p2=2 p1=3";
+
+		String expectedExceptionMessage = "java.lang.IllegalArgumentException: " +
+				"Duplicate value found for parameter 'param1'\n" +
+				"p1=1 p2=2 p1=3\n" +
+				"             ^";
+		try {
+			string.parse(inputException);
+		} catch (IllegalArgumentException ex) {
+			assertEquals(ex.toString(), expectedExceptionMessage);
+		}
+	}
 }
