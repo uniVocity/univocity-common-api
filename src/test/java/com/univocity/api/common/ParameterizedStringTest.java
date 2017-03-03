@@ -151,6 +151,32 @@ public class ParameterizedStringTest {
 		assertEquals(string.get("fileName"), "testFile.txt");
 	}
 
+	@Test
+	public void testSingleParameter() {
+		String pattern = "{param}";
+		String input = "This is an input";
+
+		ParameterizedString string = new ParameterizedString(pattern);
+		string.parse(input);
+
+		assertEquals(string.getParameterValues().toString(), "{param=This is an input}");
+
+		string.set("param", "a different input");
+		assertEquals(string.applyParameterValues(), "a different input");
+	}
+
+	@Test
+	public void testNoParameters() {
+		String pattern = "There is no parameters";
+		String input = "input";
+
+		ParameterizedString string = new ParameterizedString(pattern);
+		string.parse(input);
+
+		assertEquals(string.getParameters().size(), 0);
+		assertEquals(string.getParameterValues().size(), 0);
+	}
+
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void testAdjacentParameters() {
 		String pattern = "One parameter {A} two parameters together {X}{Y} should produce an exception";

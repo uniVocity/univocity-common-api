@@ -189,6 +189,11 @@ public class ParameterizedString implements Cloneable {
 
 			set(parameter.name, value);
 		}
+		if(nonParameterSections.size() == 0){
+			if(parameters.size() == 1){
+				set(parameters.get(0).name, originalInput);
+			}
+		}
 		return getParameterValues();
 	}
 
