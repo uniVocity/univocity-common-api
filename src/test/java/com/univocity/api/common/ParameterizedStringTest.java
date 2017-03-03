@@ -166,6 +166,21 @@ public class ParameterizedStringTest {
 	}
 
 	@Test
+	public void parsingNewValues(){
+		String pattern  = "p1={p1} p2={p2}";
+		String input1 = "p1=1 p2=2";
+		String input2 = "p1=2 p2=1";
+
+		ParameterizedString string = new ParameterizedString(pattern);
+		string.parse(input1);
+		assertEquals(string.getParameterValues().toString(), "{p1=1, p2=2}");
+
+
+		string.parse(input2);
+		assertEquals(string.getParameterValues().toString(), "{p1=2, p2=1}");
+	}
+
+	@Test
 	public void testNoParameters() {
 		String pattern = "There is no parameters";
 		String input = "input";

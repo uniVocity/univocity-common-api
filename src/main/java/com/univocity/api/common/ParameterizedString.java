@@ -144,6 +144,7 @@ public class ParameterizedString implements Cloneable {
 	public final Map<String, Object> parse(String input) {
 		String originalInput = input;
 		int sectionIndex = 0;
+		TreeSet<String> parsedParams = new TreeSet<String>();
 		for (int i = 0; i < parameters.size() && sectionIndex < nonParameterSections.size(); i++, sectionIndex++) {
 			Parameter parameter = parameters.get(i);
 			int parameterStart = parameter.startPosition;
@@ -170,10 +171,11 @@ public class ParameterizedString implements Cloneable {
 
 			input = sectionRemoved;
 			int nextSectionIndex = nextSection.isEmpty() ? input.length() : input.indexOf(nextSection);
-
 			String value = input.substring(0, nextSectionIndex);
 
-			if (parameterValues.get(parameter.name) != null && !parameterValues.get(parameter.name).equals(value)) {
+			if (parameterValues.get(parameter.name) != null &&
+					!parameterValues.get(parameter.name).equals(value) &&
+					parsedParams.contains(parameter.name)) {
 				StringBuilder sb = new StringBuilder("Duplicate value found for parameter '");
 				sb.append(parameter.name);
 				sb.append("'\n");
@@ -186,7 +188,7 @@ public class ParameterizedString implements Cloneable {
 				sb.append('^');
 				throw new IllegalArgumentException(sb.toString());
 			}
-
+			parsedParams.add(parameter.name);
 			set(parameter.name, value);
 		}
 		if(nonParameterSections.size() == 0){
