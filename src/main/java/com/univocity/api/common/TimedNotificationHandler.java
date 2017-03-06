@@ -36,7 +36,7 @@ public abstract class TimedNotificationHandler<T> implements NotificationHandler
 		if (notificationInterval > 0 && !lastNotification) {
 			long time = System.currentTimeMillis();
 			if (time - previousNotification > notificationInterval) {
-				onNotification(notification, lastNotification);
+				onNotification(notification, false);
 				previousNotification = time;
 			}
 		} else {

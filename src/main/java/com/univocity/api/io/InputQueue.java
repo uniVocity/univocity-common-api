@@ -142,16 +142,16 @@ public abstract class InputQueue<T> extends ReaderProvider {
 	 *
 	 * @param variable     the variable name
 	 * @param defaultValue a default value to return in case the variable doesn't exist or its value is {@code null}
-	 * @param <T>          the type of value returned by this method.
+	 * @param <O>          the type of value returned by this method.
 	 *
 	 * @return the value of the variable, or the default value if the variable value evaluates to {@code null}
 	 */
-	public <T> T readVariable(String variable, T defaultValue) {
+	public <O> O readVariable(String variable, O defaultValue) {
 		Object out = getCurrentVariables().get(variable);
 		if (out == null) {
 			return defaultValue;
 		}
-		return (T) out;
+		return (O) out;
 	}
 
 	/**
@@ -160,11 +160,11 @@ public abstract class InputQueue<T> extends ReaderProvider {
 	 * @param variable the variable name
 	 * @param type     the type of value expected to be returned. The value assigned to this
 	 *                 variable will be cast to the given type.
-	 * @param <T>      the type of value returned by this method.
+	 * @param <O>      the type of value returned by this method.
 	 *
 	 * @return the value of the variable, or the default value if the variable value evaluates to {@code null}
 	 */
-	public <T> T readVariable(String variable, Class<T> type) {
+	public <O> O readVariable(String variable, Class<O> type) {
 		Object out = getCurrentVariables().get(variable);
 		if (out != null) {
 			return type.cast(out);

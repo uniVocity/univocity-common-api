@@ -108,12 +108,10 @@ public class PropertyBasedConfiguration {
 		} catch (Exception e) {
 			throw new IllegalConfigurationException("Error loading configuration from properties " + getPropertiesDescription(), e);
 		} finally {
-			if (inputProperties != null) {
-				try {
-					inputProperties.close();
-				} catch (Exception e) {
-					//ignore
-				}
+			try {
+				inputProperties.close();
+			} catch (Exception e) {
+				//ignore
 			}
 		}
 
@@ -277,7 +275,7 @@ public class PropertyBasedConfiguration {
 			if (var == null && parentProperty != null) {
 				String parent = parentProperty;
 
-				while (var == null) {
+				while (true) {
 					found = values.containsKey(parent + "." + key);
 					if (found) {
 						var = values.get(parent + "." + key);
