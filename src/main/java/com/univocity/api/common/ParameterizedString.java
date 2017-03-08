@@ -171,6 +171,13 @@ public class ParameterizedString implements Cloneable {
 
 			input = sectionRemoved;
 			int nextSectionIndex = nextSection.isEmpty() ? input.length() : input.indexOf(nextSection);
+
+			if (nextSectionIndex == -1) {
+				clearValues();
+				throw new IllegalArgumentException("The input:\n'" + originalInput +
+						"'\nDoes not match the parameter pattern:\n'" + string + "'");
+			}
+
 			String value = input.substring(0, nextSectionIndex);
 
 			if (parameterValues.get(parameter.name) != null &&
