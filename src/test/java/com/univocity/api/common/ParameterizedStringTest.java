@@ -6,10 +6,8 @@
 
 package com.univocity.api.common;
 
-import static org.testng.Assert.*;
-
 import org.testng.annotations.*;
-
+import static org.testng.Assert.*;
 
 /**
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
@@ -166,8 +164,8 @@ public class ParameterizedStringTest {
 	}
 
 	@Test
-	public void parsingNewValues(){
-		String pattern  = "p1={p1} p2={p2}";
+	public void parsingNewValues() {
+		String pattern = "p1={p1} p2={p2}";
 		String input1 = "p1=1 p2=2";
 		String input2 = "p1=2 p2=1";
 

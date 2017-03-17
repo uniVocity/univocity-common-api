@@ -31,6 +31,7 @@ public class ParameterizedString implements Cloneable {
 	private final String closeBracket;
 
 	private String result = null;
+	private Object defaultValue = null;
 
 
 	/**
@@ -101,6 +102,23 @@ public class ParameterizedString implements Cloneable {
 	}
 
 	/**
+	 * Sets multiple parameter values
+	 *
+	 * @param parametersAndValues map of parameter names and thier corresponding values.
+	 *
+	 * @throws IllegalArgumentException if a parameter name in found in the given map does not exist
+	 */
+	public final void set(Map<String, ?> parametersAndValues) throws IllegalArgumentException {
+		if (parametersAndValues == null) {
+			return;
+		}
+		for (Map.Entry<String, ?> e : parametersAndValues.entrySet()) {
+			set(e.getKey(), e.getValue());
+		}
+	}
+
+
+	/**
 	 * Sets a parameter value
 	 *
 	 * @param parameter the parameter name
@@ -130,7 +148,7 @@ public class ParameterizedString implements Cloneable {
 
 	/**
 	 * <p>Parses the {@code String input} and extracts the parameter values storing them as regular parameters.</p>
-	 * <p>The {@link Map} of parameters is returned as a convenience, but parameters values can also be retrieved using:
+	 * <p>The {@link Map} of parameters is returned as a convenience, but parameter values can also be retrieved using:
 	 * <ul>
 	 * <li>{@link #get(String)} - for individual parameters</li>
 	 * <li>{@link #getParameterValues()} - for all of them</li>
@@ -198,8 +216,8 @@ public class ParameterizedString implements Cloneable {
 			parsedParams.add(parameter.name);
 			set(parameter.name, value);
 		}
-		if(nonParameterSections.size() == 0){
-			if(parameters.size() == 1){
+		if (nonParameterSections.size() == 0) {
+			if (parameters.size() == 1) {
 				set(parameters.get(0).name, originalInput);
 			}
 		}
@@ -226,8 +244,9 @@ public class ParameterizedString implements Cloneable {
 	/**
 	 * Applies the parameter values provided using {@link #set(String, Object)} and returns the resulting {@code String}
 	 *
-	 * Parameters without values provided will not be replaced, therefore the {@code String} "zero/{one}/{two}/{one}",
-	 * with parameter "one" set to 27 will evaluate to "zero/27/{two}/27"
+	 * Unless a default value is provided via {@link #getDefaultValue()}, parameters without values provided will not
+	 * be replaced. Therefore the {@code String} "zero/{one}/{two}/{one}", with parameter "one" set to 27 will
+	 * evaluate to "zero/27/{two}/27"
 	 *
 	 * @return the resulting {@code String} with all parameters replaced by their values.
 	 */
@@ -236,6 +255,9 @@ public class ParameterizedString implements Cloneable {
 			result = string;
 			for (int i = parameters.size() - 1; i >= 0; i--) {
 				Object parameterValue = parameterValues.get(parameters.get(i).name);
+				if (parameterValue == null && defaultValue != null) {
+					parameterValue = defaultValue;
+				}
 				if (parameterValue != null) {
 					int openBracketIndex = parameters.get(i).startPosition;
 					int closedBracketIndex = parameters.get(i).endPosition;
@@ -316,6 +338,80 @@ public class ParameterizedString implements Cloneable {
 	 */
 	public final Map<String, Object> getParameterValues() {
 		return Collections.unmodifiableMap(parameterValues);
+	}
+
+	/**
+	 * Defines a default value to be used for parameters that have no value associated.
+	 *
+	 * Defaults to {@code null}, in which case the original parameter will appear in the result of
+	 * {@link #applyParameterValues()}.
+	 *
+	 * @param defaultValue the default value to be used when one or more parameters have no value associated.
+	 */
+	public void setDefaultValue(Object defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
+	/**
+	 * Returns the default value to be used for parameters that have no value associated.
+	 *
+	 * Defaults to {@code null}, in which case the original parameter will appear in the result of
+	 * {@link #applyParameterValues()}.
+	 *
+	 * @return the default value to be used when one or more parameters have no value associated.
+	 */
+	public Object getDefaultValue() {
+		return defaultValue;
+	}
+
+	/**
+	 * Returns the index before the first parameter in this parameterized string.
+	 *
+	 * @return index before the first parameter, or {@code -1} if no parameters exist.
+	 */
+	public int getIndexBeforeFirstParameter() {
+		if (parameters.size() > 0) {
+			return parameters.get(0).startPosition;
+		}
+		return -1;
+	}
+
+	/**
+	 * Returns the index after the last parameter in this parameterized string.
+	 *
+	 * @return index after the last parameter, or {@code -1} if no parameters exist.
+	 */
+	public int getIndexAfterLastParameter() {
+		if (parameters.size() > 0) {
+			return parameters.get(parameters.size() - 1).endPosition;
+		}
+		return -1;
+	}
+
+	/**
+	 * Returns the content before the first parameter in this parameterized string.
+	 *
+	 * @return text content before the first parameter, or the entire {@code String} if no parameters exist.
+	 */
+	public String getContentBeforeFirstParameter() {
+		if (parameters.isEmpty()) {
+			return string;
+		}
+		int index = getIndexBeforeFirstParameter();
+		return string.substring(0, index);
+	}
+
+	/**
+	 * Returns the content after the last parameter in this parameterized string.
+	 *
+	 * @return text content after the last parameter, or the entire {@code String} if no parameters exist.
+	 */
+	public String getContentAfterLastParameter() {
+		if (parameters.isEmpty()) {
+			return string;
+		}
+		int index = getIndexAfterLastParameter();
+		return string.substring(index, string.length());
 	}
 
 	static private final class Parameter {
