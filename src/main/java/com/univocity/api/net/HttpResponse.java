@@ -98,6 +98,14 @@ public interface HttpResponse extends Closeable {
 
 
 	/**
+	 * Returns a {@code String} with the content of the response body of this HTTP response.
+	 *
+	 * @return the response body as a {@code String}
+	 */
+	String getContent();
+
+
+	/**
 	 * Reads this HTTP response using a custom class (i.e. a {@link HttpResponseReader}). The response body
 	 * {@link InputStream} is available for reading the response body of this message. Useful to process binary content.
 	 *
