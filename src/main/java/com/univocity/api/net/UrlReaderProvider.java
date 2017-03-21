@@ -352,7 +352,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 *
 	 * @return a copy of the current object and all its configurations, but targeting a new URL.
 	 */
-	public final UrlReaderProvider clone(String newUrl) {
+	public final UrlReaderProvider newRequest(String newUrl) {
 		UrlReaderProvider out = this.clone();
 		out.getRequest().setUrl(newUrl);
 		return out;
