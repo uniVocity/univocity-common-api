@@ -67,13 +67,14 @@ public abstract class DataTransferListener<S, T, E extends DataTransfer<S, T>> i
 	}
 
 	/**
-	 * Creates a a new data transfer
+	 * Creates a a new {@link DataTransfer}
 	 *
-	 * @param source
-	 * @param totalSize
-	 * @param target
+	 * @param source    where the data will be transferred from
+	 * @param totalSize the total size of the data to be transferred
+	 * @param target    the target where the data will be transferred to
 	 *
-	 * @return
+	 * @return a new {@link DataTransfer} that will transfer data of size {@code totalSize}
+	 * from {@code source} to {@code target}
 	 */
 	protected abstract E newDataTransfer(S source, long totalSize, T target);
 
