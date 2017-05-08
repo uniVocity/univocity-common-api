@@ -331,7 +331,7 @@ public class PropertyBasedConfiguration {
 	 */
 	public final String getProperty(String property) throws IllegalConfigurationException {
 		if (!values.containsKey(property)) {
-			throw new IllegalConfigurationException("Invalid configuration in " + getPropertiesDescription() + "! Property '" + property + "' could not be found.");
+			throw new IllegalConfigurationException("Invalid configuration in " + getPropertiesDescription() + ". Property '" + property + "' could not be found.");
 		}
 
 		return values.get(property);
@@ -454,7 +454,7 @@ public class PropertyBasedConfiguration {
 		String baseErrorMessage = ". Path defined by property '" + property + "' is: " + path;
 
 		if (create && !file.exists()) {
-			boolean created = false;
+			boolean created;
 			if (isDirectory) {
 				created = file.mkdirs();
 			} else {
