@@ -139,6 +139,12 @@ public class PropertyBasedConfiguration {
 				if (out != null) {
 					return out;
 				}
+				if (!path.startsWith("/")) {
+					out = PropertyBasedConfiguration.class.getResourceAsStream("/" + path);
+					if (out != null) {
+						return out;
+					}
+				}
 			}
 		}
 		throw new IllegalConfigurationException("Could not load a properties file from any of the given paths: " + Arrays.toString(pathsToTry));
