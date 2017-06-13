@@ -7,6 +7,9 @@
 package com.univocity.api.common;
 
 import org.testng.annotations.*;
+
+import java.util.*;
+
 import static org.testng.Assert.*;
 
 /**
@@ -219,7 +222,7 @@ public class ParameterizedStringTest {
 		String inputException = "p1=1 p2=2 p1=3";
 
 		String expectedExceptionMessage = "java.lang.IllegalArgumentException: " +
-				"Duplicate value found for parameter 'param1'\n" +
+				"Multiple values ('1' and '3') found for parameter 'param1'\n" +
 				"p1=1 p2=2 p1=3\n" +
 				"             ^";
 		try {
@@ -227,5 +230,33 @@ public class ParameterizedStringTest {
 		} catch (IllegalArgumentException ex) {
 			assertEquals(ex.toString(), expectedExceptionMessage);
 		}
+	}
+
+	@Test
+	public void parseLargeString() {
+		String pattern = "" +
+				"a: {_a};" +
+				"b: {_b};" +
+				"c: {_c};" +
+				"d: {_d};" +
+				"e: {_e};" +
+				"f: {_f};" +
+				"g: {_g};" +
+				"h: {_h}";
+
+		String signature = "a: first;b: second;c: third;d: 8;e: 00:50:56:c0:00:01|00:50:56:c0:00:08|06:5c:89:92:11:01|42:6e:4c:4c:03:4f|6a:00:01:80:68:e0|6a:00:01:80:68:e1|f4:5c:89:92:11:01;f: blah;g: F1F9310F-6709-36CB-AB38-436A77CD2925|85AB6672-5E1E-440B-BAF7-AE9D1474644A|9E6BAB4A-AFE3-4541-B546-3E443135DE5F|B4B9B151-D89B-4D3F-9553-3A6452889640;h: N/A";
+
+		ParameterizedString string = new ParameterizedString(pattern);
+		Map<String, Object> result = string.parse(signature);
+
+		assertEquals(result.get("_a"), "first");
+		assertEquals(result.get("_b"), "second");
+		assertEquals(result.get("_c"), "third");
+		assertEquals(result.get("_d"), "8");
+		assertEquals(result.get("_e"), "00:50:56:c0:00:01|00:50:56:c0:00:08|06:5c:89:92:11:01|42:6e:4c:4c:03:4f|6a:00:01:80:68:e0|6a:00:01:80:68:e1|f4:5c:89:92:11:01");
+		assertEquals(result.get("_f"), "blah");
+		assertEquals(result.get("_g"), "F1F9310F-6709-36CB-AB38-436A77CD2925|85AB6672-5E1E-440B-BAF7-AE9D1474644A|9E6BAB4A-AFE3-4541-B546-3E443135DE5F|B4B9B151-D89B-4D3F-9553-3A6452889640");
+		assertEquals(result.get("_h"), "N/A");
+
 	}
 }

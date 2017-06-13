@@ -21,11 +21,11 @@ public class ParameterizedString implements Cloneable {
 
 	private final String string;
 
-	private final List<Parameter> parameters = new ArrayList<Parameter>();
+	private Parameter[] parameters;
 	private final Set<String> parameterNames = new TreeSet<String>();
 	private TreeMap<String, Object> parameterValues;
 
-	private final List<String> nonParameterSections = new ArrayList<String>();
+	private String[] nonParameterSections;
 
 	private final String openBracket;
 	private final String closeBracket;
@@ -64,6 +64,9 @@ public class ParameterizedString implements Cloneable {
 
 
 	private void collectParameters() {
+		List<String> nonParameterSections = new ArrayList<String>();
+		List<Parameter> parameters = new ArrayList<Parameter>();
+
 		int x = 0;
 		int nonParameterIndexStart = 0;
 		int openBracketIndex;
@@ -91,6 +94,9 @@ public class ParameterizedString implements Cloneable {
 				String parameterizedName = string.substring(openBracketIndex + 1, closeBracketIndex);
 				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + 1);
 				parameters.add(parameter);
+				if(openBracketIndex == 0){
+					nonParameterSections.add("");
+				}
 				parameterNames.add(parameter.name);
 			} else {
 				x = openBracketIndex + 1;
@@ -99,6 +105,9 @@ public class ParameterizedString implements Cloneable {
 		if (nonParameterIndexStart < string.length()) {
 			nonParameterSections.add(string.substring(nonParameterIndexStart));
 		}
+
+		this.nonParameterSections = nonParameterSections.toArray(new String[0]);
+		this.parameters = parameters.toArray(new Parameter[0]);
 	}
 
 	/**
@@ -146,6 +155,11 @@ public class ParameterizedString implements Cloneable {
 		return parameterValues.get(parameter);
 	}
 
+	private void invalidInput(String input) {
+		clearValues();
+		throw new IllegalArgumentException("The input:\n'" + input + "'\nDoes not match the parameter pattern:\n'" + string + "'");
+	}
+
 	/**
 	 * <p>Parses the {@code String input} and extracts the parameter values storing them as regular parameters.</p>
 	 * <p>The {@link Map} of parameters is returned as a convenience, but parameter values can also be retrieved using:
@@ -160,53 +174,45 @@ public class ParameterizedString implements Cloneable {
 	 * @return the {@link Map} of parameters to their assigned values
 	 */
 	public final Map<String, Object> parse(String input) {
-		String originalInput = input;
-		int sectionIndex = 0;
+		if (parameters.length == 0) {
+			return Collections.emptyMap();
+		}
+
 		TreeSet<String> parsedParams = new TreeSet<String>();
-		for (int i = 0; i < parameters.size() && sectionIndex < nonParameterSections.size(); i++, sectionIndex++) {
-			Parameter parameter = parameters.get(i);
-			int parameterStart = parameter.startPosition;
 
-			String section = nonParameterSections.get(sectionIndex);
-			String nextSection = "";
-			if (sectionIndex + 1 < nonParameterSections.size()) {
-				nextSection = nonParameterSections.get(sectionIndex + 1);
+		int valueStart = 0;
+
+		for (int i = 0, p = 0; i < nonParameterSections.length && p < parameters.length; i++) {
+			String section = nonParameterSections[i];
+
+			valueStart = input.indexOf(section, valueStart);
+			if (valueStart == -1) {
+				invalidInput(input);
+			}
+			valueStart += section.length();
+
+			int valueEnd;
+			if (i + 1 < nonParameterSections.length) {
+				String nextSection = nonParameterSections[i + 1];
+				valueEnd = input.indexOf(nextSection, valueStart);
+				if (valueEnd == -1) {
+					invalidInput(input);
+				}
+			} else {
+				valueEnd = input.length();
 			}
 
-			int sectionStart = input.indexOf(section);
-			if (sectionStart == -1) {
-				clearValues();
-				throw new IllegalArgumentException("The input:\n'" + originalInput +
-						"'\nDoes not match the parameter pattern:\n'" + string + "'");
-			}
+			String value = input.substring(valueStart, valueEnd);
 
-			String sectionRemoved = input.substring(sectionStart + section.length());
-			if (parameterStart < sectionStart) {
-				sectionRemoved = input;
-				nextSection = section;
-				sectionIndex--;
-			}
-
-			input = sectionRemoved;
-			int nextSectionIndex = nextSection.isEmpty() ? input.length() : input.indexOf(nextSection);
-
-			if (nextSectionIndex == -1) {
-				clearValues();
-				throw new IllegalArgumentException("The input:\n'" + originalInput +
-						"'\nDoes not match the parameter pattern:\n'" + string + "'");
-			}
-
-			String value = input.substring(0, nextSectionIndex);
-
-			if (parameterValues.get(parameter.name) != null &&
-					!parameterValues.get(parameter.name).equals(value) &&
-					parsedParams.contains(parameter.name)) {
-				StringBuilder sb = new StringBuilder("Duplicate value found for parameter '");
+			Parameter parameter = parameters[p++];
+			Object existingValue = parameterValues.get(parameter.name);
+			if (existingValue != null && !existingValue.equals(value) && parsedParams.contains(parameter.name)) {
+				StringBuilder sb = new StringBuilder("Multiple values ('").append(existingValue).append("' and '").append(value).append("') found for parameter '");
 				sb.append(parameter.name);
 				sb.append("'\n");
-				sb.append(originalInput);
+				sb.append(input);
 				sb.append('\n');
-				int errPos = originalInput.length() - input.length() + input.indexOf(value);
+				int errPos = input.length() - input.length() + input.indexOf(value);
 				for (int j = 0; j < errPos; j++) {
 					sb.append(' ');
 				}
@@ -216,9 +222,9 @@ public class ParameterizedString implements Cloneable {
 			parsedParams.add(parameter.name);
 			set(parameter.name, value);
 		}
-		if (nonParameterSections.size() == 0) {
-			if (parameters.size() == 1) {
-				set(parameters.get(0).name, originalInput);
+		if (nonParameterSections.length == 0) {
+			if (parameters.length == 1) {
+				set(parameters[0].name, input);
 			}
 		}
 		return getParameterValues();
@@ -253,14 +259,14 @@ public class ParameterizedString implements Cloneable {
 	public final String applyParameterValues() {
 		if (result == null) {
 			result = string;
-			for (int i = parameters.size() - 1; i >= 0; i--) {
-				Object parameterValue = parameterValues.get(parameters.get(i).name);
+			for (int i = parameters.length - 1; i >= 0; i--) {
+				Object parameterValue = parameterValues.get(parameters[i].name);
 				if (parameterValue == null && defaultValue != null) {
 					parameterValue = defaultValue;
 				}
 				if (parameterValue != null) {
-					int openBracketIndex = parameters.get(i).startPosition;
-					int closedBracketIndex = parameters.get(i).endPosition;
+					int openBracketIndex = parameters[i].startPosition;
+					int closedBracketIndex = parameters[i].endPosition;
 					result = result.substring(0, openBracketIndex) + parameterValue.toString() + result.substring(closedBracketIndex, result.length());
 				}
 			}
@@ -370,8 +376,8 @@ public class ParameterizedString implements Cloneable {
 	 * @return index before the first parameter, or {@code -1} if no parameters exist.
 	 */
 	public int getIndexBeforeFirstParameter() {
-		if (parameters.size() > 0) {
-			return parameters.get(0).startPosition;
+		if (parameters.length > 0) {
+			return parameters[0].startPosition;
 		}
 		return -1;
 	}
@@ -382,8 +388,8 @@ public class ParameterizedString implements Cloneable {
 	 * @return index after the last parameter, or {@code -1} if no parameters exist.
 	 */
 	public int getIndexAfterLastParameter() {
-		if (parameters.size() > 0) {
-			return parameters.get(parameters.size() - 1).endPosition;
+		if (parameters.length > 0) {
+			return parameters[parameters.length - 1].endPosition;
 		}
 		return -1;
 	}
@@ -394,7 +400,7 @@ public class ParameterizedString implements Cloneable {
 	 * @return text content before the first parameter, or the entire {@code String} if no parameters exist.
 	 */
 	public String getContentBeforeFirstParameter() {
-		if (parameters.isEmpty()) {
+		if (parameters.length == 0) {
 			return string;
 		}
 		int index = getIndexBeforeFirstParameter();
@@ -407,7 +413,7 @@ public class ParameterizedString implements Cloneable {
 	 * @return text content after the last parameter, or the entire {@code String} if no parameters exist.
 	 */
 	public String getContentAfterLastParameter() {
-		if (parameters.isEmpty()) {
+		if (parameters.length == 0) {
 			return string;
 		}
 		int index = getIndexAfterLastParameter();
