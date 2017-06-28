@@ -258,5 +258,8 @@ public class ParameterizedStringTest {
 		assertEquals(result.get("_g"), "F1F9310F-6709-36CB-AB38-436A77CD2925|85AB6672-5E1E-440B-BAF7-AE9D1474644A|9E6BAB4A-AFE3-4541-B546-3E443135DE5F|B4B9B151-D89B-4D3F-9553-3A6452889640");
 		assertEquals(result.get("_h"), "N/A");
 
+		string.setDefaultValue("N/A");
+		assertEquals(result.get("_h"), null);
+
 	}
 }

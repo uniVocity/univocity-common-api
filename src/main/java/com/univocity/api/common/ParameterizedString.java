@@ -32,6 +32,7 @@ public class ParameterizedString implements Cloneable {
 
 	private String result = null;
 	private Object defaultValue = null;
+	private boolean convertDefaultValueToNull = true;
 
 
 	/**
@@ -94,7 +95,7 @@ public class ParameterizedString implements Cloneable {
 				String parameterizedName = string.substring(openBracketIndex + 1, closeBracketIndex);
 				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + 1);
 				parameters.add(parameter);
-				if(openBracketIndex == 0){
+				if (openBracketIndex == 0) {
 					nonParameterSections.add("");
 				}
 				parameterNames.add(parameter.name);
@@ -137,6 +138,11 @@ public class ParameterizedString implements Cloneable {
 	 */
 	public final void set(String parameter, Object value) throws IllegalArgumentException {
 		validateParameterName(parameter);
+
+		if (convertDefaultValueToNull && value != null && defaultValue != null && value.equals(defaultValue)) {
+			value = null;
+		}
+
 		parameterValues.put(parameter, value);
 		result = null;
 	}
@@ -354,8 +360,15 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @param defaultValue the default value to be used when one or more parameters have no value associated.
 	 */
-	public void setDefaultValue(Object defaultValue) {
+	public final void setDefaultValue(Object defaultValue) {
 		this.defaultValue = defaultValue;
+		if (defaultValue != null && !parameterValues.isEmpty()) {
+			for (Map.Entry<String, Object> e : parameterValues.entrySet()) {
+				if (defaultValue.equals(e.getValue())) {
+					e.setValue(null);
+				}
+			}
+		}
 	}
 
 	/**
@@ -366,7 +379,7 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @return the default value to be used when one or more parameters have no value associated.
 	 */
-	public Object getDefaultValue() {
+	public final Object getDefaultValue() {
 		return defaultValue;
 	}
 
@@ -375,7 +388,7 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @return index before the first parameter, or {@code -1} if no parameters exist.
 	 */
-	public int getIndexBeforeFirstParameter() {
+	public final int getIndexBeforeFirstParameter() {
 		if (parameters.length > 0) {
 			return parameters[0].startPosition;
 		}
@@ -387,7 +400,7 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @return index after the last parameter, or {@code -1} if no parameters exist.
 	 */
-	public int getIndexAfterLastParameter() {
+	public final int getIndexAfterLastParameter() {
 		if (parameters.length > 0) {
 			return parameters[parameters.length - 1].endPosition;
 		}
@@ -399,7 +412,7 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @return text content before the first parameter, or the entire {@code String} if no parameters exist.
 	 */
-	public String getContentBeforeFirstParameter() {
+	public final String getContentBeforeFirstParameter() {
 		if (parameters.length == 0) {
 			return string;
 		}
@@ -412,7 +425,7 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @return text content after the last parameter, or the entire {@code String} if no parameters exist.
 	 */
-	public String getContentAfterLastParameter() {
+	public final String getContentAfterLastParameter() {
 		if (parameters.length == 0) {
 			return string;
 		}
@@ -443,7 +456,7 @@ public class ParameterizedString implements Cloneable {
 		}
 
 		@Override
-		public String toString() {
+		public final String toString() {
 			return "Parameter{" +
 					"name='" + name + '\'' +
 					", startPosition=" + startPosition +
@@ -453,7 +466,7 @@ public class ParameterizedString implements Cloneable {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public final boolean equals(Object o) {
 			if (this == o) {
 				return true;
 			}
@@ -476,7 +489,7 @@ public class ParameterizedString implements Cloneable {
 		}
 
 		@Override
-		public int hashCode() {
+		public final int hashCode() {
 			int result = name.hashCode();
 			result = 31 * result + startPosition;
 			result = 31 * result + endPosition;
@@ -486,7 +499,7 @@ public class ParameterizedString implements Cloneable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public final boolean equals(Object o) {
 		if (this == o) {
 			return true;
 		}
@@ -515,7 +528,7 @@ public class ParameterizedString implements Cloneable {
 	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		int result = string != null ? string.hashCode() : 0;
 		result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
 		result = 31 * result + (parameterNames != null ? parameterNames.hashCode() : 0);
@@ -523,5 +536,35 @@ public class ParameterizedString implements Cloneable {
 		result = 31 * result + (closeBracket != null ? closeBracket.hashCode() : 0);
 		result = 31 * result + (parameterValues != null ? parameterValues.hashCode() : 0);
 		return result;
+	}
+
+	/**
+	 * Flag indicating that values parsed from this {@code ParameterizedString} will be converted to {@code null}, when
+	 * equal to the String representation of the value returned by {@link #getDefaultValue()}.
+	 *
+	 * <ul>
+	 * <li>When {@code true} all methods that return values associated with a parameter will return {@code null} instead of the specified default value.</li>
+	 * <li>When {@code false} all methods that return values associated with a parameter will default value returned by {@link #getDefaultValue()}.</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if default values should be converted to {@code null} when reading parameter values, otherwise {@code false}
+	 */
+	public final boolean getConvertDefaultValueToNull() {
+		return convertDefaultValueToNull;
+	}
+
+	/**
+	 * Defines whether values parsed from this {@code ParameterizedString} should be converted to {@code null}, when
+	 * equal to the String representation of the value returned by {@link #getDefaultValue()}.
+	 *
+	 * <ul>
+	 * <li>When {@code true} all methods that return values associated with a parameter will return {@code null} instead of the specified default value.</li>
+	 * <li>When {@code false} all methods that return values associated with a parameter will default value returned by {@link #getDefaultValue()}.</li>
+	 * </ul>
+	 *
+	 * @param convertDefaultValueToNull flag indicating whether default values should be converted to {@code null} when reading parameter values
+	 */
+	public final void setConvertDefaultValueToNull(boolean convertDefaultValueToNull) {
+		this.convertDefaultValueToNull = convertDefaultValueToNull;
 	}
 }
