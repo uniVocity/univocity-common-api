@@ -328,7 +328,7 @@ public class ParameterizedString implements Cloneable {
 	}
 
 	/**
-	 * Clones this parameterzied string object. Currenty parameter values are copied as well.
+	 * Clones this parameterzied string object. Current parameter values are copied as well.
 	 *
 	 * @return a clone of this object.
 	 */
