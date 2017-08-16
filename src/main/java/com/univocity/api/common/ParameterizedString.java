@@ -26,6 +26,7 @@ public class ParameterizedString implements Cloneable {
 	private TreeMap<String, Object> parameterValues;
 
 	private String[] nonParameterSections;
+	private final StringBuilder tmp;
 
 	private final String openBracket;
 	private final String closeBracket;
@@ -51,6 +52,7 @@ public class ParameterizedString implements Cloneable {
 		this.openBracket = openBracket;
 		this.closeBracket = closeBracket;
 		this.string = string;
+		this.tmp = new StringBuilder((int)(string.length() * 1.5));
 		collectParameters();
 	}
 
@@ -264,18 +266,29 @@ public class ParameterizedString implements Cloneable {
 	 */
 	public final String applyParameterValues() {
 		if (result == null) {
-			result = string;
-			for (int i = parameters.length - 1; i >= 0; i--) {
+			tmp.setLength(0);
+			int lastClosedBracketIndex = 0;
+			for (int i = 0; i < parameters.length; i++) {
 				Object parameterValue = parameterValues.get(parameters[i].name);
 				if (parameterValue == null && defaultValue != null) {
 					parameterValue = defaultValue;
 				}
+
 				if (parameterValue != null) {
 					int openBracketIndex = parameters[i].startPosition;
 					int closedBracketIndex = parameters[i].endPosition;
-					result = result.substring(0, openBracketIndex) + parameterValue.toString() + result.substring(closedBracketIndex, result.length());
+
+					if(tmp.length() == 0){
+						tmp.append(string, 0, openBracketIndex);
+					} else {
+						tmp.append(string, lastClosedBracketIndex, openBracketIndex);
+					}
+					tmp.append(parameterValue);
+					lastClosedBracketIndex = closedBracketIndex;
 				}
 			}
+			tmp.append(string, lastClosedBracketIndex, string.length());
+			result = tmp.toString();
 		}
 		return result;
 	}
