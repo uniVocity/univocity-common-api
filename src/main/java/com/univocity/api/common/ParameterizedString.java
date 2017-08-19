@@ -26,7 +26,7 @@ public class ParameterizedString implements Cloneable {
 	private TreeMap<String, Object> parameterValues;
 
 	private String[] nonParameterSections;
-	private final StringBuilder tmp;
+	private StringBuilder tmp;
 
 	private final String openBracket;
 	private final String closeBracket;
@@ -350,6 +350,7 @@ public class ParameterizedString implements Cloneable {
 		try {
 			ParameterizedString clone = (ParameterizedString) super.clone();
 			clone.parameterValues = (TreeMap<String, Object>) this.parameterValues.clone();
+			clone.tmp = new StringBuilder(this.tmp.capacity());
 			return clone;
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException("Could not clone parameterized string", e);
