@@ -52,7 +52,7 @@ public class ParameterizedString implements Cloneable {
 		this.openBracket = openBracket;
 		this.closeBracket = closeBracket;
 		this.string = string;
-		this.tmp = new StringBuilder((int)(string.length() * 1.5));
+		this.tmp = new StringBuilder((int) (string.length() * 1.5));
 		collectParameters();
 	}
 
@@ -86,6 +86,14 @@ public class ParameterizedString implements Cloneable {
 			}
 			int closeBracketIndex = string.indexOf(closeBracket, openBracketIndex);
 			if (closeBracketIndex > 0) {
+				int nextOpenBracket;
+				do {
+					nextOpenBracket = string.indexOf(openBracket, openBracketIndex + 1);
+					if (nextOpenBracket > 0 && nextOpenBracket < closeBracketIndex) {
+						openBracketIndex = nextOpenBracket;
+					}
+				} while (nextOpenBracket > 0 && nextOpenBracket < closeBracketIndex);
+
 				x = closeBracketIndex;
 
 				String nonParameterSection = string.substring(nonParameterIndexStart, openBracketIndex);
@@ -267,6 +275,27 @@ public class ParameterizedString implements Cloneable {
 	public final String applyParameterValues() {
 		if (result == null) {
 			tmp.setLength(0);
+			applyParameterValues(tmp);
+			result = tmp.toString();
+		}
+		return result;
+	}
+
+	/**
+	 * Applies the parameter values provided using {@link #set(String, Object)} and appends the resulting {@code String}
+	 * to a given {@code StringBuilder}
+	 *
+	 * Unless a default value is provided via {@link #getDefaultValue()}, parameters without values provided will not
+	 * be replaced. Therefore the {@code String} "zero/{one}/{two}/{one}", with parameter "one" set to 27 will
+	 * evaluate to "zero/27/{two}/27"
+	 *
+	 * @param out the {@code StringBuilder} that will be appended with the result of all parameters replaced by their values.
+	 */
+	public final void applyParameterValues(StringBuilder out) {
+		if (result != null) {
+			out.append(result);
+		} else {
+			int initialLength = out.length();
 			int lastClosedBracketIndex = 0;
 			for (int i = 0; i < parameters.length; i++) {
 				Object parameterValue = parameterValues.get(parameters[i].name);
@@ -278,20 +307,19 @@ public class ParameterizedString implements Cloneable {
 					int openBracketIndex = parameters[i].startPosition;
 					int closedBracketIndex = parameters[i].endPosition;
 
-					if(tmp.length() == 0){
-						tmp.append(string, 0, openBracketIndex);
+					if (tmp.length() == initialLength) {
+						out.append(string, 0, openBracketIndex);
 					} else {
-						tmp.append(string, lastClosedBracketIndex, openBracketIndex);
+						out.append(string, lastClosedBracketIndex, openBracketIndex);
 					}
-					tmp.append(parameterValue);
+					out.append(parameterValue);
 					lastClosedBracketIndex = closedBracketIndex;
 				}
 			}
-			tmp.append(string, lastClosedBracketIndex, string.length());
-			result = tmp.toString();
+			out.append(string, lastClosedBracketIndex, string.length());
 		}
-		return result;
 	}
+
 
 	/**
 	 * Returns a set of all parameter names found in the input string given in the constructor of this class.

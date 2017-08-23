@@ -262,4 +262,24 @@ public class ParameterizedStringTest {
 		assertEquals(result.get("_h"), null);
 
 	}
+
+	@Test
+	public void parseParameterAroundDelimiters() {
+		ParameterizedString string = new ParameterizedString("{% if customer and customer.id == {CUSTOMER_ID} %} stuff");
+		assertEquals(string.getParameters().size(), 1);
+		assertEquals(string.getParameters().iterator().next(), "CUSTOMER_ID");
+
+		string.set("CUSTOMER_ID", 1234);
+
+		assertEquals(string.applyParameterValues(), "{% if customer and customer.id == 1234 %} stuff");
+
+		string = new ParameterizedString("{% if customer and {{customer.id == {CUSTOMER_ID} %} }}stuff");
+		assertEquals(string.getParameters().size(), 1);
+		assertEquals(string.getParameters().iterator().next(), "CUSTOMER_ID");
+
+		string.set("CUSTOMER_ID", 1234);
+
+		assertEquals(string.applyParameterValues(), "{% if customer and {{customer.id == 1234 %} }}stuff");
+
+	}
 }
