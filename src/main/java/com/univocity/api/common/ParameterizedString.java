@@ -307,7 +307,7 @@ public class ParameterizedString implements Cloneable {
 					int openBracketIndex = parameters[i].startPosition;
 					int closedBracketIndex = parameters[i].endPosition;
 
-					if (tmp.length() == initialLength) {
+					if (out.length() == initialLength) {
 						out.append(string, 0, openBracketIndex);
 					} else {
 						out.append(string, lastClosedBracketIndex, openBracketIndex);
