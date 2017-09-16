@@ -79,7 +79,7 @@ public class DataTransferStatisticsTest {
 					assertFalse(statistics.isRunning());
 					assertFalse(statistics.isAborted());
 					assertTrue(statistics.isStarted());
-
+					count[0]++;
 					assertEquals(statistics.getTransferPercentage(), 1.0);
 				} else {
 					assertTrue(statistics.isRunning());

@@ -652,6 +652,7 @@ public final class HttpRequest implements Cloneable {
 	/**
 	 * Configures this request to connect through a proxy.
 	 *
+	 * @param proxy    an optional existing proxy configuration.
 	 * @param host     the proxy host.
 	 * @param port     the proxy port.
 	 * @param user     the proxy user.

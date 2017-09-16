@@ -253,7 +253,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 *
 	 * @param timeUnit the unit of time to use to represent the time elapsed.
 	 *
-	 *                 Returns how long the data transfer took so far.
+	 * @return how long the data transfer took so far.
 	 */
 	public final double getTimeElapsed(TimeUnit timeUnit) {
 		return timeUnit.convert(getTimeElapsed(), MILLISECONDS);
@@ -508,7 +508,7 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 	 */
 	public final double getRatePerSecond() {
 		updateRatePerSecond();
-		if(ratePerSecond == 0.0){
+		if (ratePerSecond == 0.0) {
 			return getAverageRate();
 		}
 		return ratePerSecond;

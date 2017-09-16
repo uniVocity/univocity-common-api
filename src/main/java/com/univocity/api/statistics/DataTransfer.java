@@ -50,10 +50,11 @@ public interface DataTransfer<S, T> {
 	void completed(S source, T target);
 
 	/**
-	 * Notifies that the data has been aborted.
+	 * Notifies that the data transfer has been aborted.
 	 *
 	 * @param source the source of data
 	 * @param target the data target
+	 * @param error  exception that caused the process abortion.
 	 */
 	void aborted(S source, T target, Exception error);
 

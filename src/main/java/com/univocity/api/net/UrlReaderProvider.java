@@ -350,6 +350,8 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * The clone allows you to perform a new HTTP request call to another URL, while preserving all original parameters,
 	 * to obtain a fresh HTTP response through {@link #getResponse()}
 	 *
+	 * @param newUrl the new URL to be used.
+	 *
 	 * @return a copy of the current object and all its configurations, but targeting a new URL.
 	 */
 	public final UrlReaderProvider newRequest(String newUrl) {

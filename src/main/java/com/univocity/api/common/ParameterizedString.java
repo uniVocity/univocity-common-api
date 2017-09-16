@@ -183,7 +183,6 @@ public class ParameterizedString implements Cloneable {
 	 * <li>{@link #get(String)} - for individual parameters</li>
 	 * <li>{@link #getParameterValues()} - for all of them</li>
 	 * </ul>
-	 * </p>
 	 *
 	 * @param input the input String to be parsed
 	 *
