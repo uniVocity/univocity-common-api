@@ -731,4 +731,34 @@ public class PropertyBasedConfiguration {
 		}
 		return out;
 	}
+
+	/**
+	 * Returns the {@code boolean} value associated with a property in the configuration
+	 *
+	 * @param property     the property name
+	 * @param defaultValue a default value to return in case the property is not present in the configuration
+	 *
+	 * @return the property value, or the default value if the property is not present in the configuration.
+	 */
+	public final boolean getBoolean(String property, boolean defaultValue) {
+		if (!values.containsKey(property)) {
+			return defaultValue;
+		}
+		return getBoolean(property);
+	}
+
+	/**
+	 * Returns the {@code boolean} value associated with a property in the configuration
+	 *
+	 * @param property the property name
+	 *
+	 * @return the property value, or {@code false} if no value is provided.
+	 *
+	 * @throws IllegalConfigurationException if the property is not present in the configuration.
+	 */
+	public final boolean getBoolean(String property) {
+		String value = getProperty(property);
+		return Boolean.valueOf(value);
+	}
+
 }
