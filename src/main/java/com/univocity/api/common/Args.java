@@ -156,6 +156,26 @@ public class Args {
 	}
 
 	/**
+	 * Ensures the elements in a given array are not null/empty/blank. The array itself can be empty but not null.
+	 *
+	 * @param o         the array of elements to be validated.
+	 * @param fieldName description of the array.
+	 */
+	public static void noBlanks(Object[] o, String fieldName) {
+		notNull(o, fieldName);
+		for (Object e : o) {
+			if (e == null) {
+				throw new IllegalArgumentException("Null value in " + fieldName + ": " + Arrays.toString(o));
+			}
+			if (e instanceof CharSequence) {
+				if (isBlank(e.toString())) {
+					throw new IllegalArgumentException("Blank value in " + fieldName + ": " + Arrays.toString(o));
+				}
+			}
+		}
+	}
+
+	/**
 	 * Ensures a given {@link File} argument is not null, exists and does not point to a directory
 	 *
 	 * @param file      a file
@@ -379,4 +399,45 @@ public class Args {
 		return original;
 	}
 
+	/**
+	 * Converts a yyyy-MM-dd formatted string to a Calendar instance.
+	 *
+	 * @param s the yyyy-MM-dd formatted string
+	 *
+	 * @return the corresponding {@code Calendar} instance
+	 */
+	public static Calendar isoDateStringToCalendar(String s) {
+		if (isBlank(s)) {
+			return null;
+		}
+		Calendar out = null;
+		try {
+			int firstDash = s.indexOf('-');
+			int secondDash = s.indexOf('-', firstDash + 1);
+
+			String yyyy = s.substring(0, firstDash);
+			String mm = s.substring(firstDash + 1, secondDash);
+			String dd = s.substring(secondDash + 1);
+
+			if (yyyy.length() == 4 && mm.length() == 2 && dd.length() == 2) {
+				int year = Integer.parseInt(yyyy);
+				int month = Integer.parseInt(mm) - 1;
+				int day = Integer.parseInt(dd);
+
+				out = new GregorianCalendar(year, month, day);
+
+				if (out.get(Calendar.YEAR) != year || out.get(Calendar.MONTH) != month || out.get(Calendar.DAY_OF_MONTH) != day) {
+					return null;
+				}
+			}
+		} catch (Exception e) {
+			//Not formatted correctly ignore any errors here;
+		}
+
+		if (out == null) {
+			throw new IllegalArgumentException("Date '" + s + "' must be formatted as yyyy-MM-dd");
+		}
+
+		return out;
+	}
 }
