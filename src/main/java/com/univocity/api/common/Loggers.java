@@ -22,4 +22,6 @@ public class Loggers {
 	 * General logger for common operations performed by our software.
 	 */
 	public static final String GENERAL = "GENERAL";
+
+	public static final String UNIVOCITY_LOCAL_STORE = "UNIVOCITY_LOCAL_STORE";
 }
