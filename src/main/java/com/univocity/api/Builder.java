@@ -21,12 +21,12 @@ public final class Builder {
 	private static ServiceLoader<CommonFactoryProvider> factoryProviderLoader = ServiceLoader.load(CommonFactoryProvider.class);
 
 	private static CommonFactoryProvider loadProvider() {
-		Exception error = null;
+		Throwable error = null;
 		try {
 			for (CommonFactoryProvider provider : factoryProviderLoader) {
 				return provider;
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			error = e;
 		}
 		throw new IllegalStateException("Unable to load provider. You might need to use a different classloader in order to load it from uniVocity's jar file", error);
@@ -41,6 +41,7 @@ public final class Builder {
 	 */
 	public static final synchronized void setClassLoader(ClassLoader classLoader) {
 		factoryProviderLoader = ServiceLoader.load(CommonFactoryProvider.class, classLoader);
+		provider = null;
 	}
 
 	private static final synchronized CommonFactoryProvider provider() {
