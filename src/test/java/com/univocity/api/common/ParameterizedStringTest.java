@@ -282,4 +282,20 @@ public class ParameterizedStringTest {
 		assertEquals(string.applyParameterValues(), "{% if customer and {{customer.id == 1234 %} }}stuff");
 
 	}
+
+	@Test
+	public void testSpecialDelimiters() {
+		ParameterizedString s = new ParameterizedString("Hello {{ var }}", "{{ ", " }}");
+
+		Iterator<String> it = s.getParameters().iterator();
+		assertEquals(it.next(), "var");
+
+		s.set("var", "world");
+		assertEquals(s.applyParameterValues(), "Hello world");
+
+		s = new ParameterizedString("Hello {{ var }}! {{ var2 }}", "{{ ", " }}");
+		s.set("var", "world");
+		s.set("var2", "Bye now");
+		assertEquals(s.applyParameterValues(), "Hello world! Bye now");
+	}
 }

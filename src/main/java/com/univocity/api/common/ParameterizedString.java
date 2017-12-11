@@ -88,7 +88,7 @@ public class ParameterizedString implements Cloneable {
 			if (closeBracketIndex > 0) {
 				int nextOpenBracket;
 				do {
-					nextOpenBracket = string.indexOf(openBracket, openBracketIndex + 1);
+					nextOpenBracket = string.indexOf(openBracket, openBracketIndex + openBracket.length());
 					if (nextOpenBracket > 0 && nextOpenBracket < closeBracketIndex) {
 						openBracketIndex = nextOpenBracket;
 					}
@@ -100,17 +100,17 @@ public class ParameterizedString implements Cloneable {
 				if (!nonParameterSection.isEmpty()) {
 					nonParameterSections.add(nonParameterSection);
 				}
-				nonParameterIndexStart = closeBracketIndex + 1;
+				nonParameterIndexStart = closeBracketIndex + closeBracket.length();
 
-				String parameterizedName = string.substring(openBracketIndex + 1, closeBracketIndex);
-				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + 1);
+				String parameterizedName = string.substring(openBracketIndex + openBracket.length(), closeBracketIndex);
+				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + closeBracket.length());
 				parameters.add(parameter);
 				if (openBracketIndex == 0) {
 					nonParameterSections.add("");
 				}
 				parameterNames.add(parameter.name);
 			} else {
-				x = openBracketIndex + 1;
+				x = openBracketIndex + openBracket.length();
 			}
 		}
 		if (nonParameterIndexStart < string.length()) {
