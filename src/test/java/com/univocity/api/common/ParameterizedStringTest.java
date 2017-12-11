@@ -297,5 +297,19 @@ public class ParameterizedStringTest {
 		s.set("var", "world");
 		s.set("var2", "Bye now");
 		assertEquals(s.applyParameterValues(), "Hello world! Bye now");
+
+		//again without spaces in open/close brackets
+		s = new ParameterizedString("Hello {{ var }}", "{{", "}}");
+
+		it = s.getParameters().iterator();
+		assertEquals(it.next(), "var");
+
+		s.set("var", "world");
+		assertEquals(s.applyParameterValues(), "Hello world");
+
+		s = new ParameterizedString("Hello {{ var }}! {{ var2 }}", "{{", "}}");
+		s.set("var", "world");
+		s.set("var2", "Bye now");
+		assertEquals(s.applyParameterValues(), "Hello world! Bye now");
 	}
 }
