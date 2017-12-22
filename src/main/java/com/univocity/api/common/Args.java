@@ -427,7 +427,7 @@ public class Args {
 				out = new GregorianCalendar(year, month, day);
 
 				if (out.get(Calendar.YEAR) != year || out.get(Calendar.MONTH) != month || out.get(Calendar.DAY_OF_MONTH) != day) {
-					return null;
+					out = null;
 				}
 			}
 		} catch (Exception e) {
