@@ -102,7 +102,13 @@ public class ParameterizedString implements Cloneable {
 				}
 				nonParameterIndexStart = closeBracketIndex + closeBracket.length();
 
-				String parameterizedName = string.substring(openBracketIndex + openBracket.length(), closeBracketIndex);
+				int start = openBracketIndex + openBracket.length();
+				if (hasWhitespace(start, closeBracketIndex)) {
+					continue; //skips content spread across multiple lines, or containing spaces.
+				}
+
+				String parameterizedName = string.substring(start, closeBracketIndex);
+
 				Parameter parameter = new Parameter(parameterizedName, openBracketIndex, closeBracketIndex + closeBracket.length());
 				parameters.add(parameter);
 				if (openBracketIndex == 0) {
@@ -119,6 +125,19 @@ public class ParameterizedString implements Cloneable {
 
 		this.nonParameterSections = nonParameterSections.toArray(new String[0]);
 		this.parameters = parameters.toArray(new Parameter[0]);
+	}
+
+	private boolean hasWhitespace(int from, int to) {
+		for (int i = from; i < to; i++) {
+			char ch = string.charAt(i);
+			if (ch <= ' ') {
+				if (ch == ' ' && (i == from || i + 1 == to)) {
+					continue;
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
