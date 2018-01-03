@@ -134,7 +134,12 @@ public class ParameterizedString implements Cloneable {
 				if (ch == ' ' && (i == from || i + 1 == to)) {
 					continue;
 				}
-				return true;
+			} else if (ch == ',') { //format definition?
+				for (; i < to; i++) {
+					if (string.charAt(i) < ' ') { //spaces allowed, but not other special chars
+						return true;
+					}
+				}
 			}
 		}
 		return false;
@@ -502,7 +507,7 @@ public class ParameterizedString implements Cloneable {
 		Parameter(String name, int startPosition, int endPosition) {
 			name = name.trim();
 			if (name.contains(",")) {
-				this.name = name.substring(0, name.indexOf(","));
+				this.name = name.substring(0, name.indexOf(",")).trim();
 				this.format = name.substring(name.indexOf(",") + 1).trim();
 				if (format.length() == 0) {
 					throw new IllegalArgumentException("Expected formatting parameter after ',' in '" + name + "'");

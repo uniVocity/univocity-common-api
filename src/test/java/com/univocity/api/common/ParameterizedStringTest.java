@@ -312,4 +312,17 @@ public class ParameterizedStringTest {
 		s.set("var2", "Bye now");
 		assertEquals(s.applyParameterValues(), "Hello world! Bye now");
 	}
+
+	@Test
+	public void testParameterWithFormat(){
+		ParameterizedString s = new ParameterizedString("Valid until: { DATE , mmm dd, yyyy }\r\n");
+		assertEquals(s.getParameters().size(), 1);
+
+		assertEquals(s.getParameters().iterator().next(), "DATE");
+
+		assertEquals(s.getFormat("DATE"), "mmm dd, yyyy");
+
+		s = new ParameterizedString("Valid until: { DATE , mmm\n dd, yyyy }\r\n");
+		assertEquals(s.getParameters().size(), 0);
+	}
 }
