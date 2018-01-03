@@ -325,4 +325,22 @@ public class ParameterizedStringTest {
 		s = new ParameterizedString("Valid until: { DATE , mmm\n dd, yyyy }\r\n");
 		assertEquals(s.getParameters().size(), 0);
 	}
+
+	@Test
+	public void testHandlingOfInvalidStuff(){
+		String in = "" +
+				"\tfor (var i = 0; i < emails.length; i++) {\n" +
+				"\t\t\t\tvar email = emails[i].trim();\n" +
+				"\t\t\t\tif (!isEmailValid(email)) {\n" +
+				"\t\t\t\t\tfield.setCustomValidity(\"Invalid e-mail address.\");\n" +
+				"\t\t\t\t\treturn;\n" +
+				"\t\t\t\t}\n" +
+				"\t\t\t}";
+
+		ParameterizedString s = new ParameterizedString(in);
+		assertEquals(s.getParameters().size(), 0);
+
+		s = new ParameterizedString("insertAtCursor(editor, '{{ ' + fieldName + ' }}');");
+		assertEquals(s.getParameters().size(), 0);
+	}
 }

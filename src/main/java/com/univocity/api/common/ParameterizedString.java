@@ -134,11 +134,18 @@ public class ParameterizedString implements Cloneable {
 				if (ch == ' ' && (i == from || i + 1 == to)) {
 					continue;
 				}
-			} else if (ch == ',') { //format definition?
+
+				boolean foundComma = false;
 				for (; i < to; i++) {
-					if (string.charAt(i) < ' ') { //spaces allowed, but not other special chars
+					ch = string.charAt(i);
+					if (ch < ' ') { //spaces allowed, but not other special chars
 						return true;
+					} else if (ch == ','){
+						foundComma = true;
 					}
+				}
+				if(!foundComma){
+					return true;
 				}
 			}
 		}
