@@ -224,7 +224,7 @@ public class ParameterizedStringTest {
 		String expectedExceptionMessage = "java.lang.IllegalArgumentException: " +
 				"Multiple values ('1' and '3') found for parameter 'param1'\n" +
 				"p1=1 p2=2 p1=3\n" +
-				"             ^";
+				".............^";
 		try {
 			string.parse(inputException);
 		} catch (IllegalArgumentException ex) {
