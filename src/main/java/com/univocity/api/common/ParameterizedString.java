@@ -76,10 +76,10 @@ public class ParameterizedString implements Cloneable {
 		while ((openBracketIndex = string.indexOf(openBracket, x)) >= 0) {
 			if (openBracketIndex != 0 && openBracketIndex == nonParameterIndexStart) {
 				int errorPos = openBracketIndex;
-				StringBuilder errorMsg = new StringBuilder("There needs to be at least one character separating parameters\nNo separation found after:\n'");
+				StringBuilder errorMsg = new StringBuilder("At least one character between parameters is required.\nNo separation found after:\n'");
 				errorMsg.append(string).append("'\n");
 				for (int i = 0; i < errorPos; i++) {
-					errorMsg.append(' ');
+					errorMsg.append('.');
 				}
 				errorMsg.append('^');
 				throw new IllegalArgumentException(errorMsg.toString());
@@ -260,7 +260,7 @@ public class ParameterizedString implements Cloneable {
 				sb.append('\n');
 				int errPos = input.length() - input.length() + input.indexOf(value);
 				for (int j = 0; j < errPos; j++) {
-					sb.append(' ');
+					sb.append('.');
 				}
 				sb.append('^');
 				throw new IllegalArgumentException(sb.toString());
