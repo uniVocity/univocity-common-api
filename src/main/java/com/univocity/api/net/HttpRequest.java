@@ -658,7 +658,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param user     the proxy user.
 	 * @param password the proxy password
 	 */
-	public final void setProxy(Proxy proxy, String host, int port, String user, String password) {
+	private final void setProxy(Proxy proxy, String host, int port, String user, String password) {
 		if (proxy == null) {
 			Args.positive(port, "Proxy port");
 			Args.notBlank(host, "Proxy host");
