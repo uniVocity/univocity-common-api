@@ -44,7 +44,7 @@ public final class HttpRequest implements Cloneable {
 	private boolean ignoreHttpErrors;
 
 	private String proxyUser;
-	private String proxyPassword;
+	private char[] proxyPassword;
 
 	/**
 	 * Creates a new request for a given request URL
@@ -599,7 +599,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param user  the proxy user.
 	 */
 	public final void setProxy(Proxy proxy, String user) {
-		setProxy(proxy, null, 0, user, "");
+		setProxy(proxy, null, 0, user, null);
 	}
 
 	/**
@@ -609,7 +609,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param user     the proxy user.
 	 * @param password the proxy password.
 	 */
-	public final void setProxy(Proxy proxy, String user, String password) {
+	public final void setProxy(Proxy proxy, String user, char[] password) {
 		setProxy(proxy, null, 0, user, password);
 	}
 
@@ -632,7 +632,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param user the proxy user.
 	 */
 	public final void setProxy(String host, int port, String user) {
-		setProxy(host, port, user, "");
+		setProxy(host, port, user, null);
 	}
 
 	/**
@@ -643,7 +643,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param user     the proxy user.
 	 * @param password the proxy password
 	 */
-	public final void setProxy(String host, int port, String user, String password) {
+	public final void setProxy(String host, int port, String user, char[] password) {
 		setProxy((Proxy) null, host, port, user, password);
 	}
 
@@ -656,9 +656,9 @@ public final class HttpRequest implements Cloneable {
 	 * @param host     the proxy host.
 	 * @param port     the proxy port.
 	 * @param user     the proxy user.
-	 * @param password the proxy password
+	 * @param password the proxy password (note the char array is copied)
 	 */
-	private final void setProxy(Proxy proxy, String host, int port, String user, String password) {
+	private final void setProxy(Proxy proxy, String host, int port, String user, char[] password) {
 		if (proxy == null) {
 			Args.positive(port, "Proxy port");
 			Args.notBlank(host, "Proxy host");
@@ -668,7 +668,7 @@ public final class HttpRequest implements Cloneable {
 		}
 
 		this.proxyUser = user;
-		this.proxyPassword = password;
+		this.proxyPassword = password == null ? null : password.clone();
 	}
 
 	/**
@@ -678,10 +678,10 @@ public final class HttpRequest implements Cloneable {
 	 * @param host      the proxy host.
 	 * @param port      the proxy port.
 	 * @param user      the proxy user.
-	 * @param password  the proxy password
+	 * @param password  the proxy password (note the char array is copied)
 	 */
 	@UI
-	public void setProxy(Proxy.Type proxyType, String host, int port, String user, String password) {
+	public void setProxy(Proxy.Type proxyType, String host, int port, String user, char[] password) {
 		Proxy proxy = new Proxy(proxyType, new InetSocketAddress(host, port));
 		setProxy(proxy, host, port, user, password);
 	}
@@ -701,7 +701,7 @@ public final class HttpRequest implements Cloneable {
 	 *
 	 * @return the proxy password
 	 */
-	public final String getProxyPassword() {
+	public final char[] getProxyPassword() {
 		return proxyPassword;
 	}
 
