@@ -458,6 +458,10 @@ public class PropertyBasedConfiguration {
 			if (isDirectory) {
 				created = file.mkdirs();
 			} else {
+				File parent = file.getParentFile();
+				if(parent != null && !parent.exists()){
+					parent.mkdirs();
+				}
 				try {
 					created = file.createNewFile();
 				} catch (IOException e) {
