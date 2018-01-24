@@ -148,6 +148,21 @@ public final class HttpRequest implements Cloneable {
 	 * @param value  the header value
 	 */
 	public final void setHeader(String header, String value) {
+		setHeader(header, value, false);
+	}
+
+	/**
+	 * Defines a header and its value. All headers are transmitted after the request line
+	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * @param header the header name
+	 * @param value  the header value
+	 * @param encode flag indicating whether the value should be encoded
+	 */
+	public final void setHeader(String header, String value, boolean encode) {
+		if (encode) {
+			value = Args.encode(value);
+		}
 		set(headers, header, value);
 	}
 
@@ -158,8 +173,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param headers a map of headers names and their values. Previous values will be discarded
 	 */
 	public final void setHeaders(Map<String, String> headers) {
-		this.headers.clear();
-		addHeaders(headers);
+		setHeaders(headers, false);
 	}
 
 	/**
@@ -169,8 +183,37 @@ public final class HttpRequest implements Cloneable {
 	 * @param headers a map of header names and their values.
 	 */
 	public final void addHeaders(Map<String, String> headers) {
-		for (Map.Entry<String, String> e : headers.entrySet()) {
-			set(this.headers, e.getKey(), e.getValue());
+		addHeaders(headers, false);
+	}
+
+	/**
+	 * Replaces any previous headers with the given values. All headers are transmitted after the request line
+	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * @param headers a map of headers names and their values. Previous values will be discarded
+	 * @param encode  flag indicating whether values should be encoded
+	 */
+	public final void setHeaders(Map<String, String> headers, boolean encode) {
+		this.headers.clear();
+		addHeaders(headers, encode);
+	}
+
+	/**
+	 * Adds the given headers and their values to the existing list of headers. All headers are transmitted after
+	 * the request line (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * @param headers a map of header names and their values.
+	 * @param encode  flag indicating whether values should be encoded
+	 */
+	public final void addHeaders(Map<String, String> headers, boolean encode) {
+		if (encode) {
+			for (Map.Entry<String, String> e : headers.entrySet()) {
+				set(this.headers, e.getKey(), Args.encode(e.getValue()));
+			}
+		} else {
+			for (Map.Entry<String, String> e : headers.entrySet()) {
+				set(this.headers, e.getKey(), e.getValue());
+			}
 		}
 	}
 
