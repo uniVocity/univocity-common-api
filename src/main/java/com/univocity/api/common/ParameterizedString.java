@@ -130,7 +130,7 @@ public class ParameterizedString implements Cloneable {
 	private boolean hasWhitespace(int from, int to) {
 		for (int i = from; i < to; i++) {
 			char ch = string.charAt(i);
-			if (ch <= ' ') {
+			if (ch <= ' ' || ch == ',') {
 				if (ch == ' ' && (i == from || i + 1 == to)) {
 					continue;
 				}

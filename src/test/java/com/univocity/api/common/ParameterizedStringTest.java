@@ -343,4 +343,14 @@ public class ParameterizedStringTest {
 		s = new ParameterizedString("insertAtCursor(editor, '{{ ' + fieldName + ' }}');");
 		assertEquals(s.getParameters().size(), 0);
 	}
+
+	@Test
+	public void testParameterWithDateMask(){
+		String in = "This ends on {{ SUPPORT_END, dd/mm/yyyy }} and that's it.";
+
+		ParameterizedString s = new ParameterizedString(in);
+		assertEquals(s.getParameters().size(), 1);
+
+		assertEquals(s.getFormat("SUPPORT_END"), "dd/mm/yyyy");
+	}
 }
