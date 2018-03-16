@@ -17,7 +17,7 @@ public class HttpRequestTest {
 
 	@Test
 	public void testUrlParameterization() {
-		HttpRequest request = new UrlReaderProvider("https://www.google.com.au/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}").getRequest();
+		HttpRequest request = new UrlReaderProvider("https://www.google.com.au/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}", null).getRequest();
 		assertEquals(request.getUrl(), "https://www.google.com.au/?q={QUERY}#q={QUERY}&tbs=qdr:{PERIOD}");
 
 		request.setUrlParameter("QUERY", "univocity");

@@ -45,14 +45,33 @@ public final class HttpRequest implements Cloneable {
 
 	private String proxyUser;
 	private char[] proxyPassword;
+	private RateLimiter rateLimiter;
 
 	/**
 	 * Creates a new request for a given request URL
 	 *
 	 * @param url the request URL
+	 * @param rateLimiter a {@link RateLimiter} to prevent the execution of excessive simultaneous requests.
 	 */
-	HttpRequest(String url) {
+	HttpRequest(String url, RateLimiter rateLimiter) {
 		setUrl(url);
+		this.rateLimiter = rateLimiter;
+	}
+
+	/**
+	 * Returns the {@link RateLimiter} associated with this request, if any.
+	 * @return the request rate limiter, if available.
+	 */
+	public final RateLimiter getRateLimiter() {
+		return rateLimiter;
+	}
+
+	/**
+	 * Associates a {@link RateLimiter} with this request to prevent multiple simultaneous requests.
+	 * @param rateLimiter the rate limiter to be used when executing this request.
+	 */
+	public final void setRateLimiter(RateLimiter rateLimiter) {
+		this.rateLimiter = rateLimiter;
 	}
 
 	/**

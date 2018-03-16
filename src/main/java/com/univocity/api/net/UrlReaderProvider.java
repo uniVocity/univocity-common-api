@@ -46,7 +46,17 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @param url the URL to access.
 	 */
 	public UrlReaderProvider(String url) {
-		this.request = new HttpRequest(url);
+		this.request = new HttpRequest(url, null);
+	}
+
+	/**
+	 * Creates a new instance to read content from a given URL.
+	 *
+	 * @param url the URL to access.
+	 * @param a {@link RateLimiter} that ensures multiple requests execute one after the other, after a minimum interval.
+	 */
+	public UrlReaderProvider(String url, RateLimiter rateLimiter) {
+		this.request = new HttpRequest(url, rateLimiter);
 	}
 
 	/**
