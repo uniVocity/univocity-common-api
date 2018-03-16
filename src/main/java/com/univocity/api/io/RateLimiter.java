@@ -24,7 +24,7 @@ public class RateLimiter {
 	private long lastCallTime;
 	private long waitTimeAdjustment;
 
-	private final long interval;
+	private long interval;
 	private final Object callLock = new Object();
 	private final AtomicInteger callWaitingCount = new AtomicInteger();
 	private final String name;
@@ -47,9 +47,9 @@ public class RateLimiter {
 	 * @param interval the interval to wait between each call to {@link #waitAndGo()}
 	 */
 	public RateLimiter(String name, long interval) {
-		Args.positive(interval, "Interval");
+		Args.positiveOrZero(interval, "Interval");
 		this.interval = interval;
-		this.name = Args.isBlank(name) ? "" : " " + name.trim();
+		this.name = Args.isBlank(name) ? "" : name.trim();
 	}
 
 	/**
@@ -67,6 +67,21 @@ public class RateLimiter {
 	public final long getInterval() {
 		return interval;
 	}
+
+	/**
+	 * Modifies the rate interval
+	 * @param interval the new interval
+	 */
+	public void setInterval(long interval) {
+		Args.positiveOrZero(interval, "Interval");
+		this.interval = interval;
+		if (interval == 0L) {
+			synchronized (callLock) {
+				callLock.notifyAll();
+			}
+		}
+	}
+
 
 	/**
 	 * Returns the number of threads blocked and waiting for their turn to execute
@@ -119,7 +134,7 @@ public class RateLimiter {
 		synchronized (callLock) {
 			long time = System.currentTimeMillis();
 			if (timeout > 0 && time - start > timeout) {
-				throw new TimeoutException("Rate limiter" + name + ": " + action + " timed out after " + (time - start) + "ms");
+				throw new TimeoutException(name + " rate limiter: " + action + " timed out after " + (time - start) + "ms");
 			}
 			doWait(time, action);
 		}
@@ -160,7 +175,7 @@ public class RateLimiter {
 
 		if (waitTime > 0L) {
 			try {
-				log.debug("Rate limiter{} active: waiting {} ms before {}", name, waitTime, action);
+				log.debug("{} rate limiter active: waiting {} ms before {}", name, waitTime, action);
 				Thread.sleep(waitTime);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
