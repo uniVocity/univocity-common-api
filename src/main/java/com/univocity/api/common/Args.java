@@ -28,7 +28,7 @@ public class Args {
 	 * @param o         the object to validate
 	 * @param fieldName the description of the field
 	 */
-	public static void notNull(Object o, String fieldName) {
+	public static final void notNull(Object o, String fieldName) {
 		if (o == null) {
 			throw new IllegalArgumentException(fieldName + " cannot be null");
 		}
@@ -40,7 +40,7 @@ public class Args {
 	 * @param o         the number to validate
 	 * @param fieldName the description of the field
 	 */
-	public static void positive(Number o, String fieldName) {
+	public static final void positive(Number o, String fieldName) {
 		notNull(o, fieldName);
 		if (((Integer) o.intValue()).compareTo(0) <= 0) {
 			throw new IllegalArgumentException(fieldName + " must be positive. Got " + o);
@@ -53,7 +53,7 @@ public class Args {
 	 * @param o         the number to validate
 	 * @param fieldName the description of the field
 	 */
-	public static void positiveOrZero(Number o, String fieldName) {
+	public static final void positiveOrZero(Number o, String fieldName) {
 		notNull(o, fieldName);
 		if (((Double) o.doubleValue()).compareTo(0.0) < 0) {
 			throw new IllegalArgumentException(fieldName + " must be a positive number or zero. Got " + o);
@@ -108,7 +108,7 @@ public class Args {
 	 * @param field     the array of objects
 	 * @param fieldName the description of the field
 	 */
-	public static void notEmpty(int[] field, String fieldName) {
+	public static final void notEmpty(int[] field, String fieldName) {
 		notNull(field, fieldName);
 		if (field.length == 0) {
 			throw new IllegalArgumentException(fieldName + " cannot be empty");
@@ -121,7 +121,7 @@ public class Args {
 	 * @param field     the array of objects
 	 * @param fieldName the description of the field
 	 */
-	public static void notEmpty(char[] field, String fieldName) {
+	public static final void notEmpty(char[] field, String fieldName) {
 		notNull(field, fieldName);
 		if (field.length == 0) {
 			throw new IllegalArgumentException(fieldName + " cannot be empty");
@@ -135,7 +135,7 @@ public class Args {
 	 * @param o         a character sequence
 	 * @param fieldName the description of the field
 	 */
-	public static void notEmpty(CharSequence o, String fieldName) {
+	public static final void notEmpty(CharSequence o, String fieldName) {
 		notNull(o, fieldName);
 		if (o.length() == 0) {
 			throw new IllegalArgumentException(fieldName + " cannot be empty");
@@ -148,7 +148,7 @@ public class Args {
 	 * @param o         a character sequence
 	 * @param fieldName the description of the field
 	 */
-	public static void notBlank(CharSequence o, String fieldName) {
+	public static final void notBlank(CharSequence o, String fieldName) {
 		notNull(o, fieldName);
 		if (o.toString().trim().isEmpty()) {
 			throw new IllegalArgumentException(fieldName + " cannot be blank");
@@ -161,7 +161,7 @@ public class Args {
 	 * @param o         the array of elements to be validated.
 	 * @param fieldName description of the array.
 	 */
-	public static void noBlanks(Object[] o, String fieldName) {
+	public static final void noBlanks(Object[] o, String fieldName) {
 		notNull(o, fieldName);
 		for (Object e : o) {
 			if (e == null) {
@@ -181,7 +181,7 @@ public class Args {
 	 * @param file      a file
 	 * @param fieldName the description of the field
 	 */
-	public static void validFile(File file, String fieldName) {
+	public static final void validFile(File file, String fieldName) {
 		notNull(file, fieldName);
 		if (!file.exists()) {
 			throw new IllegalArgumentException("Illegal " + fieldName + ": '" + file.getAbsolutePath() + "' it does not exist.");
@@ -196,14 +196,14 @@ public class Args {
 	 *
 	 * @param transactionIsolationLevel code of the transaction isolation level
 	 */
-	public static void validTransactionIsolationLevel(int transactionIsolationLevel) {
+	public static final void validTransactionIsolationLevel(int transactionIsolationLevel) {
 		List<Integer> levels = Arrays.asList(TRANSACTION_NONE, TRANSACTION_READ_COMMITTED, TRANSACTION_READ_UNCOMMITTED, TRANSACTION_REPEATABLE_READ, TRANSACTION_SERIALIZABLE);
 		if (!levels.contains(transactionIsolationLevel)) {
 			throw new IllegalArgumentException("Illegal transaction isolation level: " + transactionIsolationLevel + ". Accepted isolation levels are: " + levels + " (from java.sql.Connection)");
 		}
 	}
 
-	public static String guessAndValidateName(String name, File file, String fieldName) {
+	public static final String guessAndValidateName(String name, File file, String fieldName) {
 		if (name != null) {
 			notBlank(name, fieldName);
 			return name;
@@ -230,7 +230,7 @@ public class Args {
 	 *
 	 * @return {@code true} if the given {@code String} is null, empty or blank, otherwise returns {@code false}
 	 */
-	public static boolean isBlank(String s) {
+	public static final boolean isBlank(String s) {
 		return s == null || s.trim().isEmpty();
 	}
 
@@ -241,7 +241,7 @@ public class Args {
 	 *
 	 * @return {@code true} if the given {@code String} is not null, empty or blank, otherwise returns {@code false}
 	 */
-	public static boolean isNotBlank(String s) {
+	public static final boolean isNotBlank(String s) {
 		return !isBlank(s);
 	}
 
@@ -253,7 +253,7 @@ public class Args {
 	 *
 	 * @return the resulting {@code String} with all known system properties replaced.
 	 */
-	public static String replaceSystemProperties(String string) {
+	public static final String replaceSystemProperties(String string) {
 		int offset = 0;
 		int braceOpen = 0;
 		while (braceOpen >= 0) {
@@ -289,7 +289,7 @@ public class Args {
 	 *
 	 * @return the decoded value.
 	 */
-	public static String decode(Object value) {
+	public static final String decode(Object value) {
 		return decode(null, value, null);
 	}
 
@@ -301,7 +301,7 @@ public class Args {
 	 *
 	 * @return the decoded value.
 	 */
-	public static String decode(Object value, String charsetName) {
+	public static final String decode(Object value, String charsetName) {
 		return decode(null, value, charsetName);
 	}
 
@@ -314,7 +314,7 @@ public class Args {
 	 *
 	 * @return the decoded value.
 	 */
-	public static String decode(String parameterName, Object value, String charsetName) {
+	public static final String decode(String parameterName, Object value, String charsetName) {
 		if (value == null) {
 			return null;
 		}
@@ -343,7 +343,7 @@ public class Args {
 	 *
 	 * @return the encoded value.
 	 */
-	public static String encode(Object parameterValue) {
+	public static final String encode(Object parameterValue) {
 		return encode(null, parameterValue, null);
 	}
 
@@ -356,7 +356,7 @@ public class Args {
 	 *
 	 * @return the encoded value.
 	 */
-	public static String encode(Object parameterValue, String charsetName) {
+	public static final String encode(Object parameterValue, String charsetName) {
 		return encode(null, parameterValue, charsetName);
 	}
 
@@ -370,7 +370,7 @@ public class Args {
 	 *
 	 * @return the encoded value.
 	 */
-	public static String encode(String parameterName, Object parameterValue, String charsetName) {
+	public static final String encode(String parameterName, Object parameterValue, String charsetName) {
 		if (parameterValue == null) {
 			return null;
 		}
@@ -406,7 +406,7 @@ public class Args {
 	 *
 	 * @return the corresponding {@code Calendar} instance
 	 */
-	public static Calendar isoDateStringToCalendar(String s) {
+	public static final Calendar isoDateStringToCalendar(String s) {
 		if (isBlank(s)) {
 			return null;
 		}
