@@ -185,7 +185,7 @@ public class RateLimiter {
 	}
 
 	/**
-	 * Decreases the wait time of the <emp>next</emp> process that will be put to wait.
+	 * Decreases the wait time of the <em>next</em> process that will be put to wait.
 	 * The wait time returns back to the interval provided in the constructor of this
 	 * class after the next process is blocked
 	 *
@@ -197,11 +197,11 @@ public class RateLimiter {
 	}
 
 	/**
-	 * Increases the wait time of the <emp>next</emp> process that will be put to wait.
+	 * Increases the wait time of the <em>next</em> process that will be put to wait.
 	 * The wait time returns back to the interval provided in the constructor of this
 	 * class after the next process is blocked
 	 *
-	 * @param timeToDecrease length of time add to the configured interval.
+	 * @param timeToIncrease length of time add to the configured interval.
 	 */
 	public final void increaseWaitTime(long timeToIncrease) {
 		Args.positive(timeToIncrease, "Time to increase");

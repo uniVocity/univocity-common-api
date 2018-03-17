@@ -81,6 +81,13 @@ public class Args {
 		}
 	}
 
+	public static void notEmpty(Collection<?> field, String fieldName) {
+		notNull(field, fieldName);
+		if (field.isEmpty()) {
+			throw new IllegalArgumentException(fieldName + " cannot be empty");
+		}
+	}
+
 	/**
 	 * Ensures a given collection is not null/empty
 	 *
@@ -88,7 +95,7 @@ public class Args {
 	 * @param fieldName the description of the field
 	 * @param <T>       the type of elements in the collection
 	 */
-	public static <T> void notEmpty(Collection<T> elements, String fieldName) {
+	public static <T> void noneEmpty(Collection<T> elements, String fieldName) {
 		notNull(elements, fieldName);
 		if (elements.isEmpty()) {
 			throw new IllegalArgumentException(fieldName + " cannot be empty");
