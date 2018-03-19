@@ -327,7 +327,7 @@ public final class HttpRequest implements Cloneable {
 	 * @throws IllegalArgumentException if the parameter name does not exist
 	 */
 	public final void setUrlParameter(String parameterName, Object parameterValue) {
-		this.url.set(parameterName, parameterValue);
+		setUrlParameter(parameterName, parameterValue, true);
 	}
 
 	/**
