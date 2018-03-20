@@ -39,7 +39,6 @@ public final class HttpRequest implements Cloneable {
 	private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
 	private LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
 	private List<Object[]> data = new ArrayList<Object[]>();
-	private TreeMap<String, Object> parameters = new TreeMap<String, Object>();
 	private Charset charset;
 	private boolean ignoreHttpErrors;
 
@@ -96,8 +95,8 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
-	 * Sets the {@code Connection} request header to explicitly to {@code keep-alive} if the connection is meant to be
 	 * reused for further requests, or to {@code close} if the connection should be discarded and closed as soon as the
+	 * Sets the {@code Connection} request header to explicitly to {@code keep-alive} if the connection is meant to be
 	 * response is processed.
 	 *
 	 * @param enableKeepAlive flag indicating whether or not the HTTP connection should be persistent (i.e kept alive).
@@ -515,9 +514,9 @@ public final class HttpRequest implements Cloneable {
 	public final void removeDataParameter(String paramName) {
 		Args.notBlank(paramName, "Parameter name");
 		Iterator<Object[]> it = this.data.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			Object[] entry = it.next();
-			if(paramName.equals(entry[0])){
+			if (paramName.equals(entry[0])) {
 				it.remove();
 			}
 		}
@@ -532,6 +531,24 @@ public final class HttpRequest implements Cloneable {
 	public final void setDataParameter(String paramName, Object value) {
 		removeDataParameter(paramName);
 		this.addDataParameter(paramName, value);
+	}
+
+	/**
+	 * Sets multiple parameters to the body of {@link HttpMethodType#POST} requests as a plain {@code String}s.
+	 * Multiple values can be associated with a parameter name. Any previous parameters will be removed.
+	 *
+	 * {@code null} or empty lists of values will cause an empty {@code String} to be associated with the parameter name.
+	 *
+	 * @param params the parameters and values associated with them. Multiple values can be associated with each
+	 *               parameter name.
+	 * @param keys   the specific keys to read from the given parameter map. Parameters will be added in the order
+	 *               defined by the key sequence. If the map doesn't contain a given key, a parameter named after
+	 *               the key will be created, assigning an empty {@code String} value to it.
+	 *               If no keys are provided, all elements of the map will be used.
+	 */
+	public final void setDataParameters(Map<String, String[]> params, String... keys) {
+		clearDataParameters();
+		addDataParameters(params, keys);
 	}
 
 
@@ -947,7 +964,6 @@ public final class HttpRequest implements Cloneable {
 		try {
 			HttpRequest clone = (HttpRequest) super.clone();
 			clone.url = this.url.clone();
-			clone.parameters = (TreeMap<String, Object>) this.parameters.clone();
 			clone.headers = (LinkedHashMap<String, String>) this.headers.clone();
 			clone.cookies = (LinkedHashMap<String, String>) this.cookies.clone();
 			clone.data = new ArrayList<Object[]>();
@@ -959,6 +975,46 @@ public final class HttpRequest implements Cloneable {
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException("Could not clone", e);
 		}
+	}
+
+	private void printMap(StringBuilder out, String title, Map<?,?> map){
+		out.append("\n+----[ ").append(title).append(" ]-----");
+		if (map.isEmpty()) {
+			out.append("\n| N/A");
+		} else {
+			for (Map.Entry<?, ?> header : map.entrySet()) {
+				out.append("\n| ");
+				out.append(header.getKey()).append(" = ").append(header.getValue());
+			}
+		}
+	}
+
+	public String printDetails() {
+		StringBuilder out = new StringBuilder();
+		out.append("+----[ ").append(httpMethodType).append(" ]-----\n| ");
+		out.append(getUrl());
+		printMap(out,"cookies", cookies);
+		printMap(out,"headers", headers);
+
+		out.append("\n+----[ data ]-----");
+		if (data.isEmpty()) {
+			out.append("\n| N/A");
+		} else {
+			for(Object[] entry : data){
+				out.append("\n| ").append(entry[0]).append(" = ");
+
+				String value = String.valueOf(entry[1]);
+				if(value.length() > 100){
+					out.append(value, 0, 100);
+					out.append("...");
+				} else {
+					out.append(value);
+				}
+			}
+		}
+		out.append("\n+-----------------\n");
+
+		return out.toString();
 	}
 
 	@Override
@@ -986,10 +1042,8 @@ public final class HttpRequest implements Cloneable {
 		if (headers != null ? !headers.equals(that.headers) : that.headers != null) {
 			return false;
 		}
-		if (data != null ? !data.equals(that.data) : that.data != null) {
-			return false;
-		}
-		return parameters != null ? parameters.equals(that.parameters) : that.parameters == null;
+
+		return Args.equals(data, that.data);
 	}
 
 	@Override
@@ -998,7 +1052,6 @@ public final class HttpRequest implements Cloneable {
 		result = 31 * result + (httpMethodType != null ? httpMethodType.hashCode() : 0);
 		result = 31 * result + (headers != null ? headers.hashCode() : 0);
 		result = 31 * result + (data != null ? data.hashCode() : 0);
-		result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
 		return result;
 	}
 }

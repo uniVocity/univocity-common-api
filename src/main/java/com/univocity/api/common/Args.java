@@ -447,4 +447,37 @@ public class Args {
 
 		return out;
 	}
+
+	/**
+	 * Determines whether two collections of Object[] contain the same values.
+	 * @param c1 the first collection
+	 * @param c2 the second collection.
+	 * @return {@code true} if both collections contain the same values, {@code false} otherwise.
+	 */
+	public static boolean equals(Collection<Object[]> c1, Collection<Object[]> c2) {
+		if(c1 == c2){
+			return true;
+		}
+		if (c1 != null) {
+			if (c2 != null) {
+				if (c1.size() == c2.size()) {
+					Iterator<Object[]> i1 = c1.iterator();
+					Iterator<Object[]> i2 = c1.iterator();
+
+					while (i1.hasNext()) {
+						if (!Arrays.equals(i1.next(), i2.next())) {
+							return false;
+						}
+					}
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		} else {
+			return c2 == null;
+		}
+	}
 }
