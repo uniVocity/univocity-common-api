@@ -523,6 +523,27 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
+	 * Returns the values associated with a parameter of the body a {@link HttpMethodType#POST} request
+	 *
+	 * @param paramName the parameter name
+	 * @return all values associated with the given parameter name.
+	 */
+	public final List<Object> getDataParameter(String paramName) {
+		Args.notBlank(paramName, "Parameter name");
+
+		List<Object> out = new ArrayList<Object>(1);
+
+		Iterator<Object[]> it = this.data.iterator();
+		while (it.hasNext()) {
+			Object[] entry = it.next();
+			if (paramName.equals(entry[0])) {
+				out.add(entry[1]);
+			}
+		}
+		return out;
+	}
+
+	/**
 	 * Adds/replaces a parameter of the body of {@link HttpMethodType#POST} requests as a plain {@code String}
 	 *
 	 * @param paramName the parameter name
