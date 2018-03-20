@@ -504,8 +504,36 @@ public final class HttpRequest implements Cloneable {
 	 * @param value     the parameter value
 	 */
 	public final void addDataParameter(String paramName, Object value) {
+		Args.notBlank(paramName, "Parameter name");
 		this.data.add(new Object[]{paramName, value == null ? "" : String.valueOf(value)});
 	}
+
+	/**
+	 * Removes a given data parameter from the body of a {@link HttpMethodType#POST} request
+	 * @param paramName the parameter name
+	 */
+	public final void removeDataParameter(String paramName) {
+		Args.notBlank(paramName, "Parameter name");
+		Iterator<Object[]> it = this.data.iterator();
+		while(it.hasNext()){
+			Object[] entry = it.next();
+			if(paramName.equals(entry[0])){
+				it.remove();
+			}
+		}
+	}
+
+	/**
+	 * Adds/replaces a parameter of the body of {@link HttpMethodType#POST} requests as a plain {@code String}
+	 *
+	 * @param paramName the parameter name
+	 * @param value     the parameter value
+	 */
+	public final void setDataParameter(String paramName, Object value) {
+		removeDataParameter(paramName);
+		this.addDataParameter(paramName, value);
+	}
+
 
 	/**
 	 * Adds multiple parameters to the body of {@link HttpMethodType#POST} requests as a plain {@code String}s.
@@ -607,6 +635,70 @@ public final class HttpRequest implements Cloneable {
 	 */
 	public final void addFileParameter(String paramName, String fileName, String pathToFile) {
 		this.data.add(new Object[]{paramName, fileName, new FileProvider(pathToFile)});
+	}
+
+	/**
+	 * Adds/replaces a parameter to the body of {@link HttpMethodType#POST} requests as an {@link InputStream}, which will
+	 * upload content in MIME multipart/form-data encoding.
+	 *
+	 * @param paramName    the parameter name
+	 * @param fileName     the file name
+	 * @param dataProvider a {@link ResourceProvider} which will open the input to be uploaded when required.
+	 */
+	public final void setDataStreamParameter(String paramName, String fileName, ResourceProvider<InputStream> dataProvider) {
+		removeDataParameter(paramName);
+		addDataStreamParameter(paramName, fileName, dataProvider);
+	}
+
+	/**
+	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as an {@link InputStream}, which will
+	 * upload content in MIME multipart/form-data encoding.
+	 *
+	 * @param paramName   the parameter name
+	 * @param fileName    the file name
+	 * @param inputStream the binary stream of the content to upload
+	 */
+	public final void setDataStreamParameter(String paramName, String fileName, final InputStream inputStream) {
+		removeDataParameter(paramName);
+		addDataStreamParameter(paramName, fileName, inputStream);
+	}
+
+	/**
+	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
+	 *
+	 * @param paramName the parameter name
+	 * @param fileName  the file name
+	 * @param file      the file to upload.
+	 */
+	public final void setFileParameter(String paramName, String fileName, FileProvider file) {
+		removeDataParameter(paramName);
+		addFileParameter(paramName, fileName, file);
+	}
+
+	/**
+	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
+	 *
+	 * @param paramName the parameter name
+	 * @param fileName  fileName   the file name
+	 * @param file      the file to upload.
+	 */
+	public final void setFileParameter(String paramName, String fileName, File file) {
+		removeDataParameter(paramName);
+		addFileParameter(paramName, fileName, file);
+	}
+
+	/**
+	 * Adds/replaces a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
+	 *
+	 * @param paramName  the parameter name
+	 * @param fileName   the file name
+	 * @param pathToFile the file or resource to upload.It can either be the path to a file in the file system or
+	 *                   a resource in the classpath. The path can contain system variables enclosed within { and }
+	 *                   (e.g. {@code {user.home}/myapp/log"}).
+	 */
+	public final void setFileParameter(String paramName, String fileName, String pathToFile) {
+		removeDataParameter(paramName);
+		addFileParameter(paramName, fileName, pathToFile);
 	}
 
 	/**
