@@ -462,7 +462,7 @@ public class Args {
 			if (c2 != null) {
 				if (c1.size() == c2.size()) {
 					Iterator<Object[]> i1 = c1.iterator();
-					Iterator<Object[]> i2 = c1.iterator();
+					Iterator<Object[]> i2 = c2.iterator();
 
 					while (i1.hasNext()) {
 						if (!Arrays.equals(i1.next(), i2.next())) {
