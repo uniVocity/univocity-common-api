@@ -215,7 +215,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * Further calls to this method will produce the same object, and no further HTTP requests will be performed.
 	 *
 	 * Use the {@link #clone()} method to obtain a copy of the current {@link UrlReaderProvider} instance if you need
-	 * to invoke hte HTTP request again.
+	 * to invoke the HTTP request again.
 	 *
 	 * @return the HTTP response originated by the configured HTTP request.
 	 */
