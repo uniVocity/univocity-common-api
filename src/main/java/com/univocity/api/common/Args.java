@@ -61,7 +61,7 @@ public class Args {
 	}
 
 	/**
-	 * Ensures a given array argument is not null/empty
+	 * Ensures a given array argument is not null/empty and no elements are null/empty
 	 *
 	 * @param sequence  the array of objects
 	 * @param fieldName the description of the field
