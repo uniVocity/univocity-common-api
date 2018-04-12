@@ -39,6 +39,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	private HttpResponse response;
 	private HttpRequest request;
 	private FileProvider localCopyProvider;
+	private URL url;
 
 	/**
 	 * Creates a new instance to read content from a given URL.
@@ -75,6 +76,24 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	}
 
 	/**
+	 * Returns a {@link URL} instance used to produce the current response. If {@link #getResponse()} was not invoked yet, the URL
+	 * provided in the constructor of this class will be returned. If redirection was enabled
+	 * (through {@link HttpRequest#getFollowRedirects()}), the redirection URL will be returned.
+	 *
+	 * @return the current URL
+	 */
+	public final URL getUrlInstance() {
+		if(url == null || !url.toString().equals(getUrl())){
+			try {
+				url = new URL(getUrl());
+			} catch (Exception ex) {
+				throw new IllegalStateException("Invalid URL " + getUrl(), ex);
+			}
+		}
+		return url;
+	}
+
+	/**
 	 * Returns a flag indicating whether the HTTP request has been executed and a response is already available through
 	 * {@link #getResponse()}.
 	 *
@@ -92,11 +111,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @return the current domain name.
 	 */
 	public final String getDomainName() {
-		try {
-			return new URL(getUrl()).getAuthority();
-		} catch (Exception ex) {
-			throw new IllegalStateException("Invalid URL " + getUrl(), ex);
-		}
+		return getUrlInstance().getAuthority();
 	}
 
 	/**
@@ -115,11 +130,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @return the current protocol.
 	 */
 	public final String getProtocol() {
-		try {
-			return new URL(getUrl()).getProtocol();
-		} catch (Exception ex) {
-			throw new IllegalStateException("Invalid URL " + getUrl(), ex);
-		}
+		return getUrlInstance().getProtocol();
 	}
 
 	/**
@@ -178,11 +189,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @return the path portion of the URL.
 	 */
 	public final String getPath() {
-		try {
-			return new URL(getUrl()).getPath();
-		} catch (Exception ex) {
-			throw new IllegalStateException("Invalid URL " + getUrl(), ex);
-		}
+		return getUrlInstance().getPath();
 	}
 
 	/**
