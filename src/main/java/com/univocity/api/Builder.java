@@ -7,6 +7,7 @@
 package com.univocity.api;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * This is the entry point to univocity's internal implementation classes. It connects the resources in the public API to their actual implementations in univocity's jars.
@@ -18,21 +19,9 @@ import java.util.*;
  */
 public final class Builder {
 
+	private static ConcurrentHashMap<Class, CommonFactoryProvider> providers = new ConcurrentHashMap<Class, CommonFactoryProvider>();
+
 	private static ServiceLoader<CommonFactoryProvider> factoryProviderLoader = ServiceLoader.load(CommonFactoryProvider.class);
-
-	private static CommonFactoryProvider loadProvider() {
-		Throwable error = null;
-		try {
-			for (CommonFactoryProvider provider : factoryProviderLoader) {
-				return provider;
-			}
-		} catch (Throwable e) {
-			error = e;
-		}
-		throw new IllegalStateException("Unable to load provider. You might need to use a different classloader in order to load it from uniVocity's jar file", error);
-	}
-
-	private static CommonFactoryProvider provider;
 
 	/**
 	 * Defines the class loader to be used to load uniVocity implementation classes (from univocity.jar)
@@ -41,15 +30,7 @@ public final class Builder {
 	 */
 	public static final synchronized void setClassLoader(ClassLoader classLoader) {
 		factoryProviderLoader = ServiceLoader.load(CommonFactoryProvider.class, classLoader);
-		provider = null;
-	}
-
-	private static final synchronized CommonFactoryProvider provider() {
-		if (provider == null) {
-			provider = loadProvider();
-		}
-
-		return provider;
+		providers.clear();
 	}
 
 	/**
@@ -62,6 +43,23 @@ public final class Builder {
 	 * @return an instance of the given type.
 	 */
 	public static final <T> T build(Class<T> builderType, Object... args) {
-		return provider().build(builderType, args);
+		T out = null;
+		CommonFactoryProvider builder = providers.get(builderType);
+		if(builder == null) {
+			for (CommonFactoryProvider provider : factoryProviderLoader) {
+				try {
+					out = provider.build(builderType, args);
+					providers.put(builderType, provider);
+				} catch (Throwable t) {
+					//ignore
+				}
+			}
+		} else {
+			out = builder.build(builderType, args);
+		}
+		if (out == null) {
+			throw new IllegalStateException("Unable to load implementation of " + builderType.getName() + ". You might need to use a different classloader in order to load it from uniVocity's jar file");
+		}
+		return out;
 	}
 }
