@@ -50,6 +50,7 @@ public final class Builder {
 				try {
 					out = provider.build(builderType, args);
 					providers.put(builderType, provider);
+					return out;
 				} catch (Throwable t) {
 					//ignore
 				}
@@ -58,7 +59,7 @@ public final class Builder {
 			out = builder.build(builderType, args);
 		}
 		if (out == null) {
-			throw new IllegalStateException("Unable to load implementation of " + builderType.getName() + ". You might need to use a different classloader in order to load it from uniVocity's jar file");
+			throw new IllegalStateException("Unable to load implementation of " + builderType.getName() + ". You might need to use a different classloader in order to load it from univocity's jar file");
 		}
 		return out;
 	}

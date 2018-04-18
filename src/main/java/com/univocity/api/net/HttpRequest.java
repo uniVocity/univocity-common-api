@@ -10,6 +10,7 @@ import com.univocity.api.*;
 import com.univocity.api.common.*;
 import com.univocity.api.io.*;
 
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.*;
@@ -45,6 +46,7 @@ public final class HttpRequest implements Cloneable {
 	private String proxyUser;
 	private char[] proxyPassword;
 	private RateLimiter rateLimiter;
+	private SSLSocketFactory sslSocketFactory;
 
 	/**
 	 * Creates a new request for a given request URL
@@ -976,6 +978,22 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
+	 * Get the current custom SSL socket factory, if any.
+	 * @return custom SSL socket factory if set, null otherwise
+	 */
+	public SSLSocketFactory getSslSocketFactory() {
+		return sslSocketFactory;
+	}
+
+	/**
+	 * Set a custom SSL socket factory.
+	 * @param sslSocketFactory SSL socket factory
+	 */
+	public void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+		this.sslSocketFactory = sslSocketFactory;
+	}
+
+	/**
 	 * Clones this request and all its configurations.
 	 * <b>NOTE:</b>Data parameters are reused and not cloned.
 	 *
@@ -998,7 +1016,7 @@ public final class HttpRequest implements Cloneable {
 		}
 	}
 
-	private void printMap(StringBuilder out, String title, Map<?,?> map){
+	private void printMap(StringBuilder out, String title, Map<?, ?> map) {
 		out.append("\n+----[ ").append(title).append(" ]-----");
 		if (map.isEmpty()) {
 			out.append("\n| N/A");
@@ -1014,18 +1032,18 @@ public final class HttpRequest implements Cloneable {
 		StringBuilder out = new StringBuilder();
 		out.append("+----[ ").append(httpMethodType).append(" ]-----\n| ");
 		out.append(getUrl());
-		printMap(out,"cookies", cookies);
-		printMap(out,"headers", headers);
+		printMap(out, "cookies", cookies);
+		printMap(out, "headers", headers);
 
 		out.append("\n+----[ data ]-----");
 		if (data.isEmpty()) {
 			out.append("\n| N/A");
 		} else {
-			for(Object[] entry : data){
+			for (Object[] entry : data) {
 				out.append("\n| ").append(entry[0]).append(" = ");
 
 				String value = String.valueOf(entry[1]);
-				if(value.length() > 100){
+				if (value.length() > 100) {
 					out.append(value, 0, 100);
 					out.append("...");
 				} else {
