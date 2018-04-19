@@ -45,7 +45,7 @@ public final class Builder {
 	public static final <T> T build(Class<T> builderType, Object... args) {
 		T out = null;
 		CommonFactoryProvider builder = providers.get(builderType);
-		if (builder == null) {
+		if (builder == null && !providers.containsKey(builderType)) {
 			if (!providers.isEmpty()) {
 				for (Map.Entry<Class, CommonFactoryProvider> e : providers.entrySet()) {
 					try {
@@ -67,7 +67,9 @@ public final class Builder {
 					//ignore
 				}
 			}
-		} else {
+
+			providers.put(builderType, null);
+		} else if (builder != null){
 			out = builder.build(builderType, args);
 		}
 		if (out == null) {
