@@ -45,7 +45,19 @@ public final class Builder {
 	public static final <T> T build(Class<T> builderType, Object... args) {
 		T out = null;
 		CommonFactoryProvider builder = providers.get(builderType);
-		if(builder == null) {
+		if (builder == null) {
+			if (!providers.isEmpty()) {
+				for (Map.Entry<Class, CommonFactoryProvider> e : providers.entrySet()) {
+					try {
+						out = e.getValue().build(builderType, args);
+						providers.put(builderType, e.getValue());
+						return out;
+					} catch (Throwable t) {
+						//ignore
+					}
+				}
+			}
+
 			for (CommonFactoryProvider provider : factoryProviderLoader) {
 				try {
 					out = provider.build(builderType, args);
