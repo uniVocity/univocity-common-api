@@ -13,7 +13,7 @@ import java.util.concurrent.*;
  * This is the entry point to univocity's internal implementation classes. It connects the resources in the public API to their actual implementations in univocity's jars.
  *
  * <p>In some circumstances, you might need to configure the class loader before being able to obtain instances of {@link CommonFactoryProvider} from univocity.jar.
- * If that is the case, use the {@link #setClassLoader(ClassLoader)} method before calling the {@link #provider()} method.
+ * If that is the case, use the {@link #setClassLoader(ClassLoader)} method before calling the {@link #build(Class, Object...)}} method.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
