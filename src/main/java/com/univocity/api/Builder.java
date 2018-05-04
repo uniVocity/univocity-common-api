@@ -68,7 +68,14 @@ public final class Builder {
 				}
 			}
 
-			providers.put(builderType, null);
+			if(builderType != null) {
+				providers.put(builderType, new CommonFactoryProvider() {
+					@Override
+					public <T> T build(Class<T> builderType, Object... args) {
+						return null;
+					}
+				});
+			}
 		} else if (builder != null){
 			out = builder.build(builderType, args);
 		}
