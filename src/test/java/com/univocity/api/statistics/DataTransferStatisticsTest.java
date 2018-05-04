@@ -68,10 +68,16 @@ public class DataTransferStatisticsTest {
 	@Test
 	public void testStatisticsReportingAtGivenIntervals() throws Exception {
 
-		final boolean[] last = new boolean[]{false};
-		final int[] count = new int[]{0};
+		final String source = "0123456789";
+		final int notificationInterval = 10;
+		final int waitTime = 5;
+		final int expectedMaximimNotificationsReceived = (source.length() * 2) + 1;
 
-		DataTransferStatistics<String, StringBuilder> stats = new DataTransferStatistics<String, StringBuilder>(10, new NotificationHandler<DataTransferStatistics<String, StringBuilder>>() {
+
+		final boolean[] last = new boolean[]{false};
+		final int[] notificationsReceived = new int[]{0};
+
+		DataTransferStatistics<String, StringBuilder> stats = new DataTransferStatistics<String, StringBuilder>(notificationInterval, new NotificationHandler<DataTransferStatistics<String, StringBuilder>>() {
 			@Override
 			public void notify(DataTransferStatistics<String, StringBuilder> statistics, boolean lastNotification) {
 				last[0] = lastNotification;
@@ -79,18 +85,16 @@ public class DataTransferStatisticsTest {
 					assertFalse(statistics.isRunning());
 					assertFalse(statistics.isAborted());
 					assertTrue(statistics.isStarted());
-					count[0]++;
+					notificationsReceived[0]++;
 					assertEquals(statistics.getTransferPercentage(), 1.0);
 				} else {
 					assertTrue(statistics.isRunning());
 					assertFalse(statistics.isAborted());
 					assertTrue(statistics.isStarted());
-					count[0]++;
+					notificationsReceived[0]++;
 				}
 			}
 		});
-
-		String source = "0123456789";
 
 		StringBuilder target = new StringBuilder();
 		stats.started(source, source.length(), target);
@@ -99,14 +103,15 @@ public class DataTransferStatisticsTest {
 			target.append(source.charAt(i));
 			stats.transferred(source, 1, target);
 
-			Thread.sleep(5);
+			Thread.sleep(waitTime);
 		}
 
 		assertFalse(last[0]);
 		stats.completed(source, target);
 		assertTrue(last[0]);
 
-		assertTrue(count[0] < (source.length() / 2) + 1 && count[0] > 4);
+		assertTrue(notificationsReceived[0] < expectedMaximimNotificationsReceived, notificationsReceived[0] + " should be less than" + expectedMaximimNotificationsReceived);
+		assertTrue( notificationsReceived[0] > 4, notificationsReceived[0] + " should be more than" + 4);
 	}
 
 }
