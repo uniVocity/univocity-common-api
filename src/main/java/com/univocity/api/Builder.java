@@ -80,7 +80,7 @@ public final class Builder {
 			out = builder.build(builderType, args);
 		}
 		if (out == null) {
-			throw new IllegalStateException("Unable to load implementation of " + builderType.getName() + ". You might need to use a different classloader in order to load it from univocity's jar file");
+			throw new IllegalStateException("Unable to load implementation of " + builderType.getName() + ".");
 		}
 		return out;
 	}
