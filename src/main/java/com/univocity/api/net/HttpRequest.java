@@ -464,29 +464,6 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
-	 * Returns a flag indicating whether SSL validation is enabled for HTTPS requests.
-	 *
-	 * <i>Defaults to {@code true}.</i>
-	 *
-	 * @return a flag indicating whether SSL will be validated.
-	 */
-	public final boolean isSslValidationEnabled() {
-		return validateSsl;
-	}
-
-	/**
-	 * Configures this HTTP request to enable/disable SSL validation for HTTPS requests.
-	 *
-	 * <i>Defaults to {@code true}.</i>
-	 *
-	 * @param validateSsl flag indicating whether SSL is should be validated.
-	 */
-	@UI
-	public final void setSslValidationEnabled(boolean validateSsl) {
-		this.validateSsl = validateSsl;
-	}
-
-	/**
 	 * Returns the {@link HttpMethodType} to be used by this request.
 	 * The method type identifies an action to be performed on the identified (remote) resource.
 	 *
