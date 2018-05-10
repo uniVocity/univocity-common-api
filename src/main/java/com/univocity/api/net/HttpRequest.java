@@ -35,7 +35,6 @@ public final class HttpRequest implements Cloneable {
 	private ParameterizedString url;
 	private int timeout = 0;
 	private boolean followRedirects = true;
-	private boolean validateSsl = true;
 	private HttpMethodType httpMethodType = HttpMethodType.GET;
 	private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
 	private LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
