@@ -455,7 +455,7 @@ public class Args {
 	 * @return {@code true} if both collections contain the same values, {@code false} otherwise.
 	 */
 	public static boolean equals(Collection<Object[]> c1, Collection<Object[]> c2) {
-		if(c1 == c2){
+		if (c1 == c2) {
 			return true;
 		}
 		if (c1 != null) {

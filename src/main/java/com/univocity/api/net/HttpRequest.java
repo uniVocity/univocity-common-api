@@ -30,15 +30,13 @@ import java.util.*;
  * @see HttpResponseReader
  * @see UrlReaderProvider
  */
-public final class HttpRequest implements Cloneable {
+//FIXME: javadoc
+public class HttpRequest extends HttpMessage implements Cloneable {
 
 	private ParameterizedString url;
-	private int timeout = 0;
+	private int timeout;
 	private boolean followRedirects = true;
-	private HttpMethodType httpMethodType = HttpMethodType.GET;
-	private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
-	private LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
-	private List<Object[]> data = new ArrayList<Object[]>();
+	private List<DataParameter> data = new ArrayList<DataParameter>();
 	private Charset charset;
 	private boolean ignoreHttpErrors;
 
@@ -46,6 +44,10 @@ public final class HttpRequest implements Cloneable {
 	private char[] proxyPassword;
 	private RateLimiter rateLimiter;
 	private SSLSocketFactory sslSocketFactory;
+	private int maxBodySize;
+	private String requestBody;
+	private boolean ignoreContentType;
+	private Charset postDataCharset = Charset.forName("UTF-8");
 
 	/**
 	 * Creates a new request for a given request URL
@@ -53,9 +55,11 @@ public final class HttpRequest implements Cloneable {
 	 * @param url the request URL
 	 * @param rateLimiter a {@link RateLimiter} to prevent the execution of excessive simultaneous requests.
 	 */
-	HttpRequest(String url, RateLimiter rateLimiter) {
+	protected HttpRequest(String url, RateLimiter rateLimiter) {
 		setUrl(url);
 		this.rateLimiter = rateLimiter;
+		this.addHeader("Accept-Encoding", "gzip");
+		this.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36");
 	}
 
 	/**
@@ -95,6 +99,52 @@ public final class HttpRequest implements Cloneable {
 		}
 	}
 
+
+	public int maxBodySize() {
+		return maxBodySize;
+	}
+
+
+	public void maxBodySize(int chars) {
+		Args.positiveOrZero(chars, "maximum body size must be 0 (unlimited) or larger");
+		maxBodySize = chars;
+	}
+
+
+	public String getRequestBody() {
+		return requestBody;
+	}
+
+	public void setRequestBody(String body) {
+		this.requestBody = body;
+	}
+
+	public boolean ignoreContentType() {
+		return ignoreContentType;
+	}
+
+	public void setIgnoreContentType(boolean ignoreContentType) {
+		this.ignoreContentType = ignoreContentType;
+	}
+
+	public Charset getPostDataCharset() {
+		return postDataCharset;
+	}
+
+	public String getPostDataCharsetName() {
+		return postDataCharset.name();
+	}
+
+	public void setPostDataCharset(String charsetName) {
+		Args.notBlank(charsetName, "Charset name for POST data request");
+		setPostDataCharset(Charset.forName(charsetName));
+	}
+
+	public void setPostDataCharset(Charset postDataCharset) {
+		Args.notNull(postDataCharset, "Charset for POST data request");
+		this.postDataCharset = postDataCharset;
+	}
+
 	/**
 	 * reused for further requests, or to {@code close} if the connection should be discarded and closed as soon as the
 	 * Sets the {@code Connection} request header to explicitly to {@code keep-alive} if the connection is meant to be
@@ -104,18 +154,6 @@ public final class HttpRequest implements Cloneable {
 	 */
 	public final void setKeepAliveEnabled(boolean enableKeepAlive) {
 		setHeader("Connection", enableKeepAlive ? "keep-alive" : "close");
-	}
-
-	/**
-	 * Returns a flag indicating whether the connection is meant to be reused for further requests (i.e. persistent) or
-	 * not, in which case the {@code Connection} request header is set to {@code close}. If the {@code Connection}
-	 * header is not set, it is assumed that the connection is persistent, and this method will return {@code true}.
-	 *
-	 * @return flag indicating whether or not the HTTP connection is persistent (i.e kept alive).
-	 */
-	public final boolean isKeepAliveEnabled() {
-		String value = headers.get("Connection");
-		return value == null || "keep-alive".equalsIgnoreCase(value);
 	}
 
 	/**
@@ -141,27 +179,39 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
-	 * Returns the current  {@code User-Agent} request header, which identifies the user agent originating the request.
+	 * Defines a header and its value. All headers are transmitted after the request line
+	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
 	 *
-	 * @return the {@code User-Agent} header
-	 */
-	public final String getUserAgent() {
-		return headers.get("User-Agent");
-	}
-
-	/**
-	 * Returns the current {@code Referer} request header that identifies the address of the web-page
-	 * that linked to the resource being requested.
+	 * Existing values associated with the given header will be removed.
 	 *
-	 * @return the {@code Referer} header
+	 * @param header the header name
+	 * @param value  the header value
 	 */
-	public final String getReferrer() {
-		return headers.get("Referer");
+	public final void addHeader(String header, String value) {
+		addHeader(header, value, false);
 	}
 
 	/**
 	 * Defines a header and its value. All headers are transmitted after the request line
 	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * Existing values associated with the given header will be removed.
+	 *
+	 * @param header the header name
+	 * @param value  the header value
+	 */
+	public final void addHeader(String header, String value, boolean encode) {
+		if (encode) {
+			value = Args.encode(value);
+		}
+		addMulti(headers, header, value);
+	}
+
+	/**
+	 * Defines a header and its value. All headers are transmitted after the request line
+	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * Existing values associated with the given header will be removed.
 	 *
 	 * @param header the header name
 	 * @param value  the header value
@@ -172,22 +222,26 @@ public final class HttpRequest implements Cloneable {
 
 	/**
 	 * Defines a header and its value. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs.
+	 *
+	 * Existing values associated with the given header will be removed.
 	 *
 	 * @param header the header name
-	 * @param value  the header value
+	 * @param value  the new header value
 	 * @param encode flag indicating whether the value should be encoded
 	 */
 	public final void setHeader(String header, String value, boolean encode) {
 		if (encode) {
 			value = Args.encode(value);
 		}
-		set(headers, header, value);
+		setMulti(headers, header, value);
 	}
 
 	/**
 	 * Replaces any previous headers with the given values. All headers are transmitted after the request line
 	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 *
+	 * Existing values associated with the given headers will be removed.
 	 *
 	 * @param headers a map of headers names and their values. Previous values will be discarded
 	 */
@@ -209,6 +263,8 @@ public final class HttpRequest implements Cloneable {
 	 * Replaces any previous headers with the given values. All headers are transmitted after the request line
 	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
 	 *
+	 * Existing values associated with the given header will be removed.
+	 *
 	 * @param headers a map of headers names and their values. Previous values will be discarded
 	 * @param encode  flag indicating whether values should be encoded
 	 */
@@ -227,11 +283,11 @@ public final class HttpRequest implements Cloneable {
 	public final void addHeaders(Map<String, String> headers, boolean encode) {
 		if (encode) {
 			for (Map.Entry<String, String> e : headers.entrySet()) {
-				set(this.headers, e.getKey(), Args.encode(e.getValue()));
+				addMulti(this.headers, e.getKey(), Args.encode(e.getValue()));
 			}
 		} else {
 			for (Map.Entry<String, String> e : headers.entrySet()) {
-				set(this.headers, e.getKey(), e.getValue());
+				addMulti(this.headers, e.getKey(), e.getValue());
 			}
 		}
 	}
@@ -268,6 +324,29 @@ public final class HttpRequest implements Cloneable {
 		for (Map.Entry<String, String> e : cookies.entrySet()) {
 			set(this.cookies, e.getKey(), e.getValue());
 		}
+	}
+
+	public final void removeCookie(String name) {
+		cookies.remove(name);
+	}
+
+	private void addMulti(Map<String, List<String>> map, String key, String value) {
+		setMulti(map, key, value, true);
+	}
+
+	private void setMulti(Map<String, List<String>> map, String key, String value) {
+		setMulti(map, key, value, false);
+	}
+
+	private void setMulti(Map<String, List<String>> map, String key, String value, boolean add) {
+		List<String> values = Utils.getValueCaseInsensitive(headers, key);
+		if (values == null) {
+			values = new ArrayList<String>();
+			map.put(key, values);
+		} else if (!add) {
+			values.clear();
+		}
+		values.add(value);
 	}
 
 	private void set(Map<String, String> map, String key, String value) {
@@ -463,18 +542,6 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
-	 * Returns the {@link HttpMethodType} to be used by this request.
-	 * The method type identifies an action to be performed on the identified (remote) resource.
-	 *
-	 * <i>Defaults to {@link HttpMethodType#GET}</i>
-	 *
-	 * @return the HTTP method to use
-	 */
-	public final HttpMethodType getHttpMethodType() {
-		return httpMethodType;
-	}
-
-	/**
 	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as a plain {@code String}
 	 *
 	 * @param paramName the parameter name
@@ -482,7 +549,7 @@ public final class HttpRequest implements Cloneable {
 	 */
 	public final void addDataParameter(String paramName, Object value) {
 		Args.notBlank(paramName, "Parameter name");
-		this.data.add(new Object[]{paramName, value == null ? "" : String.valueOf(value)});
+		this.data.add(DataParameter.create(paramName, value == null ? "" : String.valueOf(value)));
 	}
 
 	/**
@@ -491,10 +558,10 @@ public final class HttpRequest implements Cloneable {
 	 */
 	public final void removeDataParameter(String paramName) {
 		Args.notBlank(paramName, "Parameter name");
-		Iterator<Object[]> it = this.data.iterator();
+		Iterator<DataParameter> it = this.data.iterator();
 		while (it.hasNext()) {
-			Object[] entry = it.next();
-			if (paramName.equals(entry[0])) {
+			DataParameter entry = it.next();
+			if (paramName.equals(entry.key())) {
 				it.remove();
 			}
 		}
@@ -511,11 +578,11 @@ public final class HttpRequest implements Cloneable {
 
 		List<Object> out = new ArrayList<Object>(1);
 
-		Iterator<Object[]> it = this.data.iterator();
+		Iterator<DataParameter> it = this.data.iterator();
 		while (it.hasNext()) {
-			Object[] entry = it.next();
-			if (paramName.equals(entry[0])) {
-				out.add(entry[1]);
+			DataParameter entry = it.next();
+			if (paramName.equals(entry.key())) {
+				out.add(entry.value());
 			}
 		}
 		return out;
@@ -598,7 +665,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param dataProvider a {@link ResourceProvider} which will open the input to be uploaded when required.
 	 */
 	public final void addDataStreamParameter(String paramName, String fileName, ResourceProvider<InputStream> dataProvider) {
-		this.data.add(new Object[]{paramName, fileName, dataProvider});
+		this.data.add(DataParameter.create(paramName, fileName, dataProvider));
 	}
 
 	/**
@@ -626,7 +693,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param file      the file to upload.
 	 */
 	public final void addFileParameter(String paramName, String fileName, FileProvider file) {
-		this.data.add(new Object[]{paramName, fileName, file});
+		this.data.add(DataParameter.create(paramName, fileName, file));
 	}
 
 	/**
@@ -637,7 +704,7 @@ public final class HttpRequest implements Cloneable {
 	 * @param file      the file to upload.
 	 */
 	public final void addFileParameter(String paramName, String fileName, File file) {
-		this.data.add(new Object[]{paramName, fileName, new FileProvider(file)});
+		this.data.add(DataParameter.create(paramName, fileName, new FileProvider(file)));
 	}
 
 	/**
@@ -650,7 +717,7 @@ public final class HttpRequest implements Cloneable {
 	 *                   (e.g. {@code {user.home}/myapp/log"}).
 	 */
 	public final void addFileParameter(String paramName, String fileName, String pathToFile) {
-		this.data.add(new Object[]{paramName, fileName, new FileProvider(pathToFile)});
+		this.data.add(DataParameter.create(paramName, fileName, new FileProvider(pathToFile)));
 	}
 
 	/**
@@ -718,32 +785,125 @@ public final class HttpRequest implements Cloneable {
 	}
 
 	/**
-	 * Returns the currently defined headers and their values. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
-	 *
-	 * @return a map of headers and their values.
-	 */
-	public final Map<String, String> getHeaders() {
-		return Collections.unmodifiableMap(headers);
-	}
-
-	/**
-	 * Returns the cookies to be added to the {@code Cookie} HTTP header.
-	 * All cookies are sent in this header in the format of semicolon-separated name-value pairs.
-	 *
-	 * @return a map of cookie names and values.
-	 */
-	public final Map<String, String> getCookies() {
-		return Collections.unmodifiableMap(cookies);
-	}
-
-	/**
 	 * Returns the data parameters sent by on the body of this request if it is a {@link HttpMethodType#POST} request.
 	 *
 	 * @return a map of data parameters and their values.
 	 */
-	public final List<Object[]> getData() {
-		return Collections.unmodifiableList(data);
+	public final List<DataParameter> getData() {
+		return data;
+	}
+
+	public final void removeHeader(String name) {
+		Map.Entry<String, List<String>> entry = Utils.getEntryCaseInsensitive(headers, name);
+		if (entry != null) {
+			headers.remove(entry.getKey());
+		}
+	}
+
+	/**
+	 * Add an input stream as a request data parameter. For GETs, has no effect, but for POSTS this will upload the
+	 * input stream.
+	 *
+	 * @param key         data key (form item name)
+	 * @param filename    the name of the file to present to the remove server. Typically just the name, not path,
+	 *                    component.
+	 * @param inputStream the input stream to upload.
+	 * @param contentType the Content Type (aka mimetype) to specify for this file.
+	 *                    You must close the InputStream in a {@code finally} block.
+	 *
+	 * @return this Connections, for chaining
+	 */
+	public void data(String key, String filename, final InputStream inputStream, String contentType) {
+		data(key, filename, new ResourceProvider<InputStream>() {
+			@Override
+			public InputStream getResource() {
+				return inputStream;
+			}
+		}, contentType);
+
+	}
+
+	/**
+	 * Add an input stream as a request data parameter. For GETs, has no effect, but for POSTS this will upload the
+	 * input stream.
+	 *
+	 * @param key         data key (form item name)
+	 * @param filename    the name of the file to present to the remove server. Typically just the name, not path,
+	 *                    component.
+	 * @param inputStreamProvider the input stream provider to upload.
+	 * @param contentType the Content Type (aka mimetype) to specify for this file.
+	 *                    You must close the InputStream in a {@code finally} block.
+	 *
+	 * @return this Connections, for chaining
+	 */
+	public void data(String key, String filename, ResourceProvider<InputStream> inputStreamProvider, String contentType) {
+		this.data.add(DataParameter.create(key, filename, inputStreamProvider).contentType(contentType));
+	}
+
+	public void data(Map<String, String> data) {
+		Args.notNull(data, "Data map");
+		for (Map.Entry<String, String> entry : data.entrySet()) {
+			this.data.add(DataParameter.create(entry.getKey(), entry.getValue()));
+		}
+	}
+
+	/**
+	 * Add an input stream as a request data parameter. For GETs, has no effect, but for POSTS this will upload the
+	 * input stream.
+	 *
+	 * @param key         data key (form item name)
+	 * @param filename    the name of the file to present to the remove server. Typically just the name, not path,
+	 *                    component.
+	 * @param inputStream the input stream to upload, that you probably obtained from a {@link java.io.FileInputStream}.
+	 *
+	 * @return this Connections, for chaining
+	 */
+	public void data(String key, String filename, final InputStream inputStream) {
+		data(key, filename, inputStream, null);
+	}
+
+	/**
+	 * Add an input stream as a request data parameter. For GETs, has no effect, but for POSTS this will upload the
+	 * input stream.
+	 *
+	 * @param key         data key (form item name)
+	 * @param filename    the name of the file to present to the remove server. Typically just the name, not path,
+	 *                    component.
+	 * @param inputStream the input stream to upload.
+	 *
+	 * @return this Connections, for chaining
+	 */
+	public void data(String key, String filename, ResourceProvider<InputStream> inputStreamProvider) {
+		data(key, filename, inputStreamProvider, null);
+	}
+
+	public void data(String... keyValuePairs) {
+		if (keyValuePairs.length % 2 != 0) {
+			throw new IllegalArgumentException("Number of elements in sequence of key value pairs must be even");
+		}
+		for (int i = 0; i < keyValuePairs.length; i += 2) {
+			String key = keyValuePairs[i];
+			String value = keyValuePairs[i + 1];
+			Args.notBlank(key, "Data key");
+			Args.notNull(value, "Data value");
+			this.data.add(DataParameter.create(key, value));
+		}
+	}
+
+	public DataParameter data(String key) {
+		Args.notEmpty(key, "Data key must not be empty");
+		for (DataParameter param : data) {
+			if (param.key().equals(key))
+				return param;
+		}
+		return null;
+	}
+
+	public void data(Collection<DataParameter> data) {
+		Args.notNull(data, "Data collection");
+		for (DataParameter entry : data) {
+			this.data.add(entry);
+		}
 	}
 
 	/**
@@ -979,13 +1139,24 @@ public final class HttpRequest implements Cloneable {
 		try {
 			HttpRequest clone = (HttpRequest) super.clone();
 			clone.url = this.url.clone();
-			clone.headers = (LinkedHashMap<String, String>) this.headers.clone();
-			clone.cookies = (LinkedHashMap<String, String>) this.cookies.clone();
-			clone.data = new ArrayList<Object[]>();
 
-			for (Object[] object : this.data) {
-				clone.data.add(object.clone());
+			clone.cookies = new LinkedHashMap<String, String>(this.cookies);
+
+			clone.headers = new LinkedHashMap<String, List<String>>();
+			for (Map.Entry<String, List<String>> e : this.headers.entrySet()) {
+				List<String> values = e.getValue();
+				if (values != null) {
+					values = new ArrayList<String>(values);
+				}
+				clone.headers.put(e.getKey(), values);
 			}
+
+			clone.data = new ArrayList<DataParameter>();
+
+			for (DataParameter entry : this.data) {
+				clone.data.add(entry.clone());
+			}
+
 			return clone;
 		} catch (CloneNotSupportedException e) {
 			throw new IllegalStateException("Could not clone", e);
@@ -1015,10 +1186,10 @@ public final class HttpRequest implements Cloneable {
 		if (data.isEmpty()) {
 			out.append("\n| N/A");
 		} else {
-			for (Object[] entry : data) {
-				out.append("\n| ").append(entry[0]).append(" = ");
+			for (DataParameter entry : data) {
+				out.append("\n| ").append(entry.key()).append(" = ");
 
-				String value = String.valueOf(entry[1]);
+				String value = String.valueOf(entry.value());
 				if (value.length() > 100) {
 					out.append(value, 0, 100);
 					out.append("...");
@@ -1051,6 +1222,9 @@ public final class HttpRequest implements Cloneable {
 		if (url != null ? !url.equals(that.url) : that.url != null) {
 			return false;
 		}
+		if (requestBody != null ? !requestBody.equals(that.requestBody) : that.requestBody != null) {
+			return false;
+		}
 		if (httpMethodType != that.httpMethodType) {
 			return false;
 		}
@@ -1058,7 +1232,7 @@ public final class HttpRequest implements Cloneable {
 			return false;
 		}
 
-		return Args.equals(data, that.data);
+		return data.equals(that.data);
 	}
 
 	@Override
@@ -1067,6 +1241,7 @@ public final class HttpRequest implements Cloneable {
 		result = 31 * result + (httpMethodType != null ? httpMethodType.hashCode() : 0);
 		result = 31 * result + (headers != null ? headers.hashCode() : 0);
 		result = 31 * result + (data != null ? data.hashCode() : 0);
+		result = 31 * result + (requestBody != null ? requestBody.hashCode() : 0);
 		return result;
 	}
 }

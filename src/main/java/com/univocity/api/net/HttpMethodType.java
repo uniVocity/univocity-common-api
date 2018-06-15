@@ -66,5 +66,11 @@ public enum HttpMethodType {
 	/**
 	 * For use with a proxy that can dynamically switch to being a tunnel (e.g. SSL)
 	 */
-	CONNECT
+	CONNECT;
+
+
+	//FIXME: javadoc
+	public final boolean hasBody() {
+		return this == POST || this == PUT || this == PATCH;
+	}
 }

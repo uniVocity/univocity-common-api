@@ -69,12 +69,20 @@ public interface HttpResponse extends Closeable {
 	 */
 	URL getUrl();
 
+	//FIXME: javadoc
 	/**
 	 * Returns a map with all header fields an their corresponding values in this response message.
 	 *
 	 * @return the headers of this HTTP response
 	 */
 	Map<String, String> getHeaders();
+
+	/**
+	 * Returns a map with all header fields an their corresponding values in this response message.
+	 *
+	 * @return the headers of this HTTP response
+	 */
+	Map<String, List<String>> getMultiHeaders();
 
 	/**
 	 * Returns a map with the cookie collection listed in the {@code Set-Cookie} header of this response message.
