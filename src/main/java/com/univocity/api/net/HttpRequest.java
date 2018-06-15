@@ -16,6 +16,8 @@ import java.net.*;
 import java.nio.charset.*;
 import java.util.*;
 
+import static com.univocity.api.common.Utils.*;
+
 /**
  * A reusable, cloneable HTTP request configuration, with support for parameterization of the URL.
  *
@@ -331,22 +333,11 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	private void addMulti(Map<String, List<String>> map, String key, String value) {
-		setMulti(map, key, value, true);
+		putValueCaseInsensitive(map, key, value, true);
 	}
 
 	private void setMulti(Map<String, List<String>> map, String key, String value) {
-		setMulti(map, key, value, false);
-	}
-
-	private void setMulti(Map<String, List<String>> map, String key, String value, boolean add) {
-		List<String> values = Utils.getValueCaseInsensitive(headers, key);
-		if (values == null) {
-			values = new ArrayList<String>();
-			map.put(key, values);
-		} else if (!add) {
-			values.clear();
-		}
-		values.add(value);
+		putValueCaseInsensitive(map, key, value, false);
 	}
 
 	private void set(Map<String, String> map, String key, String value) {

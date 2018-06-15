@@ -105,4 +105,17 @@ public class Utils {
 		}
 		return e.getValue();
 	}
+
+	//FIXME: javadoc
+	public static final <V> void putValueCaseInsensitive(Map<String, List<V>> map, String key, V value, boolean add) {
+		List<V> values = Utils.getValueCaseInsensitive(map, key);
+		if (values == null) {
+			values = new ArrayList<V>();
+			map.put(key, values);
+		} else if (!add) {
+			values.clear();
+		}
+		values.add(value);
+	}
+
 }

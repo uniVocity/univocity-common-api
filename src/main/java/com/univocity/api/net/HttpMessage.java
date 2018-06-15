@@ -40,7 +40,7 @@ public abstract class HttpMessage {
 	 * @return a map of headers and their values.
 	 */
 	public final Map<String, List<String>> getMultiHeaders() {
-		return headers;
+		return Collections.unmodifiableMap(headers);
 	}
 
 	/**
@@ -80,7 +80,7 @@ public abstract class HttpMessage {
 	 * @return a map of cookie names and values.
 	 */
 	public final Map<String, String> getCookies() {
-		return cookies;
+		return Collections.unmodifiableMap(cookies);
 	}
 
 	/**
@@ -134,4 +134,14 @@ public abstract class HttpMessage {
 		return cookies.containsKey(name);
 	}
 
+	public final boolean hasHeaderWithValue(String name, String value) {
+		List<String> values = getHeaderValues(name);
+		if (values != null) {
+			for (String candidate : values) {
+				if (value.equalsIgnoreCase(candidate))
+					return true;
+			}
+		}
+		return false;
+	}
 }
