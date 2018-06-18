@@ -106,7 +106,15 @@ public class Utils {
 		return e.getValue();
 	}
 
-	//FIXME: javadoc
+	/**
+	 * Adds a given value into a list of values of a map, where the key should be handled case-insensitively.
+	 * @param map the map into which the value will be added
+	 * @param key the key to look for
+	 * @param value the value to add
+	 * @param add a flag indicating whether the value should be added to the list of existing values, or if
+	 *            the list should be replaced by a new one containing only the given value.
+	 * @param <V> the type of the values stored in the map.
+	 */
 	public static final <V> void putValueCaseInsensitive(Map<String, List<V>> map, String key, V value, boolean add) {
 		List<V> values = Utils.getValueCaseInsensitive(map, key);
 		if (values == null) {

@@ -27,12 +27,11 @@ import static com.univocity.api.common.Utils.*;
  * generates the final URL.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
- * @see HttpMethodType
+ * @see RequestMethod
  * @see HttpResponse
  * @see HttpResponseReader
  * @see UrlReaderProvider
  */
-//FIXME: javadoc
 public class HttpRequest extends HttpMessage implements Cloneable {
 
 	private ParameterizedString url;
@@ -46,9 +45,8 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	private char[] proxyPassword;
 	private RateLimiter rateLimiter;
 	private SSLSocketFactory sslSocketFactory;
-	private int maxBodySize;
+	private int bodySizeLimit;
 	private String requestBody;
-	private boolean ignoreContentType;
 	private Charset postDataCharset = Charset.forName("UTF-8");
 
 	/**
@@ -86,7 +84,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 *
 	 * @param url the new request URL.
 	 */
-	public void setUrl(String url) {
+	public final void setUrl(String url) {
 		Args.notBlank(url, "HTTP request URL");
 
 		Map<String, Object> oldParameters = Collections.emptyMap();
@@ -101,48 +99,85 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		}
 	}
 
-
-	public int maxBodySize() {
-		return maxBodySize;
+	/**
+	 * Returns the size limit when reading the HTTP response body, effectively
+	 * truncating the response if the number of characters read exceed the given
+	 * limit.
+	 *
+	 * <b>Defaults to 0 (no limit)</b>
+	 *
+	 * @return the maximum number of characters to read from the response
+	 */
+	public final int getBodySizeLimit() {
+		return bodySizeLimit;
 	}
 
-
-	public void maxBodySize(int chars) {
-		Args.positiveOrZero(chars, "maximum body size must be 0 (unlimited) or larger");
-		maxBodySize = chars;
+	/**
+	 * Defines a size limit when reading the HTTP response body, effectively
+	 * truncating the response if the number of characters read exceed the given
+	 * limit.
+	 *
+	 * <b>Defaults to 0 (no limit)</b>
+	 *
+	 * @param limit the maximum number of characters to read from the response
+	 */
+	public final void setBodySizeLimit(int limit) {
+		Args.positiveOrZero(limit, "body size limit");
+		bodySizeLimit = limit;
 	}
 
-
-	public String getRequestBody() {
+	/**
+	 * Returns the plain request body to be sent by this request.
+	 *
+	 * @return the request body {@code String}.
+	 */
+	public final String getRequestBody() {
 		return requestBody;
 	}
 
-	public void setRequestBody(String body) {
+	/**
+	 * Defines a plain request body to be sent by this request.
+	 *
+	 * @param body the request body {@code String}.
+	 */
+	public final void setRequestBody(String body) {
 		this.requestBody = body;
 	}
 
-	public boolean ignoreContentType() {
-		return ignoreContentType;
-	}
-
-	public void setIgnoreContentType(boolean ignoreContentType) {
-		this.ignoreContentType = ignoreContentType;
-	}
-
-	public Charset getPostDataCharset() {
+	/**
+	 * Returns the POST data character set for {@code x-www-form-urlencoded} POST data
+	 *
+	 * @return the character set used to encode the POST data
+	 */
+	public final Charset getPostDataCharset() {
 		return postDataCharset;
 	}
 
-	public String getPostDataCharsetName() {
+	/**
+	 * Returns the name of the POST data character set for {@code x-www-form-urlencoded} POST data
+	 *
+	 * @return the name of the character set used to encode the POST data
+	 */
+	public final String getPostDataCharsetName() {
 		return postDataCharset.name();
 	}
 
-	public void setPostDataCharset(String charsetName) {
+	/**
+	 * Sets the POST data character set for {@code x-www-form-urlencoded} POST data
+	 *
+	 * @param charsetName name of the character set
+	 */
+	public final void setPostDataCharset(String charsetName) {
 		Args.notBlank(charsetName, "Charset name for POST data request");
 		setPostDataCharset(Charset.forName(charsetName));
 	}
 
-	public void setPostDataCharset(Charset postDataCharset) {
+	/**
+	 * Sets the POST data character set for {@code x-www-form-urlencoded} POST data
+	 *
+	 * @param postDataCharset the character set to use
+	 */
+	public final void setPostDataCharset(Charset postDataCharset) {
 		Args.notNull(postDataCharset, "Charset for POST data request");
 		this.postDataCharset = postDataCharset;
 	}
@@ -181,10 +216,10 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Defines a header and its value. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * Associates a value to a header. All headers are transmitted after the request line
+	 * (the first line of a HTTP message), in the format of comma-separated name-value pairs
 	 *
-	 * Existing values associated with the given header will be removed.
+	 * Existing values associated with the given header will remain.
 	 *
 	 * @param header the header name
 	 * @param value  the header value
@@ -194,13 +229,14 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Defines a header and its value. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * Associates a value to a header. All headers are transmitted after the request line
+	 * (the first line of a HTTP message), in the format of comma-separated name-value pairs
 	 *
-	 * Existing values associated with the given header will be removed.
+	 * Existing values associated with the given header will remain.
 	 *
 	 * @param header the header name
 	 * @param value  the header value
+	 * @param encode flag indicating whether to encode the given value
 	 */
 	public final void addHeader(String header, String value, boolean encode) {
 		if (encode) {
@@ -211,7 +247,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Defines a header and its value. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * (the first line of a HTTP message), in the format of comma-separated name-value pairs
 	 *
 	 * Existing values associated with the given header will be removed.
 	 *
@@ -224,7 +260,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Defines a header and its value. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs.
+	 * (the first line of a HTTP message), in the format of comma-separated name-value pairs.
 	 *
 	 * Existing values associated with the given header will be removed.
 	 *
@@ -241,7 +277,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Replaces any previous headers with the given values. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * (the first line of a HTTP message), in the format of comma-separated name-value pairs
 	 *
 	 * Existing values associated with the given headers will be removed.
 	 *
@@ -252,8 +288,9 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Adds the given headers and their values to the existing list of headers. All headers are transmitted after
-	 * the request line (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * Adds the given values to the existing list of headers. New header names will be added as required.
+	 * All headers are transmitted after the request line (the first line of a HTTP message), in the
+	 * format of comma-separated name-value pairs
 	 *
 	 * @param headers a map of header names and their values.
 	 */
@@ -263,7 +300,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Replaces any previous headers with the given values. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * (the first line of a HTTP message), in the format of comma-separated name-value pairs
 	 *
 	 * Existing values associated with the given header will be removed.
 	 *
@@ -276,8 +313,8 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Adds the given headers and their values to the existing list of headers. All headers are transmitted after
-	 * the request line (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * Adds the given values to the existing list of headers.. New header names will be added as required.
+	 * All headers are transmitted after the request line (the first line of a HTTP message), in the format of comma-separated name-value pairs
 	 *
 	 * @param headers a map of header names and their values.
 	 * @param encode  flag indicating whether values should be encoded
@@ -328,6 +365,10 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		}
 	}
 
+	/**
+	 * Removes a given cookie and its value from the {@code Cookie} header of this HTTP request
+	 * @param name the name of the cookie to be removed.
+	 */
 	public final void removeCookie(String name) {
 		cookies.remove(name);
 	}
@@ -363,14 +404,14 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Sets the {@link HttpMethodType} to be used by this request.
+	 * Sets the {@link RequestMethod} to be used by this request.
 	 * The method type identifies an action to be performed on the identified (remote) resource.
 	 *
-	 * <i>Defaults to {@link HttpMethodType#GET}</i>
+	 * <i>Defaults to {@link RequestMethod#GET}</i>
 	 *
 	 * @param httpMethodType the HTTP method to use
 	 */
-	public final void setHttpMethodType(HttpMethodType httpMethodType) {
+	public final void setHttpMethodType(RequestMethod httpMethodType) {
 		Args.notNull(httpMethodType, "HTTP method type");
 		this.httpMethodType = httpMethodType;
 	}
@@ -533,18 +574,17 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as a plain {@code String}
+	 * Adds a data parameter to the body of {@link RequestMethod#POST} requests as a plain {@code String}
 	 *
-	 * @param paramName the parameter name
-	 * @param value     the parameter value
+	 * @param dataParameter the data parameter
 	 */
-	public final void addDataParameter(String paramName, Object value) {
-		Args.notBlank(paramName, "Parameter name");
-		this.data.add(DataParameter.create(paramName, value == null ? "" : String.valueOf(value)));
+	public final void addDataParameter(DataParameter dataParameter){
+		Args.notNull(dataParameter, "Data parameter");
+		this.data.add(dataParameter);
 	}
 
 	/**
-	 * Removes a given data parameter from the body of a {@link HttpMethodType#POST} request
+	 * Removes a given data parameter from the body of a {@link RequestMethod#POST} request
 	 * @param paramName the parameter name
 	 */
 	public final void removeDataParameter(String paramName) {
@@ -552,46 +592,46 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		Iterator<DataParameter> it = this.data.iterator();
 		while (it.hasNext()) {
 			DataParameter entry = it.next();
-			if (paramName.equals(entry.key())) {
+			if (paramName.equals(entry.getName())) {
 				it.remove();
 			}
 		}
 	}
 
 	/**
-	 * Returns the values associated with a parameter of the body a {@link HttpMethodType#POST} request
+	 * Returns the values associated with a parameter of the body a {@link RequestMethod#POST} request
 	 *
 	 * @param paramName the parameter name
 	 * @return all values associated with the given parameter name.
 	 */
-	public final List<Object> getDataParameter(String paramName) {
+	public final List<DataParameter> getDataParameter(String paramName) {
 		Args.notBlank(paramName, "Parameter name");
 
-		List<Object> out = new ArrayList<Object>(1);
+		List<DataParameter> out = new ArrayList<DataParameter>(1);
 
 		Iterator<DataParameter> it = this.data.iterator();
 		while (it.hasNext()) {
 			DataParameter entry = it.next();
-			if (paramName.equals(entry.key())) {
-				out.add(entry.value());
+			if (paramName.equals(entry.getName())) {
+				out.add(entry);
 			}
 		}
 		return out;
 	}
 
 	/**
-	 * Adds/replaces a parameter of the body of {@link HttpMethodType#POST} requests as a plain {@code String}
+	 * Adds/replaces a parameter of the body of {@link RequestMethod#POST} requests as a plain {@code String}
 	 *
-	 * @param paramName the parameter name
-	 * @param value     the parameter value
+	 * @param dataParameter the new/updated data parameter
 	 */
-	public final void setDataParameter(String paramName, Object value) {
-		removeDataParameter(paramName);
-		this.addDataParameter(paramName, value);
+	public final void setDataParameter(DataParameter dataParameter) {
+		Args.notNull(dataParameter, "data parameter");
+		removeDataParameter(dataParameter.getName());
+		this.addDataParameter(dataParameter);
 	}
 
 	/**
-	 * Sets multiple parameters to the body of {@link HttpMethodType#POST} requests as a plain {@code String}s.
+	 * Sets multiple parameters to the body of {@link RequestMethod#POST} requests as a plain {@code String}s.
 	 * Multiple values can be associated with a parameter name. Any previous parameters will be removed.
 	 *
 	 * {@code null} or empty lists of values will cause an empty {@code String} to be associated with the parameter name.
@@ -610,7 +650,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 
 	/**
-	 * Adds multiple parameters to the body of {@link HttpMethodType#POST} requests as a plain {@code String}s.
+	 * Adds multiple parameters to the body of {@link RequestMethod#POST} requests as a plain {@code String}s.
 	 * Multiple values can be associated with a parameter name.
 	 *
 	 * {@code null} or empty lists of values will cause an empty {@code String} to be associated with the parameter name.
@@ -648,135 +688,29 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as an {@link InputStream}, which will
-	 * upload content in MIME multipart/form-data encoding.
-	 *
-	 * @param paramName    the parameter name
-	 * @param fileName     the file name
-	 * @param dataProvider a {@link ResourceProvider} which will open the input to be uploaded when required.
-	 */
-	public final void addDataStreamParameter(String paramName, String fileName, ResourceProvider<InputStream> dataProvider) {
-		this.data.add(DataParameter.create(paramName, fileName, dataProvider));
-	}
-
-	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as an {@link InputStream}, which will
-	 * upload content in MIME multipart/form-data encoding.
-	 *
-	 * @param paramName   the parameter name
-	 * @param fileName    the file name
-	 * @param inputStream the binary stream of the content to upload
-	 */
-	public final void addDataStreamParameter(String paramName, String fileName, final InputStream inputStream) {
-		addDataStreamParameter(paramName, fileName, new ResourceProvider<InputStream>() {
-			@Override
-			public InputStream getResource() {
-				return inputStream;
-			}
-		});
-	}
-
-	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
+	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as a plain {@code String}
 	 *
 	 * @param paramName the parameter name
-	 * @param fileName  the file name
-	 * @param file      the file to upload.
+	 * @param value     the parameter value
 	 */
-	public final void addFileParameter(String paramName, String fileName, FileProvider file) {
-		this.data.add(DataParameter.create(paramName, fileName, file));
+	public final void addDataParameter(String paramName, Object value) {
+		this.data.add(new DataParameter(paramName, value == null ? "" : String.valueOf(value)));
 	}
 
 	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
+	 * Replaces/adds a data parameter to the body of this request
 	 *
 	 * @param paramName the parameter name
-	 * @param fileName  fileName   the file name
-	 * @param file      the file to upload.
+	 * @param value     the parameter value
 	 */
-	public final void addFileParameter(String paramName, String fileName, File file) {
-		this.data.add(DataParameter.create(paramName, fileName, new FileProvider(file)));
+	public final void setDataParameter(String paramName, Object value) {
+		this.removeDataParameter(paramName);
+		this.data.add(new DataParameter(paramName, value == null ? "" : String.valueOf(value)));
 	}
 
-	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
-	 *
-	 * @param paramName  the parameter name
-	 * @param fileName   the file name
-	 * @param pathToFile the file or resource to upload.It can either be the path to a file in the file system or
-	 *                   a resource in the classpath. The path can contain system variables enclosed within { and }
-	 *                   (e.g. {@code {user.home}/myapp/log"}).
-	 */
-	public final void addFileParameter(String paramName, String fileName, String pathToFile) {
-		this.data.add(DataParameter.create(paramName, fileName, new FileProvider(pathToFile)));
-	}
 
 	/**
-	 * Adds/replaces a parameter to the body of {@link HttpMethodType#POST} requests as an {@link InputStream}, which will
-	 * upload content in MIME multipart/form-data encoding.
-	 *
-	 * @param paramName    the parameter name
-	 * @param fileName     the file name
-	 * @param dataProvider a {@link ResourceProvider} which will open the input to be uploaded when required.
-	 */
-	public final void setDataStreamParameter(String paramName, String fileName, ResourceProvider<InputStream> dataProvider) {
-		removeDataParameter(paramName);
-		addDataStreamParameter(paramName, fileName, dataProvider);
-	}
-
-	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as an {@link InputStream}, which will
-	 * upload content in MIME multipart/form-data encoding.
-	 *
-	 * @param paramName   the parameter name
-	 * @param fileName    the file name
-	 * @param inputStream the binary stream of the content to upload
-	 */
-	public final void setDataStreamParameter(String paramName, String fileName, final InputStream inputStream) {
-		removeDataParameter(paramName);
-		addDataStreamParameter(paramName, fileName, inputStream);
-	}
-
-	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
-	 *
-	 * @param paramName the parameter name
-	 * @param fileName  the file name
-	 * @param file      the file to upload.
-	 */
-	public final void setFileParameter(String paramName, String fileName, FileProvider file) {
-		removeDataParameter(paramName);
-		addFileParameter(paramName, fileName, file);
-	}
-
-	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
-	 *
-	 * @param paramName the parameter name
-	 * @param fileName  fileName   the file name
-	 * @param file      the file to upload.
-	 */
-	public final void setFileParameter(String paramName, String fileName, File file) {
-		removeDataParameter(paramName);
-		addFileParameter(paramName, fileName, file);
-	}
-
-	/**
-	 * Adds/replaces a parameter to the body of {@link HttpMethodType#POST} requests as {@link File}.
-	 *
-	 * @param paramName  the parameter name
-	 * @param fileName   the file name
-	 * @param pathToFile the file or resource to upload.It can either be the path to a file in the file system or
-	 *                   a resource in the classpath. The path can contain system variables enclosed within { and }
-	 *                   (e.g. {@code {user.home}/myapp/log"}).
-	 */
-	public final void setFileParameter(String paramName, String fileName, String pathToFile) {
-		removeDataParameter(paramName);
-		addFileParameter(paramName, fileName, pathToFile);
-	}
-
-	/**
-	 * Returns the data parameters sent by on the body of this request if it is a {@link HttpMethodType#POST} request.
+	 * Returns the data parameters sent by on the body of this request if it is a {@link RequestMethod#POST} request.
 	 *
 	 * @return a map of data parameters and their values.
 	 */
@@ -805,13 +739,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @return this Connections, for chaining
 	 */
 	public void data(String key, String filename, final InputStream inputStream, String contentType) {
-		data(key, filename, new ResourceProvider<InputStream>() {
-			@Override
-			public InputStream getResource() {
-				return inputStream;
-			}
-		}, contentType);
-
+		this.data.add(new DataParameter(key, filename, inputStream, contentType));
 	}
 
 	/**
@@ -828,13 +756,13 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @return this Connections, for chaining
 	 */
 	public void data(String key, String filename, ResourceProvider<InputStream> inputStreamProvider, String contentType) {
-		this.data.add(DataParameter.create(key, filename, inputStreamProvider).contentType(contentType));
+		this.data.add(new DataParameter(key, filename, inputStreamProvider, contentType));
 	}
 
 	public void data(Map<String, String> data) {
 		Args.notNull(data, "Data map");
 		for (Map.Entry<String, String> entry : data.entrySet()) {
-			this.data.add(DataParameter.create(entry.getKey(), entry.getValue()));
+			this.data.add(new DataParameter(entry.getKey(), entry.getValue()));
 		}
 	}
 
@@ -877,14 +805,14 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 			String value = keyValuePairs[i + 1];
 			Args.notBlank(key, "Data key");
 			Args.notNull(value, "Data value");
-			this.data.add(DataParameter.create(key, value));
+			this.data.add(new DataParameter(key, value));
 		}
 	}
 
 	public DataParameter data(String key) {
 		Args.notEmpty(key, "Data key must not be empty");
 		for (DataParameter param : data) {
-			if (param.key().equals(key))
+			if (param.getName().equals(key))
 				return param;
 		}
 		return null;
@@ -1178,9 +1106,9 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 			out.append("\n| N/A");
 		} else {
 			for (DataParameter entry : data) {
-				out.append("\n| ").append(entry.key()).append(" = ");
+				out.append("\n| ").append(entry.getName()).append(" = ");
 
-				String value = String.valueOf(entry.value());
+				String value = String.valueOf(entry.getValue());
 				if (value.length() > 100) {
 					out.append(value, 0, 100);
 					out.append("...");

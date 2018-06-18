@@ -12,15 +12,19 @@ import java.util.*;
 
 import static com.univocity.api.common.Utils.*;
 
-//FIXME: javadoc
+/**
+ * Basic details of a HTTP message (request or response)
+ */
 public abstract class HttpMessage {
-	protected HttpMethodType httpMethodType = HttpMethodType.GET;
+	protected RequestMethod httpMethodType = RequestMethod.GET;
 	protected LinkedHashMap<String, List<String>> headers = new LinkedHashMap<String, List<String>>();
 	protected LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
 
 	/**
-	 * Returns the currently defined headers and their values. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * Returns the headers and their corresponding values in this HTTP message.
+	 * If multiple values are associated with the same header, they will be be separated by comma.
+	 *
+	 * Use {@link #getMultiHeaders()} to obtain the multiple values in a list.
 	 *
 	 * @return a map of headers and their values.
 	 */
@@ -28,14 +32,22 @@ public abstract class HttpMessage {
 		return Utils.joinValues(headers, ", ");
 	}
 
+	/**
+	 * Checks whether this HTTP message has a given header defined. The search
+	 * is case insensitive.
+	 *
+	 * @param name the header name to look for
+	 * @return {@code true} if the given header exists in this HTTP message, otherwise {@code false}
+	 */
 	public final boolean hasHeader(String name) {
 		Map.Entry<String, List<String>> entry = getEntryCaseInsensitive(headers, name);
 		return entry != null;
 	}
 
 	/**
-	 * Returns the currently defined headers and their values. All headers are transmitted after the request line
-	 * (the first line of a HTTP message), in the format of colon-separated name-value pairs
+	 * Returns the headers and their corresponding values in this HTTP message.
+	 * Multiple values can be associated with the same header, use {@link #getHeaders()}
+	 * to obtain them as a comma separated sequence
 	 *
 	 * @return a map of headers and their values.
 	 */
@@ -45,7 +57,7 @@ public abstract class HttpMessage {
 
 	/**
 	 * Returns the value(s) currently defined for a given header. If multiple values are
-	 * associated with the header the resulting {@code String} will have them separated by a colon.
+	 * associated with the header the resulting {@code String} will have them separated by a comma.
 	 * Use {@link getHeaderValues(String)} to obtain the header values as a {@code List}
 	 *
 	 * @return the value(s) associated with the given header, or {@code null} if the header is not defined
@@ -61,9 +73,9 @@ public abstract class HttpMessage {
 	/**
 	 * Returns the list of values currently defined for a given header.
 	 *
-	 * Use {@link getHeaderValue(String)} to obtain the header values as a colon delimited {@code String}
+	 * Use {@link getHeaderValue(String)} to obtain the header values as a comma delimited {@code String}
 	 *
-	 * @return the list of value associated with the given header, or {@code null} if the header is not defined
+	 * @return the list of values associated with the given header, or {@code null} if the header is not defined
 	 */
 	public final List<String> getHeaderValues(String header) {
 		List<String> values = getValueCaseInsensitive(headers, header);
@@ -75,7 +87,6 @@ public abstract class HttpMessage {
 
 	/**
 	 * Returns the cookies to be added to the {@code Cookie} HTTP header.
-	 * All cookies are sent in this header in the format of semicolon-separated name-value pairs.
 	 *
 	 * @return a map of cookie names and values.
 	 */
@@ -84,14 +95,14 @@ public abstract class HttpMessage {
 	}
 
 	/**
-	 * Returns the {@link HttpMethodType} to be used by this request.
+	 * Returns the {@link RequestMethod} to be used by this request.
 	 * The method type identifies an action to be performed on the identified (remote) resource.
 	 *
-	 * <i>Defaults to {@link HttpMethodType#GET}</i>
+	 * <i>Defaults to {@link RequestMethod#GET}</i>
 	 *
 	 * @return the HTTP method to use
 	 */
-	public final HttpMethodType getHttpMethodType() {
+	public final RequestMethod getHttpMethodType() {
 		return httpMethodType;
 	}
 
@@ -126,14 +137,30 @@ public abstract class HttpMessage {
 		return getHeaderValue("Referer");
 	}
 
-	public final String getCookie(String name) {
+	/**
+	 * Returns the value associated with a given cookie name
+	 * @param name the name that identifies a cookie
+	 * @return the value associated with the cookie, it any.
+	 */
+	public final String getCookieValue(String name) {
 		return cookies.get(name);
 	}
 
+	/**
+	 * Verifies whether a cookie has been set
+	 * @param name the name that identifies a cookie
+	 * @return {@true} if a cookie with the given name has been defined, otherwise {@false}
+	 */
 	public final boolean hasCookie(String name) {
 		return cookies.containsKey(name);
 	}
 
+	/**
+	 * Verifies whether a given header has a value
+	 * @param name the header name whose values will be verified
+	 * @param value the value to find among the possible multiple values associated with the given header
+	 * @return {@code true} if the given value is associated with the given header name, otherwise {@code false}
+	 */
 	public final boolean hasHeaderWithValue(String name, String value) {
 		List<String> values = getHeaderValues(name);
 		if (values != null) {

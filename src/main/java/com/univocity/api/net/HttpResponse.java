@@ -13,12 +13,12 @@ import java.util.*;
 /**
  * A response object resulting from a HTTP request ({@link HttpRequest}) invoked from the {@link UrlReaderProvider}.
  *
- * Both text and binary content is supported.
+ * Both text and binary content are supported.
  *
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  * @see HttpResponseReader
  * @see HttpRequest
- * @see HttpMethodType
+ * @see RequestMethod
  * @see UrlReaderProvider
  */
 public interface HttpResponse extends Closeable {
@@ -69,18 +69,22 @@ public interface HttpResponse extends Closeable {
 	 */
 	URL getUrl();
 
-	//FIXME: javadoc
 	/**
-	 * Returns a map with all header fields an their corresponding values in this response message.
+	 * Returns the headers and their corresponding values in this HTTP response.
+	 * If multiple values are associated with the same header, they will be be separated by comma.
 	 *
-	 * @return the headers of this HTTP response
+	 * Use {@link #getMultiHeaders()} to obtain the multiple values in a list.
+	 *
+	 * @return a map of headers and their values.
 	 */
 	Map<String, String> getHeaders();
 
 	/**
-	 * Returns a map with all header fields an their corresponding values in this response message.
+	 * Returns the headers and their corresponding values in this HTTP response.
+	 * Multiple values can be associated with the same header, use {@link #getHeaders()}
+	 * to obtain them as a comma separated sequence
 	 *
-	 * @return the headers of this HTTP response
+	 * @return a map of headers and their values.
 	 */
 	Map<String, List<String>> getMultiHeaders();
 

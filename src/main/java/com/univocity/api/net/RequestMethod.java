@@ -16,7 +16,7 @@ package com.univocity.api.net;
  * @see HttpResponseReader
  * @see UrlReaderProvider
  */
-public enum HttpMethodType {
+public enum RequestMethod {
 
 	/**
 	 * Requests to delete the resource identified by the Request-URI.
@@ -69,7 +69,10 @@ public enum HttpMethodType {
 	CONNECT;
 
 
-	//FIXME: javadoc
+	/**
+	 * Checks whether this request method type supports a message body
+	 * @return {@code true} if a message body is supported, {@code false} otherwise
+	 */
 	public final boolean hasBody() {
 		return this == POST || this == PUT || this == PATCH;
 	}
