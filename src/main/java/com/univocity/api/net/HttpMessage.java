@@ -16,7 +16,7 @@ import static com.univocity.api.common.Utils.*;
  * Basic details of a HTTP message (request or response)
  */
 public abstract class HttpMessage {
-	protected RequestMethod httpMethodType = RequestMethod.GET;
+	protected RequestMethod requestMethod = RequestMethod.GET;
 	protected LinkedHashMap<String, List<String>> headers = new LinkedHashMap<String, List<String>>();
 	protected LinkedHashMap<String, String> cookies = new LinkedHashMap<String, String>();
 
@@ -102,8 +102,8 @@ public abstract class HttpMessage {
 	 *
 	 * @return the HTTP method to use
 	 */
-	public final RequestMethod getHttpMethodType() {
-		return httpMethodType;
+	public final RequestMethod getRequestMethod() {
+		return requestMethod;
 	}
 
 	/**

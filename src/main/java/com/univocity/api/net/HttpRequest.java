@@ -411,9 +411,9 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 *
 	 * @param httpMethodType the HTTP method to use
 	 */
-	public final void setHttpMethodType(RequestMethod httpMethodType) {
+	public final void setRequestMethod(RequestMethod httpMethodType) {
 		Args.notNull(httpMethodType, "HTTP method type");
-		this.httpMethodType = httpMethodType;
+		this.requestMethod = httpMethodType;
 	}
 
 	/**
@@ -1096,7 +1096,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	public String printDetails() {
 		StringBuilder out = new StringBuilder();
-		out.append("+----[ ").append(httpMethodType).append(" ]-----\n| ");
+		out.append("+----[ ").append(requestMethod).append(" ]-----\n| ");
 		out.append(getUrl());
 		printMap(out, "cookies", cookies);
 		printMap(out, "headers", headers);
@@ -1124,7 +1124,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	@Override
 	public String toString() {
-		return httpMethodType + " - " + getUrl();
+		return requestMethod + " - " + getUrl();
 	}
 
 	@Override
@@ -1144,7 +1144,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		if (requestBody != null ? !requestBody.equals(that.requestBody) : that.requestBody != null) {
 			return false;
 		}
-		if (httpMethodType != that.httpMethodType) {
+		if (requestMethod != that.requestMethod) {
 			return false;
 		}
 		if (headers != null ? !headers.equals(that.headers) : that.headers != null) {
@@ -1157,7 +1157,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	@Override
 	public int hashCode() {
 		int result = url != null ? url.hashCode() : 0;
-		result = 31 * result + (httpMethodType != null ? httpMethodType.hashCode() : 0);
+		result = 31 * result + (requestMethod != null ? requestMethod.hashCode() : 0);
 		result = 31 * result + (headers != null ? headers.hashCode() : 0);
 		result = 31 * result + (data != null ? data.hashCode() : 0);
 		result = 31 * result + (requestBody != null ? requestBody.hashCode() : 0);
