@@ -19,6 +19,9 @@ public class OrderedProperties extends Properties {
 
 	private final ArrayList<Object> propertySequence;
 
+	/**
+	 * Creates a new instances of this ordered {@code Properties} object.
+	 */
 	public OrderedProperties() {
 		propertySequence = new ArrayList<Object>();
 	}

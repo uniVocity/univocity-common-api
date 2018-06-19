@@ -17,8 +17,19 @@ public final class NoopDataTransfer implements DataTransfer {
 
 	}
 
+	/**
+	 * The only instance available of a {@code NoopDataTransfer}
+	 */
 	public static final DataTransfer instance = new NoopDataTransfer();
 
+	/**
+	 * Returns the singleton {@link #instance} of a {@code NoopDataTransfer} in generic-friendly way
+	 *
+	 * @param <S> the source of data, where data is coming from
+	 * @param <T> the target of data, where data is being transferred into.
+	 *
+	 * @return the {@code NoopDataTransfer} singleton {@link #instance}
+	 */
 	public static final <S, T> DataTransfer<S, T> getInstance() {
 		return instance;
 	}

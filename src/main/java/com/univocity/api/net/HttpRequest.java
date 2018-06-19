@@ -52,7 +52,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	/**
 	 * Creates a new request for a given request URL
 	 *
-	 * @param url the request URL
+	 * @param url         the request URL
 	 * @param rateLimiter a {@link RateLimiter} to prevent the execution of excessive simultaneous requests.
 	 */
 	protected HttpRequest(String url, RateLimiter rateLimiter) {
@@ -64,6 +64,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Returns the {@link RateLimiter} associated with this request, if any.
+	 *
 	 * @return the request rate limiter, if available.
 	 */
 	public final RateLimiter getRateLimiter() {
@@ -72,6 +73,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Associates a {@link RateLimiter} with this request to prevent multiple simultaneous requests.
+	 *
 	 * @param rateLimiter the rate limiter to be used when executing this request.
 	 */
 	public final void setRateLimiter(RateLimiter rateLimiter) {
@@ -367,6 +369,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Removes a given cookie and its value from the {@code Cookie} header of this HTTP request
+	 *
 	 * @param name the name of the cookie to be removed.
 	 */
 	public final void removeCookie(String name) {
@@ -578,13 +581,14 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 *
 	 * @param dataParameter the data parameter
 	 */
-	public final void addDataParameter(DataParameter dataParameter){
+	public final void addDataParameter(DataParameter dataParameter) {
 		Args.notNull(dataParameter, "Data parameter");
 		this.data.add(dataParameter);
 	}
 
 	/**
 	 * Removes a given data parameter from the body of a {@link RequestMethod#POST} request
+	 *
 	 * @param paramName the parameter name
 	 */
 	public final void removeDataParameter(String paramName) {
@@ -602,6 +606,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * Returns the values associated with a parameter of the body a {@link RequestMethod#POST} request
 	 *
 	 * @param paramName the parameter name
+	 *
 	 * @return all values associated with the given parameter name.
 	 */
 	public final List<DataParameter> getDataParameter(String paramName) {
@@ -688,7 +693,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	/**
-	 * Adds a parameter to the body of {@link HttpMethodType#POST} requests as a plain {@code String}
+	 * Adds a parameter to the body of {@link RequestMethod#POST} requests as a plain {@code String}
 	 *
 	 * @param paramName the parameter name
 	 * @param value     the parameter value
@@ -718,6 +723,10 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		return data;
 	}
 
+	/**
+	 * Removes a given header and all values associated with it from this HTTP request
+	 * @param name the name of the header to be removed
+	 */
 	public final void removeHeader(String name) {
 		Map.Entry<String, List<String>> entry = Utils.getEntryCaseInsensitive(headers, name);
 		if (entry != null) {
@@ -735,10 +744,8 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @param inputStream the input stream to upload.
 	 * @param contentType the Content Type (aka mimetype) to specify for this file.
 	 *                    You must close the InputStream in a {@code finally} block.
-	 *
-	 * @return this Connections, for chaining
 	 */
-	public void data(String key, String filename, final InputStream inputStream, String contentType) {
+	public void addDataParameter(String key, String filename, final InputStream inputStream, String contentType) {
 		this.data.add(new DataParameter(key, filename, inputStream, contentType));
 	}
 
@@ -746,23 +753,26 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * Add an input stream as a request data parameter. For GETs, has no effect, but for POSTS this will upload the
 	 * input stream.
 	 *
-	 * @param key         data key (form item name)
-	 * @param filename    the name of the file to present to the remove server. Typically just the name, not path,
-	 *                    component.
+	 * @param key                 data key (form item name)
+	 * @param filename            the name of the file to present to the remove server. Typically just the name, not path,
+	 *                            component.
 	 * @param inputStreamProvider the input stream provider to upload.
-	 * @param contentType the Content Type (aka mimetype) to specify for this file.
-	 *                    You must close the InputStream in a {@code finally} block.
-	 *
-	 * @return this Connections, for chaining
+	 * @param contentType         the Content Type (aka mimetype) to specify for this file.
+	 *                            You must close the InputStream in a {@code finally} block.
 	 */
-	public void data(String key, String filename, ResourceProvider<InputStream> inputStreamProvider, String contentType) {
+	public void addDataParameter(String key, String filename, ResourceProvider<InputStream> inputStreamProvider, String contentType) {
 		this.data.add(new DataParameter(key, filename, inputStreamProvider, contentType));
 	}
 
-	public void data(Map<String, String> data) {
+	/**
+	 * Adds multiple data parameters to the body of this request
+	 *
+	 * @param data a map of data parameter names and their corresponding values
+	 */
+	public void addDataParameters(Map<String, ?> data) {
 		Args.notNull(data, "Data map");
-		for (Map.Entry<String, String> entry : data.entrySet()) {
-			this.data.add(new DataParameter(entry.getKey(), entry.getValue()));
+		for (Map.Entry<String, ?> entry : data.entrySet()) {
+			this.addDataParameter(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -774,11 +784,9 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @param filename    the name of the file to present to the remove server. Typically just the name, not path,
 	 *                    component.
 	 * @param inputStream the input stream to upload, that you probably obtained from a {@link java.io.FileInputStream}.
-	 *
-	 * @return this Connections, for chaining
 	 */
-	public void data(String key, String filename, final InputStream inputStream) {
-		data(key, filename, inputStream, null);
+	public void addDataParameter(String key, String filename, final InputStream inputStream) {
+		addDataParameter(key, filename, inputStream, null);
 	}
 
 	/**
@@ -788,37 +796,32 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @param key         data key (form item name)
 	 * @param filename    the name of the file to present to the remove server. Typically just the name, not path,
 	 *                    component.
-	 * @param inputStream the input stream to upload.
-	 *
-	 * @return this Connections, for chaining
+	 * @param inputStreamProvider a callback provider that produces the input stream of the content to upload.
 	 */
-	public void data(String key, String filename, ResourceProvider<InputStream> inputStreamProvider) {
-		data(key, filename, inputStreamProvider, null);
+	public void addDataParameter(String key, String filename, ResourceProvider<InputStream> inputStreamProvider) {
+		addDataParameter(key, filename, inputStreamProvider, null);
 	}
 
-	public void data(String... keyValuePairs) {
-		if (keyValuePairs.length % 2 != 0) {
-			throw new IllegalArgumentException("Number of elements in sequence of key value pairs must be even");
-		}
-		for (int i = 0; i < keyValuePairs.length; i += 2) {
-			String key = keyValuePairs[i];
-			String value = keyValuePairs[i + 1];
-			Args.notBlank(key, "Data key");
-			Args.notNull(value, "Data value");
-			this.data.add(new DataParameter(key, value));
-		}
-	}
-
-	public DataParameter data(String key) {
+	/**
+	 * Returns the first {@link DataParameter} details associated with a given data parameter name.
+	 * @param key the data parameter name
+	 * @return the first {@link DataParameter} instance associated with the given name, or {@code null} if none.
+	 */
+	public DataParameter getFirstDataParameter(String key) {
 		Args.notEmpty(key, "Data key must not be empty");
 		for (DataParameter param : data) {
-			if (param.getName().equals(key))
+			if (param.getName().equals(key)) {
 				return param;
+			}
 		}
 		return null;
 	}
 
-	public void data(Collection<DataParameter> data) {
+	/**
+	 * Adds multiple data parameters to this HTTP request
+	 * @param data the data parameters to add
+	 */
+	public final  void addDataParameters(Collection<DataParameter> data) {
 		Args.notNull(data, "Data collection");
 		for (DataParameter entry : data) {
 			this.data.add(entry);
@@ -930,7 +933,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @param password  the proxy password (note the char array is copied)
 	 */
 	@UI
-	public void setProxy(Proxy.Type proxyType, String host, int port, String user, char[] password) {
+	public  final void setProxy(Proxy.Type proxyType, String host, int port, String user, char[] password) {
 		Proxy proxy = new Proxy(proxyType, new InetSocketAddress(host, port));
 		setProxy(proxy, host, port, user, password);
 	}
@@ -970,7 +973,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @param charset the charset name
 	 */
 	@UI
-	public void setCharset(String charset) {
+	public  final void setCharset(String charset) {
 		if (charset == null) {
 			this.charset = null;
 		} else {
@@ -984,7 +987,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 *
 	 * @param charset the charset
 	 */
-	public void setCharset(Charset charset) {
+	public final  void setCharset(Charset charset) {
 		this.charset = charset;
 	}
 
@@ -994,7 +997,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 *
 	 * @return the charset
 	 */
-	public Charset getCharset() {
+	public final  Charset getCharset() {
 		return this.charset;
 	}
 
@@ -1004,7 +1007,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 *
 	 * @return the charset name
 	 */
-	public String getCharsetName() {
+	public final  String getCharsetName() {
 		if (charset == null) {
 			return null;
 		}
@@ -1017,7 +1020,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 *
 	 * @return a flag indicating whether or not HTTP response code errors should be ignored/
 	 */
-	public boolean isIgnoreHttpErrors() {
+	public  final boolean isIgnoreHttpErrors() {
 		return ignoreHttpErrors;
 	}
 
@@ -1025,26 +1028,28 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * Configures the this HTTP request to ignore HTTP errors returned by the remote server and process the
 	 * response anyway. Defaults to {@code false}.
 	 *
-	 * @param ignoreHttpErrors flag indicating whether or not HTTP response code errors should be ignored/
+	 * @param ignoreHttpErrors flag indicating whether or not HTTP response code errors should be ignored
 	 */
 	@UI
-	public void setIgnoreHttpErrors(boolean ignoreHttpErrors) {
+	public final  void setIgnoreHttpErrors(boolean ignoreHttpErrors) {
 		this.ignoreHttpErrors = ignoreHttpErrors;
 	}
 
 	/**
 	 * Get the current custom SSL socket factory, if any.
-	 * @return custom SSL socket factory if set, null otherwise
+	 *
+	 * @return custom SSL socket factory if set, {@code null} otherwise
 	 */
-	public SSLSocketFactory getSslSocketFactory() {
+	public final  SSLSocketFactory getSslSocketFactory() {
 		return sslSocketFactory;
 	}
 
 	/**
 	 * Set a custom SSL socket factory.
+	 *
 	 * @param sslSocketFactory SSL socket factory
 	 */
-	public void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+	public final  void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
 		this.sslSocketFactory = sslSocketFactory;
 	}
 
@@ -1094,7 +1099,11 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		}
 	}
 
-	public String printDetails() {
+	/**
+	 * Returns a {@code String} with all relevant details of this HTTP request, including cookies, headers, data
+	 * @return the details of this request
+	 */
+	public  final String printDetails() {
 		StringBuilder out = new StringBuilder();
 		out.append("+----[ ").append(requestMethod).append(" ]-----\n| ");
 		out.append(getUrl());
@@ -1123,12 +1132,12 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	@Override
-	public String toString() {
+	public  final String toString() {
 		return requestMethod + " - " + getUrl();
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public  final boolean equals(Object o) {
 		if (this == o) {
 			return true;
 		}
@@ -1155,7 +1164,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		int result = url != null ? url.hashCode() : 0;
 		result = 31 * result + (requestMethod != null ? requestMethod.hashCode() : 0);
 		result = 31 * result + (headers != null ? headers.hashCode() : 0);

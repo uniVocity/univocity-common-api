@@ -13,5 +13,11 @@ package com.univocity.api.common;
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public interface ValueGetter<T> {
+
+	/**
+	 * Provides a value to the caller.
+	 *
+	 * @return the value
+	 */
 	T getValue();
 }

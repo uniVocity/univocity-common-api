@@ -58,7 +58,9 @@ public abstract class HttpMessage {
 	/**
 	 * Returns the value(s) currently defined for a given header. If multiple values are
 	 * associated with the header the resulting {@code String} will have them separated by a comma.
-	 * Use {@link getHeaderValues(String)} to obtain the header values as a {@code List}
+	 * Use {@link #getHeaderValues(String)} to obtain the header values as a {@code List}
+	 *
+	 * @param header the header name whose value(s) will be returned.
 	 *
 	 * @return the value(s) associated with the given header, or {@code null} if the header is not defined
 	 */
@@ -73,7 +75,9 @@ public abstract class HttpMessage {
 	/**
 	 * Returns the list of values currently defined for a given header.
 	 *
-	 * Use {@link getHeaderValue(String)} to obtain the header values as a comma delimited {@code String}
+	 * Use {@link #getHeaderValue(String)} to obtain the header values as a comma delimited {@code String}
+	 *
+	 * @param header the header name whose value(s) will be returned.
 	 *
 	 * @return the list of values associated with the given header, or {@code null} if the header is not defined
 	 */
@@ -149,7 +153,7 @@ public abstract class HttpMessage {
 	/**
 	 * Verifies whether a cookie has been set
 	 * @param name the name that identifies a cookie
-	 * @return {@true} if a cookie with the given name has been defined, otherwise {@false}
+	 * @return {@code true} if a cookie with the given name has been defined, otherwise {@code false}
 	 */
 	public final boolean hasCookie(String name) {
 		return cookies.containsKey(name);

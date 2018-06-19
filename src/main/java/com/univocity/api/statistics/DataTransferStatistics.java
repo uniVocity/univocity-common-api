@@ -78,10 +78,24 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 		setNotificationHandler(notificationInterval, handler);
 	}
 
+	/**
+	 * Associates a notification handler callback to receive updates from the data transfer operation
+	 *
+	 * @param handler the callback that will be used every time the data transfer statistics are updated
+	 */
 	protected final void setNotificationHandler(final NotificationHandler<DataTransferStatistics<S, T>> handler) {
 		setNotificationHandler(0, handler);
 	}
 
+	/**
+	 * Associates a notification handler callback to receive updates from the data transfer operation at
+	 * at most after a given amount of time has elapsed.
+	 *
+	 * @param notificationInterval the minimum interval in milliseconds to wait before the next call to
+	 *                             {@link NotificationHandler#notify(Object, boolean)} should be performed.
+	 *                             Prevents excessive notifications.
+	 * @param handler              the callback that will be used every time the data transfer statistics are updated
+	 */
 	protected final void setNotificationHandler(long notificationInterval, final NotificationHandler<DataTransferStatistics<S, T>> handler) {
 		if (notificationInterval > 0) {
 			this.notificationHandler = new TimedNotificationHandler<DataTransferStatistics<S, T>>(notificationInterval) {
@@ -425,12 +439,18 @@ public class DataTransferStatistics<S, T> implements DataTransfer<S, T> {
 
 	@Override
 	public final boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 
 		DataTransferStatistics<?, ?> that = (DataTransferStatistics<?, ?>) o;
 
-		if (!source.equals(that.source)) return false;
+		if (!source.equals(that.source)) {
+			return false;
+		}
 		return target.equals(that.target);
 
 	}

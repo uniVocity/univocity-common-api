@@ -18,6 +18,10 @@ import static java.sql.Connection.*;
  * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public class Args {
+
+	/**
+	 * Protected to allow subclassing
+	 */
 	protected Args() {
 
 	}
@@ -81,6 +85,12 @@ public class Args {
 		}
 	}
 
+	/**
+	 * Ensures a given collection is not null/empty
+	 *
+	 * @param field  the collection of objects
+	 * @param fieldName the description of the field
+	 */
 	public static void notEmpty(Collection<?> field, String fieldName) {
 		notNull(field, fieldName);
 		if (field.isEmpty()) {
@@ -89,7 +99,7 @@ public class Args {
 	}
 
 	/**
-	 * Ensures a given collection is not null/empty
+	 * Ensures a given collection is not null/empty and doesn't contain null/empty objects or blank Strings
 	 *
 	 * @param elements  the collection of objects
 	 * @param fieldName the description of the field
@@ -210,6 +220,16 @@ public class Args {
 		}
 	}
 
+	/**
+	 * Attempts to discover the plain name of a given file, without directories or its extension
+	 *
+	 * @param name      a name if known. Will be returned if provided.
+	 * @param file      a file whose path will be analyzed in order to extract a name from
+	 * @param fieldName name of field associated with the file name. Used for validation messages only
+	 *
+	 * @return the given name or the file name if possible. If neither can be provided,
+	 * an {@code IllegalArgumentException} will be thrown
+	 */
 	public static final String guessAndValidateName(String name, File file, String fieldName) {
 		if (name != null) {
 			notBlank(name, fieldName);
@@ -450,8 +470,10 @@ public class Args {
 
 	/**
 	 * Determines whether two collections of Object[] contain the same values.
+	 *
 	 * @param c1 the first collection
 	 * @param c2 the second collection.
+	 *
 	 * @return {@code true} if both collections contain the same values, {@code false} otherwise.
 	 */
 	public static boolean equals(Collection<Object[]> c1, Collection<Object[]> c2) {

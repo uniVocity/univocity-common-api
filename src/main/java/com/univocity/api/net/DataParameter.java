@@ -38,7 +38,7 @@ public final class DataParameter implements Cloneable {
 	 *
 	 * @param name the name of the data parameter
 	 * @param filename the name of the file being uploaded
-	 * @param uploadStream the {@code InputStream} with the contents to be uploaded
+	 * @param fileToUpload the file to be uploaded
 	 */
 	public DataParameter(final String name, String filename, final FileProvider fileToUpload) {
 		this(name, filename, fileToUpload, null);
@@ -73,7 +73,7 @@ public final class DataParameter implements Cloneable {
 	 *
 	 * @param name the name of the data parameter
 	 * @param filename the name of the file being uploaded
-	 * @param uploadStream the file with the contents to be uploaded
+	 * @param fileToUpload the file to be uploaded
 	 * @param contentType the Content Type header used in the MIME body when uploading files.
 	 *                    <b>Defaults to {@code application/octet-stream}.</b>
 	 */
