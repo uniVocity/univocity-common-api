@@ -9,7 +9,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.univocity</groupId>
 	<artifactId>univocity-common-api</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 	<name>univocity-common-api</name>
 	<description>uniVocity public API - Common classes and utilites</description>
 
@@ -22,10 +22,10 @@
 
 	<licenses>
 		<license>
-			<name>uniVocity</name>
+			<name>Univocity</name>
 			<url>http://www.univocity.com/pages/license</url>
 			<distribution>repo</distribution>
-			<comments>uniVocity data integration license</comments>
+			<comments>Univocity license</comments>
 		</license>
 	</licenses>
 
