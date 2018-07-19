@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 uniVocity Software Pty Ltd. All rights reserved.
+ * Copyright (c) 2013 Univocity Software Pty Ltd. All rights reserved.
  * This file is subject to the terms and conditions defined in file
  * 'LICENSE.txt', which is part of this source code package.
  */
@@ -15,7 +15,7 @@ import java.util.concurrent.*;
  * <p>In some circumstances, you might need to configure the class loader before being able to obtain instances of {@link CommonFactoryProvider} from univocity.jar.
  * If that is the case, use the {@link #setClassLoader(ClassLoader)} method before calling the {@link #build(Class, Object...)}} method.
  *
- * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @author Univocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public final class Builder {
 
@@ -24,7 +24,7 @@ public final class Builder {
 	private static ServiceLoader<CommonFactoryProvider> factoryProviderLoader = ServiceLoader.load(CommonFactoryProvider.class);
 
 	/**
-	 * Defines the class loader to be used to load uniVocity implementation classes (from univocity.jar)
+	 * Defines the class loader to be used to load univocity implementation classes (from univocity.jar)
 	 *
 	 * @param classLoader The class loader to be used to load provider classes, or <tt>null</tt> if the system class loader is to be used.
 	 */

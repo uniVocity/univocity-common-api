@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 uniVocity Software Pty Ltd. All rights reserved.
+ * Copyright (c) 2013 Univocity Software Pty Ltd. All rights reserved.
  * This file is subject to the terms and conditions defined in file
  * 'LICENSE.txt', which is part of this source code package.
  */
@@ -12,10 +12,10 @@ import java.io.*;
 import java.nio.charset.*;
 
 /**
- * A {@code FileProvider} validates and stores the minimum information required by uniVocity to locate and manipulate files.
+ * A {@code FileProvider} validates and stores the minimum information required by univocity to locate and manipulate files.
  * System properties can be used as part of the file name, such as {user.home}.
  *
- * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @author Univocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public final class FileProvider {
 
@@ -111,7 +111,7 @@ public final class FileProvider {
 	/**
 	 * Returns the File instance given in the constructor of this class, or {@code null} if a path to a resource is being used.
 	 *
-	 * @return the File to be loaded by uniVocity, or null if a resource path should be used instead.
+	 * @return the File to be loaded by univocity, or null if a resource path should be used instead.
 	 */
 	public final File getFile() {
 		return file;
@@ -129,7 +129,7 @@ public final class FileProvider {
 	/**
 	 * Returns the resource path given in the constructor of this class, or null if a {@code File} is being used.
 	 *
-	 * @return the path to a resource to be loaded by uniVocity, or null if a {@code File} should be used instead.
+	 * @return the path to a resource to be loaded by univocity, or null if a {@code File} should be used instead.
 	 */
 	public final String getFilePath() {
 		return filePath;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 uniVocity Software Pty Ltd. All rights reserved.
+ * Copyright (c) 2013 Univocity Software Pty Ltd. All rights reserved.
  * This file is subject to the terms and conditions defined in file
  * 'LICENSE.txt', which is part of this source code package.
  */
@@ -12,7 +12,7 @@ import com.univocity.api.exception.*;
  * A {@code HttpException} is thrown when a HTTP request made using a {@link HttpRequest} object did not result
  * resulted a 2xx (i.e. 'OK') or 3xx (i.e. 'Redirect') HTTP response code
  *
- * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @author Univocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public final class HttpException extends DataInputException {
 

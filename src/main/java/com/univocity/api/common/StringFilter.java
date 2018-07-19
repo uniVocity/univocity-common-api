@@ -3,7 +3,7 @@ package com.univocity.api.common;
 /**
  * A simple interface used to test a given {@code String}
  *
- * @author uniVocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
+ * @author Univocity Software Pty Ltd - <a href="mailto:dev@univocity.com">dev@univocity.com</a>
  */
 public interface StringFilter {
 
