@@ -23,5 +23,8 @@ public class Loggers {
 	 */
 	public static final String GENERAL = "GENERAL";
 
+	/**
+	 * Logger used by all operations involving the local user-level storage.
+	 */
 	public static final String UNIVOCITY_LOCAL_STORE = "UNIVOCITY_LOCAL_STORE";
 }

@@ -7,7 +7,9 @@
 package com.univocity.api.net;
 
 import com.univocity.api.*;
+import com.univocity.api.common.*;
 import com.univocity.api.io.*;
+import org.slf4j.*;
 
 import java.io.*;
 import java.net.*;
@@ -34,12 +36,15 @@ import java.nio.charset.*;
  */
 public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 
+	private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(Loggers.NETWORKING);
+
 	private int retries = 0;
 	private long retryInterval = 2000;
 	private HttpResponse response;
 	private HttpRequest request;
 	private FileProvider localCopyProvider;
 	private URL url;
+	private Logger logger = DEFAULT_LOGGER;
 
 	/**
 	 * Creates a new instance to read content from a given URL.
@@ -53,7 +58,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	/**
 	 * Creates a new instance to read content from a given URL.
 	 *
-	 * @param url the URL to access.
+	 * @param url         the URL to access.
 	 * @param rateLimiter {@link RateLimiter} that ensures multiple requests execute one after the other, after a minimum interval.
 	 */
 	public UrlReaderProvider(String url, RateLimiter rateLimiter) {
@@ -83,7 +88,7 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	 * @return the current URL
 	 */
 	public final URL getUrlInstance() {
-		if(url == null || !url.toString().equals(getUrl())){
+		if (url == null || !url.toString().equals(getUrl())) {
 			try {
 				url = new URL(getUrl());
 			} catch (Exception ex) {
@@ -394,5 +399,25 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	@Override
 	public int hashCode() {
 		return request != null ? request.hashCode() : 0;
+	}
+
+	/**
+	 * Returns the current logger associated with this UrlReaderProvider.
+	 * Defaults to {@code Loggers.NETWORKING}
+	 *
+	 * @return the logger to be used when logging network activity (might be {@code null})
+	 */
+	public Logger getLogger() {
+		return logger;
+	}
+
+	/**
+	 * Defines a logger to be used when logging network activity associated with this particular {@code UrlReaderProvider}.
+	 * Defaults to {@code Loggers.NETWORKING}
+	 *
+	 * @param logger the logger to be used, or {@code null} if logging should be disabled.
+	 */
+	public void setLogger(Logger logger) {
+		this.logger = logger;
 	}
 }

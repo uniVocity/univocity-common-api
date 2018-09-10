@@ -9,7 +9,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.univocity</groupId>
 	<artifactId>univocity-common-api</artifactId>
-	<version>2.0.1</version>
+	<version>2.0.2-SNAPSHOT</version>
 	<name>univocity-common-api</name>
 	<description>univocity public API - Common classes and utilites</description>
 
