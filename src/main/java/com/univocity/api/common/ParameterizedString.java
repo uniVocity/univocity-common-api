@@ -34,6 +34,7 @@ public class ParameterizedString implements Cloneable {
 	private String result = null;
 	private Object defaultValue = null;
 	private boolean convertDefaultValueToNull = true;
+	private boolean parameterValidationEnabled = true;
 
 
 	/**
@@ -92,7 +93,8 @@ public class ParameterizedString implements Cloneable {
 					if (nextOpenBracket > 0 && nextOpenBracket < closeBracketIndex) {
 						openBracketIndex = nextOpenBracket;
 					}
-				} while (nextOpenBracket > 0 && nextOpenBracket < closeBracketIndex);
+				}
+				while (nextOpenBracket > 0 && nextOpenBracket < closeBracketIndex);
 
 				x = closeBracketIndex;
 
@@ -140,11 +142,11 @@ public class ParameterizedString implements Cloneable {
 					ch = string.charAt(i);
 					if (ch < ' ') { //spaces allowed, but not other special chars
 						return true;
-					} else if (ch == ','){
+					} else if (ch == ',') {
 						foundComma = true;
 					}
 				}
-				if(!foundComma){
+				if (!foundComma) {
 					return true;
 				}
 			}
@@ -175,17 +177,17 @@ public class ParameterizedString implements Cloneable {
 	 * @param parameter the parameter name
 	 * @param value     the parameter value
 	 *
-	 * @throws IllegalArgumentException if the parameter name does not exist
+	 * @throws IllegalArgumentException if the parameter name does not exist and {@link #isParameterValidationEnabled()} evaluates to {@code true}
 	 */
 	public final void set(String parameter, Object value) throws IllegalArgumentException {
-		validateParameterName(parameter);
+		if(validateParameterName(parameter)){
+			if (convertDefaultValueToNull && value != null && defaultValue != null && value.equals(defaultValue)) {
+				value = null;
+			}
 
-		if (convertDefaultValueToNull && value != null && defaultValue != null && value.equals(defaultValue)) {
-			value = null;
+			parameterValues.put(parameter, value);
+			result = null;
 		}
-
-		parameterValues.put(parameter, value);
-		result = null;
 	}
 
 	/**
@@ -195,11 +197,14 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @return the parameter value
 	 *
-	 * @throws IllegalArgumentException if the parameter name does not exist
+	 * @throws IllegalArgumentException if the parameter name does not exist and {@link #isParameterValidationEnabled()} evaluates to {@code true}
 	 */
 	public final Object get(String parameter) throws IllegalArgumentException {
-		validateParameterName(parameter);
-		return parameterValues.get(parameter);
+		if(validateParameterName(parameter)) {
+			return parameterValues.get(parameter);
+		} else {
+			return null;
+		}
 	}
 
 	private void invalidInput(String input) {
@@ -276,11 +281,17 @@ public class ParameterizedString implements Cloneable {
 		return getParameterValues();
 	}
 
-	private void validateParameterName(String parameter) {
-		Args.notBlank(parameter, "Parameter name");
-		if (!parameterNames.contains(parameter)) {
-			throw new IllegalArgumentException("Parameter '" + parameter + "' not found in " + string + ". Available parameters: " + parameterNames);
+	private boolean validateParameterName(String parameter) {
+		if (parameterValidationEnabled) {
+			Args.notBlank(parameter, "Parameter name");
 		}
+		if (!parameterNames.contains(parameter)) {
+			if (parameterValidationEnabled) {
+				throw new IllegalArgumentException("Parameter '" + parameter + "' not found in " + string + ". Available parameters: " + parameterNames);
+			}
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -386,13 +397,14 @@ public class ParameterizedString implements Cloneable {
 	 *
 	 * @return the format of parameter as {@code String}. Returns {@code null} if the parameter does not exist or format was not set.
 	 *
-	 * @throws IllegalArgumentException if the parameter name does not exist
+	 * @throws IllegalArgumentException if the parameter name does not exist and {@link #isParameterValidationEnabled()} evaluates to {@code true}
 	 */
 	public final String getFormat(String parameterName) throws IllegalArgumentException {
-		validateParameterName(parameterName);
-		for (Parameter parameter : parameters) {
-			if (parameter.name.equals(parameterName)) {
-				return parameter.format;
+		if(validateParameterName(parameterName)) {
+			for (Parameter parameter : parameters) {
+				if (parameter.name.equals(parameterName)) {
+					return parameter.format;
+				}
 			}
 		}
 		return null;
@@ -638,5 +650,31 @@ public class ParameterizedString implements Cloneable {
 	 */
 	public final void setConvertDefaultValueToNull(boolean convertDefaultValueToNull) {
 		this.convertDefaultValueToNull = convertDefaultValueToNull;
+	}
+
+	/**
+	 * Flag indicating whether parameter validation is enabled. If {@code true},
+	 * setting the value of a parameter that does not exist will throw an {@link IllegalArgumentException}.
+	 * If {@code false}, the value associated with an unknown parameter is simply ignored.
+	 *
+	 * Defaults to {@code true}
+	 *
+	 * @return whether parameter names should be validated.
+	 */
+	public boolean isParameterValidationEnabled() {
+		return parameterValidationEnabled;
+	}
+
+	/**
+	 * Determines whether parameter names should be validated. If {@code true},
+	 * setting the value of a parameter that does not exist will throw an {@link IllegalArgumentException}.
+	 * If {@code false}, the value associated with an unknown parameter is simply ignored.
+	 *
+	 * Defaults to {@code true}
+	 *
+	 * @param parameterValidationEnabled flag to enable or disable the parameter name validation
+	 */
+	public void setParameterValidationEnabled(boolean parameterValidationEnabled) {
+		this.parameterValidationEnabled = parameterValidationEnabled;
 	}
 }
