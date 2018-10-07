@@ -363,8 +363,7 @@ public class Args {
 	}
 
 	/**
-	 * Encodes a value using UTF-8 so it can be used as part of a URL. If the value is already encoded, its original {@code String}
-	 * representation will be returned.
+	 * Encodes a value using UTF-8 so it can be used as part of a URL.
 	 *
 	 * @param parameterValue the value to be encoded.
 	 *
@@ -375,8 +374,7 @@ public class Args {
 	}
 
 	/**
-	 * Encodes a value so it can be used as part of a URL. If the value is already encoded, its original {@code String}
-	 * representation will be returned.
+	 * Encodes a value so it can be used as part of a URL.
 	 *
 	 * @param parameterValue the value to be encoded.
 	 * @param charsetName    charset to use for encoding the given value. If {@code null}, then UTF-8 will be used.
@@ -388,8 +386,7 @@ public class Args {
 	}
 
 	/**
-	 * Encodes a value so it can be used as part of a URL. If the value is already encoded, its original {@code String}
-	 * representation will be returned.
+	 * Encodes a value so it can be used as part of a URL.
 	 *
 	 * @param parameterName  name of the parameter associated with the value
 	 * @param parameterValue the value to be encoded.
@@ -405,25 +402,16 @@ public class Args {
 			charsetName = "UTF-8";
 		}
 		String original = String.valueOf(parameterValue);
-		String decoded = original;
-		try {
-			decoded = decode(parameterName, original, charsetName);
-		} catch (Exception ex) {
-			//ignore, will encode.
-		}
 
-		if (decoded.equals(original)) {
-			try {
-				return URLEncoder.encode(original, charsetName);
-			} catch (Exception ex) {
-				if (parameterName == null) {
-					throw new IllegalStateException("Error encoding value: " + parameterValue, ex);
-				} else {
-					throw new IllegalStateException("Error encoding value of parameter '" + parameterName + "'. Value: " + parameterValue, ex);
-				}
+		try {
+			return URLEncoder.encode(original, charsetName);
+		} catch (Exception ex) {
+			if (parameterName == null) {
+				throw new IllegalStateException("Error encoding value: " + parameterValue, ex);
+			} else {
+				throw new IllegalStateException("Error encoding value of parameter '" + parameterName + "'. Value: " + parameterValue, ex);
 			}
-		} //else value is already encoded.
-		return original;
+		}
 	}
 
 	/**

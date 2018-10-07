@@ -480,7 +480,6 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	 * @param parameterName  name of the parameter enclosed within { and } in the URL
 	 * @param parameterValue value of the given parameter, to replace the parameter name in the URL
 	 * @param encode         flag indicating whether to encode the given parameter value.
-	 *                       If the value is already encoded, it won't be encoded again.
 	 *
 	 * @throws IllegalArgumentException if the parameter name does not exist
 	 */
