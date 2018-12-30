@@ -35,7 +35,7 @@ import static com.univocity.api.common.Utils.*;
 public class HttpRequest extends HttpMessage implements Cloneable {
 
 	private ParameterizedString url;
-	private int timeout;
+	private int timeout = 30000;
 	private boolean followRedirects = true;
 	private List<DataParameter> data = new ArrayList<DataParameter>();
 	private Charset charset;
@@ -394,7 +394,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Defines a time limit (in milliseconds) for an initial connection to be established from this request.
-	 * <i>Defaults to 0 (no timeout).</i>
+	 * <i>Defaults to 30000 (i.e. 30 seconds).</i>
 	 *
 	 * @param timeout the time limit to wait until a connection is established.
 	 */
@@ -542,7 +542,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 
 	/**
 	 * Returns the time limit (in milliseconds) for an initial connection to be established from this request.
-	 * <i>Defaults to 0 (no timeout).</i>
+	 * <i>Defaults to 30000 (i.e. 30 seconds).</i>
 	 *
 	 * @return the current timeout value.
 	 */
