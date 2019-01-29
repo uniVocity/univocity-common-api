@@ -120,6 +120,17 @@ public class UrlReaderProvider extends ReaderProvider implements Cloneable {
 	}
 
 	/**
+	 * Returns the host name in the current URL. If a response has been obtained (through {@link #getResponse()}) with
+	 * redirection enabled, the host name in the redirection URL will be returned.
+	 *
+	 * @return the current domain name.
+	 */
+	public final String getHost() {
+		return getUrlInstance().getHost();
+	}
+
+
+	/**
 	 * Returns a {@link HttpRequest} object with configuration options for executing the HTTP request.
 	 *
 	 * @return the request configuration.
