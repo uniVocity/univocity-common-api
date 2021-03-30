@@ -15,6 +15,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.*;
 import java.util.*;
+import java.util.function.*;
 
 import static com.univocity.api.common.Utils.*;
 
@@ -48,6 +49,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 	private int bodySizeLimit;
 	private String requestBody;
 	private Charset postDataCharset = Charset.forName("UTF-8");
+	private Consumer<HttpRequest> requestUpdater;
 
 	/**
 	 * Creates a new request for a given request URL
@@ -99,6 +101,16 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		for (String param : this.url.getParameters()) {
 			this.url.set(param, oldParameters.get(param));
 		}
+	}
+
+	/**
+	 * Defines an update process for this request, allowing its configuration to be updated
+	 * every time a new connection to the remote host is created. This will be executed when
+	 * {@link #prepareRequest()} is invoked.
+	 * @param requestUpdater the update action to execute before execution of this request.
+	 */
+	public void setRequestUpdater(Consumer<HttpRequest> requestUpdater) {
+		this.requestUpdater = requestUpdater;
 	}
 
 	/**
@@ -1062,7 +1074,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		try {
 			HttpRequest clone = (HttpRequest) super.clone();
 			clone.url = this.url.clone();
-
+			clone.requestUpdater = this.requestUpdater;
 			clone.cookies = new LinkedHashMap<String, String>(this.cookies);
 
 			clone.headers = new LinkedHashMap<String, List<String>>();
@@ -1170,5 +1182,14 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		result = 31 * result + (data != null ? data.hashCode() : 0);
 		result = 31 * result + (requestBody != null ? requestBody.hashCode() : 0);
 		return result;
+	}
+
+	/**
+	 * Prepares the request to be executed
+	 */
+	public void prepareRequest(){
+		if(requestUpdater != null){
+			requestUpdater.accept(this);
+		}
 	}
 }
