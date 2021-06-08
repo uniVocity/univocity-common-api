@@ -61,7 +61,7 @@ public class HttpRequest extends HttpMessage implements Cloneable {
 		setUrl(url);
 		this.rateLimiter = rateLimiter;
 		this.addHeader("Accept-Encoding", "gzip");
-		this.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36");
+		this.setUserAgent("Mozilla/5.0 (X11; Linux i686; rv:89.0) Gecko/20100101 Firefox/89.0");
 	}
 
 	/**
